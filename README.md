@@ -21,7 +21,7 @@ Portfolio auf <http://localhost:5173>, Games auf <http://localhost:5174>.
 Nur das Portfolio: `npm run dev:portfolio`.
 
 Mit Docker (ebenfalls im Portfolio-Ordner): `docker compose up --build` –
-Portfolio auf <http://localhost:5173>, Games auf <http://localhost:3001>.
+Portfolio auf <http://localhost:5173>, Games auf <http://localhost:1337>.
 
 ## Aufbau
 
