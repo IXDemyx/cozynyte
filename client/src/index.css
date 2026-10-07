@@ -1,0 +1,73 @@
+@import "tailwindcss";
+@import "./styles/theme.css";
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition:
+    color 200ms ease,
+    background-color 200ms ease;
+}
+
+::selection {
+  color: #ffffff;
+  background: var(--accent);
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-in {
+  animation: slideIn 0.35s ease both;
+}
+
+@keyframes bar {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.eq-bar {
+  transform-origin: bottom;
+  animation: bar 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-in,
+  .eq-bar {
+    animation: none;
+  }
+}
