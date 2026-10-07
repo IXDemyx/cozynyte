@@ -7,6 +7,7 @@ import { Server, type Socket } from "socket.io";
 import type {
   Ack,
   FeedItem,
+  Game,
   Phase,
   RoomState,
   Settings,
@@ -18,7 +19,7 @@ import { suggestTracks } from "./suggestions";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const REVEAL_MS = Number(process.env.REVEAL_MS ?? 9000);
-const MAX_PLAYERS = 12;
+const MAX_PLAYERS = 16;
 const LOBBY_GRACE_MS = 15_000;
 const ROOM_TTL_MS = 10 * 60_000;
 /** Zeitpunkte (Anteil der Rundenzeit), zu denen Buchstaben des Titels aufgedeckt werden. */
@@ -53,6 +54,8 @@ interface Round {
   gains: Map<string, number>;
   feed: FeedItem[];
   timer: NodeJS.Timeout;
+  /** Guess the Year: abgegebene Jahre je Spieler. */
+  years: Map<string, number>;
   titleHint: Hint;
   artistHint: Hint;
   hintTimers: NodeJS.Timeout[];
@@ -60,6 +63,7 @@ interface Round {
 
 interface Room {
   code: string;
+  game: Game;
   hostId: string;
   phase: Phase;
   settings: Settings;
@@ -124,6 +128,7 @@ function view(room: Room, playerId: string): RoomState {
   const me = room.players.get(playerId);
   const state: RoomState = {
     code: room.code,
+    game: room.game,
     phase: room.phase,
     hostId: room.hostId,
     you: playerId,
@@ -136,6 +141,7 @@ function view(room: Room, playerId: string): RoomState {
       picked: p.picks.length,
       gotTitle: round?.got.get(p.id)?.title ?? false,
       gotArtist: round?.got.get(p.id)?.artist ?? false,
+      answered: round ? hasAnswered(room, round, p.id) : false,
     })),
     myPicks: room.phase === "picking" ? (me?.picks ?? []) : [],
     serverNow: Date.now(),
@@ -151,6 +157,16 @@ function view(room: Room, playerId: string): RoomState {
       endsAt: round.endsAt,
       durationMs: round.endsAt - round.startedAt,
       youArePicker: round.pickerId === playerId,
+      ...(room.game === "year"
+        ? {
+            song:
+              room.settings.showSong || isPicker
+                ? { title: round.track.title, artist: round.track.artist }
+                : undefined,
+            yourYear: round.years.get(playerId),
+            answerYear: isPicker ? round.track.year : undefined,
+          }
+        : {}),
       // Wer etwas schon weiß (erraten oder selbst gewählt), sieht es im Klartext.
       titleMask:
         isPicker || mine?.title
@@ -170,6 +186,7 @@ function view(room: Room, playerId: string): RoomState {
       track: round.track,
       pickerId: round.pickerId,
       gains: Object.fromEntries(round.gains),
+      yearGuesses: room.game === "year" ? Object.fromEntries(round.years) : undefined,
       nextAt: room.revealNextAt,
       isLast: room.roundIndex >= room.queue.length - 1,
     };
@@ -250,12 +267,14 @@ function startRound(room: Room) {
     got: new Map(),
     gains: new Map(),
     feed: [],
+    years: new Map(),
     timer: setTimeout(() => endRound(room), duration),
     titleHint: newHint(cleanTitle(entry.track.title)),
     artistHint: newHint(entry.track.artist),
     hintTimers: [],
   };
-  round.hintTimers = HINT_AT.map((fraction) =>
+  // Buchstaben-Hinweise gibt es nur bei Guess the Song.
+  round.hintTimers = (room.game === "song" ? HINT_AT : []).map((fraction) =>
     setTimeout(() => {
       if (room.round !== round || room.phase !== "round") return;
       const changed = [round.titleHint, round.artistHint].map(openMore);
@@ -271,6 +290,13 @@ function endRound(room: Room) {
   if (!round || room.phase !== "round") return;
   clearTimeout(round.timer);
   round.hintTimers.forEach(clearTimeout);
+  if (room.game === "year" && round.track.year) {
+    for (const [playerId, guess] of round.years) {
+      const off = Math.abs(guess - round.track.year);
+      addPoints(room, round, playerId, yearPoints(off));
+      if (off <= 2) addPoints(room, round, round.pickerId, 10); // Bonus für gut schätzbare Songs
+    }
+  }
   room.phase = "reveal";
   room.revealNextAt = Date.now() + REVEAL_MS;
   room.revealTimer = setTimeout(() => nextRound(room), REVEAL_MS);
@@ -297,15 +323,20 @@ function addPoints(room: Room, round: Round, playerId: string, points: number) {
   round.gains.set(playerId, (round.gains.get(playerId) ?? 0) + points);
 }
 
+/** Guess the Year: genau = 100, ein Jahr daneben = 80, dann je Jahr 10 weniger. */
+function yearPoints(off: number): number {
+  return off === 0 ? 100 : Math.max(0, 90 - 10 * off);
+}
+
+function hasAnswered(room: Room, round: Round, playerId: string): boolean {
+  if (room.game === "year") return round.years.has(playerId);
+  const got = round.got.get(playerId);
+  return Boolean(got?.title && got?.artist);
+}
+
 function everyoneDone(room: Room, round: Round): boolean {
   const guessers = connected(room).filter((p) => p.id !== round.pickerId);
-  return (
-    guessers.length > 0 &&
-    guessers.every((p) => {
-      const g = round.got.get(p.id);
-      return g?.title && g?.artist;
-    })
-  );
+  return guessers.length > 0 && guessers.every((p) => hasAnswered(room, round, p.id));
 }
 
 function handleGuess(room: Room, player: Player, raw: unknown) {
@@ -317,6 +348,15 @@ function handleGuess(room: Room, player: Player, raw: unknown) {
   const result = matchGuess(text, round.track);
   // Alles, was der Lösung entspricht oder nahekommt, wird nie als Text weitergegeben.
   const spoils = result.title !== "none" || result.artist !== "none";
+
+  // Guess the Year: das Textfeld ist reiner Chat. Die Jahreszahl darf nicht fallen, und bei
+  // verdecktem Song auch weder Titel noch Interpret.
+  if (room.game === "year") {
+    const year = String(round.track.year ?? "");
+    if ((year && text.includes(year)) || (!room.settings.showSong && spoils)) return;
+    round.feed.push({ id: ++feedId, playerId: player.id, name: player.name, kind: "wrong", text });
+    return broadcast(room);
+  }
 
   // Wer den Song gewählt hat, rät nicht mit, darf aber chatten.
   if (round.pickerId === player.id) {
@@ -416,9 +456,10 @@ io.on("connection", (socket) => {
     detach(socket, true);
     const room: Room = {
       code: newCode(),
+      game: data?.game === "year" ? "year" : "song",
       hostId: playerId,
       phase: "lobby",
-      settings: { songsPerPlayer: 3, roundSeconds: 30, theme: "" },
+      settings: { songsPerPlayer: 3, roundSeconds: 30, theme: "", showSong: true },
       players: new Map(),
       queue: [],
       roundIndex: 0,
@@ -467,6 +508,8 @@ io.on("connection", (socket) => {
     const seconds = Number(data?.roundSeconds);
     if (Number.isInteger(songs) && songs >= 1 && songs <= 5) c.room.settings.songsPerPlayer = songs;
     if ([15, 20, 30].includes(seconds)) c.room.settings.roundSeconds = seconds;
+    if (data?.game === "song" || data?.game === "year") c.room.game = data.game;
+    if (typeof data?.showSong === "boolean") c.room.settings.showSong = data.showSong;
     if (typeof data?.theme === "string") {
       c.room.settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
     }
@@ -536,6 +579,7 @@ io.on("connection", (socket) => {
     if (!c || c.room.phase !== "picking") return;
     const track = getCachedTrack(Number(data?.trackId));
     if (!track) return reply(cb, { ok: false, error: "track_not_found" });
+    if (c.room.game === "year" && !track.year) return reply(cb, { ok: false, error: "track_no_year" });
     if (c.player.picks.length >= c.room.settings.songsPerPlayer) {
       return reply(cb, { ok: false, error: "picks_full" });
     }
@@ -569,6 +613,20 @@ io.on("connection", (socket) => {
   socket.on("round:guess", (data) => {
     const c = ctx();
     if (c) handleGuess(c.room, c.player, data?.text);
+  });
+
+  // Guess the Year: ein Tipp pro Runde, danach gesperrt.
+  socket.on("round:year", (data) => {
+    const c = ctx();
+    const round = c?.room.round;
+    if (!c || !round || c.room.game !== "year" || c.room.phase !== "round") return;
+    if (round.pickerId === c.player.id || round.years.has(c.player.id)) return;
+    const year = Math.round(Number(data?.year));
+    if (!Number.isFinite(year) || year < 1900 || year > new Date().getFullYear() + 1) return;
+    round.years.set(c.player.id, year);
+    round.feed.push({ id: ++feedId, playerId: c.player.id, name: c.player.name, kind: "locked" });
+    if (everyoneDone(c.room, round)) endRound(c.room);
+    else broadcast(c.room);
   });
 
   // Host-Werkzeug: laufenden Song abbrechen und direkt auflösen.

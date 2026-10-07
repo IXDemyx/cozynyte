@@ -35,6 +35,8 @@ function Option({
   );
 }
 
+const GAME_NAMES = { song: "Guess the Song", year: "Guess the Year" };
+
 function Lobby({ state }: { state: RoomState }) {
   const { t, err } = useLanguage();
   const [copied, setCopied] = useState(false);
@@ -59,7 +61,7 @@ function Lobby({ state }: { state: RoomState }) {
   return (
     <div className="animate-in grid gap-6 lg:grid-cols-3">
       <section className={`${card} p-7 min-w-0 lg:col-span-2`}>
-        <p className={eyebrow}>{t.lobby.eyebrow}</p>
+        <p className={eyebrow}>{GAME_NAMES[state.game]} · Lobby</p>
         <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm text-(--text-secondary)">{t.home.code}</p>
@@ -74,6 +76,21 @@ function Lobby({ state }: { state: RoomState }) {
         </div>
 
         <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 sm:grid-cols-2 dark:border-(--accent-soft)">
+          <div className="sm:col-span-2">
+            <p className="text-sm font-semibold">{t.lobby.game}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(["song", "year"] as const).map((game) => (
+                <Option
+                  key={game}
+                  active={state.game === game}
+                  disabled={!isHost}
+                  onClick={() => socket.emit("settings:update", { game })}
+                >
+                  {GAME_NAMES[game]}
+                </Option>
+              ))}
+            </div>
+          </div>
           <div>
             <p className="text-sm font-semibold">{t.lobby.songsPerPlayer}</p>
             <div className="mt-3 flex gap-2">
@@ -104,6 +121,27 @@ function Lobby({ state }: { state: RoomState }) {
               ))}
             </div>
           </div>
+          {state.game === "year" && (
+            <div className="sm:col-span-2">
+              <p className="text-sm font-semibold">{t.lobby.showSong}</p>
+              <div className="mt-3 flex gap-2">
+                <Option
+                  active={state.settings.showSong}
+                  disabled={!isHost}
+                  onClick={() => update({ showSong: true })}
+                >
+                  {t.lobby.showSongOn}
+                </Option>
+                <Option
+                  active={!state.settings.showSong}
+                  disabled={!isHost}
+                  onClick={() => update({ showSong: false })}
+                >
+                  {t.lobby.showSongOff}
+                </Option>
+              </div>
+            </div>
+          )}
           <div className="sm:col-span-2">
             <label htmlFor="theme" className="text-sm font-semibold">
               {t.lobby.theme}

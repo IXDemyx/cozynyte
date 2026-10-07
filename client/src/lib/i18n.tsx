@@ -14,9 +14,10 @@ const de = {
     switchLanguage: "Switch to English",
   },
   home: {
-    meta: "2–12 Spieler · ca. 10 Minuten",
+    meta: "2–16 Spieler",
     songText: "Jeder wählt Songs aus, alle raten Titel und Interpret.",
-    coverText: "Erkenne das Album am verpixelten Cover.",
+    yearText: "Jeder wählt Songs aus, alle schätzen das Erscheinungsjahr.",
+    joinTitle: "Raum beitreten",
     drawText: "Einer zeichnet, alle anderen raten.",
     name: "Dein Name",
     namePlaceholder: "z. B. Daniel",
@@ -34,7 +35,10 @@ const de = {
     connecting: (code: string) => `Verbinde mit Raum ${code} …`,
   },
   lobby: {
-    eyebrow: "Guess the Song · Lobby",
+    game: "Spiel",
+    showSong: "Titel und Interpret während der Runde",
+    showSongOn: "Anzeigen",
+    showSongOff: "Nur hören",
     copy: "Einladungslink kopieren",
     copied: "Kopiert",
     songsPerPlayer: "Songs pro Spieler",
@@ -50,6 +54,7 @@ const de = {
     eyebrow: "Songauswahl",
     title: (n: number) => (n === 1 ? "Wähle deinen Song" : `Wähle deine ${n} Songs`),
     hint: "Die anderen sehen deine Auswahl nicht. Du bekommst Punkte, wenn deine Songs erraten werden – zu schwer lohnt sich also nicht.",
+    hintYear: "Die anderen sehen deine Auswahl nicht. Du bekommst Punkte, wenn sie höchstens 2 Jahre danebenliegen. Schau aufs angezeigte Jahr: Bei Neuauflagen nennt iTunes manchmal ein späteres.",
     done: "Fertig! Warte auf die anderen …",
     search: "Song suchen",
     searchPlaceholder: "Titel oder Interpret suchen …",
@@ -98,6 +103,18 @@ const de = {
     close: (name: string, me: boolean) =>
       me ? "Du bist ganz nah dran …" : `${name} ist ganz nah dran …`,
   },
+  year: {
+    question: "Aus welchem Jahr ist der Song?",
+    hidden: "Titel und Interpret sind verdeckt",
+    input: "Jahr",
+    submit: "Tipp abgeben",
+    yourGuess: "Dein Tipp",
+    waiting: "Warte auf die anderen …",
+    yourSongRest: (year: number | undefined) =>
+      `Erschienen ${year ?? "?"}. Du bekommst Punkte für jeden, der höchstens 2 Jahre danebenliegt.`,
+    locked: (name: string, me: boolean) => (me ? "Du hast getippt." : `${name} hat getippt.`),
+    chat: "Nachricht schreiben …",
+  },
   reveal: {
     eyebrow: (i: number, n: number) => `Auflösung · Song ${i} / ${n}`,
     cover: (name: string) => `Cover von ${name}`,
@@ -136,6 +153,7 @@ const de = {
     track_taken: "Dieser Song wurde schon gewählt.",
     search_rate_limited: "Zu viele Suchanfragen – warte kurz und versuch es dann noch einmal.",
     kicked: "Der Host hat dich aus dem Raum entfernt.",
+    track_no_year: "Für diesen Song ist kein Erscheinungsjahr bekannt.",
   } as Record<string, string>,
 };
 
@@ -151,9 +169,10 @@ const en: typeof de = {
     switchLanguage: "Auf Deutsch wechseln",
   },
   home: {
-    meta: "2–12 players · about 10 minutes",
+    meta: "2–16 players",
     songText: "Everyone picks songs, everyone guesses the title and artist.",
-    coverText: "Recognise the album from its pixelated cover.",
+    yearText: "Everyone picks songs, everyone guesses the release year.",
+    joinTitle: "Join a room",
     drawText: "One player draws, everyone else guesses.",
     name: "Your name",
     namePlaceholder: "e.g. Daniel",
@@ -171,7 +190,10 @@ const en: typeof de = {
     connecting: (code) => `Connecting to room ${code} …`,
   },
   lobby: {
-    eyebrow: "Guess the Song · Lobby",
+    game: "Game",
+    showSong: "Title and artist during the round",
+    showSongOn: "Show",
+    showSongOff: "Audio only",
     copy: "Copy invite link",
     copied: "Copied",
     songsPerPlayer: "Songs per player",
@@ -187,6 +209,7 @@ const en: typeof de = {
     eyebrow: "Song selection",
     title: (n) => (n === 1 ? "Pick your song" : `Pick your ${n} songs`),
     hint: "The others can't see your picks. You earn points when your songs are guessed – so don't make them too hard.",
+    hintYear: "The others can't see your picks. You earn points when they are at most 2 years off. Check the year shown: for re-releases iTunes sometimes gives a later one.",
     done: "Done! Waiting for the others …",
     search: "Search for a song",
     searchPlaceholder: "Search by title or artist …",
@@ -232,6 +255,18 @@ const en: typeof de = {
     gotArtist: (name, me) => (me ? "You guessed the artist!" : `${name} guessed the artist!`),
     close: (name, me) => (me ? "You're really close …" : `${name} is really close …`),
   },
+  year: {
+    question: "What year is this song from?",
+    hidden: "Title and artist are hidden",
+    input: "Year",
+    submit: "Lock in guess",
+    yourGuess: "Your guess",
+    waiting: "Waiting for the others …",
+    yourSongRest: (year) =>
+      `Released ${year ?? "?"}. You earn points for everyone who is at most 2 years off.`,
+    locked: (name, me) => (me ? "You locked in a guess." : `${name} locked in a guess.`),
+    chat: "Write a message …",
+  },
   reveal: {
     eyebrow: (i, n) => `Reveal · Song ${i} / ${n}`,
     cover: (name) => `Cover of ${name}`,
@@ -270,6 +305,7 @@ const en: typeof de = {
     track_taken: "This song has already been picked.",
     search_rate_limited: "Too many searches – wait a moment and try again.",
     kicked: "The host removed you from the room.",
+    track_no_year: "No release year is known for this song.",
   },
 };
 

@@ -1,26 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { FiCheck, FiSkipForward } from "react-icons/fi";
-import type { FeedItem, RoomState, RoundView } from "../../../shared/types";
+import type { RoomState, RoundView } from "../../../shared/types";
 import Button from "../components/Button";
 import PlayerList from "../components/PlayerList";
 import { card, eyebrow, input } from "../components/ui";
 import { useNow } from "../hooks/useNow";
 import { useLanguage } from "../lib/i18n";
 import { socket } from "../lib/socket";
-
-function Equalizer() {
-  return (
-    <div className="flex h-16 items-end justify-center gap-1.5" aria-hidden="true">
-      {[0, 0.3, 0.15, 0.45, 0.1, 0.35, 0.2].map((delay, i) => (
-        <span
-          key={i}
-          className="eq-bar h-full w-2 rounded-full bg-(--accent)"
-          style={{ animationDelay: `${delay}s` }}
-        />
-      ))}
-    </div>
-  );
-}
+import { Equalizer, FeedLine } from "./shared";
 
 /** Eine Zeile "Titel"/"Interpret": verdeckte Buchstaben als Striche, Hinweise hervorgehoben. */
 function Mask({ label, mask, done }: { label: string; mask: string; done: boolean }) {
@@ -47,31 +34,6 @@ function Mask({ label, mask, done }: { label: string; mask: string; done: boolea
       )}
     </div>
   );
-}
-
-type RoundTexts = ReturnType<typeof useLanguage>["t"]["round"];
-
-function feedText(item: FeedItem, you: string, text: RoundTexts) {
-  const me = item.playerId === you;
-  switch (item.kind) {
-    case "title":
-      return (
-        <span className="font-semibold text-(--success)">{text.gotTitle(item.name, me)}</span>
-      );
-    case "artist":
-      return (
-        <span className="font-semibold text-(--success)">{text.gotArtist(item.name, me)}</span>
-      );
-    case "close":
-      return <span className="text-(--accent)">{text.close(item.name, me)}</span>;
-    default:
-      return (
-        <>
-          <span className="font-semibold">{item.name}:</span>{" "}
-          <span className="text-(--text-secondary)">{item.text}</span>
-        </>
-      );
-  }
 }
 
 interface RoundProps {
@@ -175,7 +137,7 @@ function Round({ state, round, offset }: RoundProps) {
               <li className="text-(--text-secondary)">{t.round.empty}</li>
             )}
             {round.feed.map((item) => (
-              <li key={item.id}>{feedText(item, state.you, t.round)}</li>
+              <li key={item.id}><FeedLine item={item} you={state.you} /></li>
             ))}
             <li ref={feedEnd} />
           </ul>
@@ -196,9 +158,7 @@ function Round({ state, round, offset }: RoundProps) {
         showScore
         status={(p) =>
           (p.gotTitle || p.gotArtist) && (
-            <span className="font-semibold text-(--success)">
-              {p.gotTitle && p.gotArtist ? "✓✓" : "✓"}
-            </span>
+            <span className="font-semibold text-(--success)">{p.answered ? "✓✓" : "✓"}</span>
           )
         }
       />

@@ -8,6 +8,7 @@ import Lobby from "../game/Lobby";
 import Picking from "../game/Picking";
 import Reveal from "../game/Reveal";
 import Round from "../game/Round";
+import YearRound from "../game/YearRound";
 import { useRoom } from "../hooks/useRoom";
 import { useLanguage } from "../lib/i18n";
 import { getName, saveName } from "../lib/socket";
@@ -77,9 +78,13 @@ function Room() {
     <>
       {state.phase === "lobby" && <Lobby state={state} />}
       {state.phase === "picking" && <Picking state={state} />}
-      {state.phase === "round" && state.round && (
-        <Round state={state} round={state.round} offset={offset} />
-      )}
+      {state.phase === "round" &&
+        state.round &&
+        (state.game === "year" ? (
+          <YearRound state={state} round={state.round} offset={offset} />
+        ) : (
+          <Round state={state} round={state.round} offset={offset} />
+        ))}
       {state.phase === "reveal" && state.reveal && (
         <Reveal state={state} reveal={state.reveal} offset={offset} />
       )}

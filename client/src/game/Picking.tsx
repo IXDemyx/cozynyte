@@ -30,6 +30,7 @@ function Picking({ state }: { state: RoomState }) {
   const picks = state.myPicks;
   const full = picks.length >= target;
   const isHost = state.hostId === state.you;
+  const isYear = state.game === "year";
   const active = state.players.filter((p) => p.connected);
   const everyoneReady = active.every((p) => p.picked >= target);
 
@@ -121,7 +122,9 @@ function Picking({ state }: { state: RoomState }) {
             <span className="font-semibold text-(--accent)">{state.settings.theme}</span>
           </p>
         )}
-        <p className="mt-2 text-sm text-(--text-secondary)">{t.picking.hint}</p>
+        <p className="mt-2 text-sm text-(--text-secondary)">
+          {isYear ? t.picking.hintYear : t.picking.hint}
+        </p>
 
         <ul className="mt-6 grid gap-2">
           {Array.from({ length: target }, (_, i) => {
@@ -145,7 +148,12 @@ function Picking({ state }: { state: RoomState }) {
                   <img src={track.artwork} alt="" className="h-11 w-11 rounded-lg object-cover" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold">{track.title}</p>
-                    <p className="truncate text-xs text-(--text-secondary)">{track.artist}</p>
+                    <p className="truncate text-xs text-(--text-secondary)">
+                      {track.artist}
+                      {isYear && track.year && (
+                        <span className="font-mono font-semibold text-(--accent)"> · {track.year}</span>
+                      )}
+                    </p>
                   </div>
                   <button
                     type="button"
@@ -228,11 +236,16 @@ function Picking({ state }: { state: RoomState }) {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{track.title}</p>
                       <p className="truncate text-xs text-(--text-secondary)">
+                        {isYear && (
+                          <span className="font-mono font-semibold text-(--accent)">
+                            {track.year ?? "?"} ·{" "}
+                          </span>
+                        )}
                         {track.artist}
                         {track.album && ` · ${track.album}`}
                       </p>
                     </div>
-                    <Button size="small" variant="secondary" disabled={mine} onClick={() => add(track)}>
+                    <Button size="small" variant="secondary" disabled={mine || (isYear && !track.year)} onClick={() => add(track)}>
                       <FiPlus aria-label={t.picking.pick} />{" "}
                       <span className="hidden sm:inline">{t.picking.pick}</span>
                     </Button>

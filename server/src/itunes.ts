@@ -1,4 +1,5 @@
 import type { Track } from "../../shared/types";
+import { cleanTitle, normalize } from "./match";
 
 const BASE = process.env.ITUNES_BASE ?? "https://itunes.apple.com";
 const COUNTRY = process.env.ITUNES_COUNTRY ?? "DE";
@@ -14,6 +15,7 @@ interface ItunesResult {
   collectionName?: string;
   artworkUrl100?: string;
   previewUrl?: string;
+  releaseDate?: string;
 }
 
 /** Gleiche Suchbegriffe werden eine Weile aus dem Speicher beantwortet – schont das iTunes-Limit. */
@@ -55,7 +57,20 @@ async function fetchTracks(term: string): Promise<Track[]> {
       artwork: (r.artworkUrl100 ?? "").replace("100x100", "300x300"),
       previewUrl: r.previewUrl,
     };
+    const year = Number.parseInt(r.releaseDate ?? "", 10);
+    if (year > 1900) track.year = year;
     tracks.push(track);
+  }
+
+  // iTunes nennt bei Neuauflagen und Samplern oft deren Jahr. Taucht derselbe Song mehrfach
+  // auf, gilt das früheste Jahr – das liegt näher an der ursprünglichen Veröffentlichung.
+  const earliest = new Map<string, number>();
+  const songKey = (t: Track) => `${normalize(cleanTitle(t.title))}|${normalize(t.artist)}`;
+  for (const t of tracks) {
+    if (t.year) earliest.set(songKey(t), Math.min(t.year, earliest.get(songKey(t)) ?? t.year));
+  }
+  for (const track of tracks) {
+    if (track.year) track.year = earliest.get(songKey(track));
     cache.delete(track.id);
     cache.set(track.id, track);
   }

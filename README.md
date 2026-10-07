@@ -1,7 +1,8 @@
 # Games
 
 Multiplayer-Partyspiele im Browser, im Stil des Portfolios (Orange, Schwarz/Weiß).
-Erstes Spiel: **Guess the Song** – jeder wählt eigene Songs, alle raten um die Wette.
+Spiele: **Guess the Song** (Titel und Interpret raten) und **Guess the Year** (Erscheinungsjahr schätzen).
+Jeder wählt eigene Songs; der Host kann das Spiel in der Lobby umschalten.
 
 ## Starten
 

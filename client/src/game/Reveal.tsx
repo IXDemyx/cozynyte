@@ -39,6 +39,11 @@ function Reveal({ state, reveal, offset }: RevealProps) {
             {reveal.track.album && (
               <p className="mt-1 text-sm text-(--text-secondary)">{reveal.track.album}</p>
             )}
+            {state.game === "year" && reveal.track.year && (
+              <p className="mt-4 font-mono text-5xl font-semibold text-(--accent)">
+                {reveal.track.year}
+              </p>
+            )}
             <p className="mt-5 text-sm text-(--text-secondary)">
               {t.reveal.pickedBy}{" "}
               <span className="font-semibold text-(--text-primary)">
@@ -65,9 +70,12 @@ function Reveal({ state, reveal, offset }: RevealProps) {
         title={t.points}
         showScore
         status={(p) =>
-          reveal.gains[p.id] ? (
-            <span className="font-mono font-semibold text-(--success)">+{reveal.gains[p.id]}</span>
-          ) : null
+          <span className="flex items-center gap-2 font-mono">
+            {reveal.yearGuesses?.[p.id] !== undefined && <span>{reveal.yearGuesses[p.id]}</span>}
+            {reveal.gains[p.id] ? (
+              <span className="font-semibold text-(--success)">+{reveal.gains[p.id]}</span>
+            ) : null}
+          </span>
         }
       />
     </div>
