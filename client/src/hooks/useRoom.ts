@@ -22,12 +22,20 @@ export function useRoom(code: string, name: string) {
       setState(next);
     };
 
+    const onKicked = (data: { code: string }) => {
+      if (data.code !== code) return;
+      setState(null);
+      setError("kicked");
+    };
+
     socket.on("room:state", onState);
+    socket.on("room:kicked", onKicked);
     socket.on("connect", join);
     if (socket.connected) join();
 
     return () => {
       socket.off("room:state", onState);
+      socket.off("room:kicked", onKicked);
       socket.off("connect", join);
       socket.emit("room:leave");
     };

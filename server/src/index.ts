@@ -13,13 +13,18 @@ import type {
   Track,
 } from "../../shared/types";
 import { getCachedTrack, searchTracks } from "./itunes";
-import { maskTitle, matchGuess } from "./match";
+import { cleanTitle, countLetters, maskText, matchGuess } from "./match";
+import { suggestTracks } from "./suggestions";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const REVEAL_MS = Number(process.env.REVEAL_MS ?? 9000);
 const MAX_PLAYERS = 12;
 const LOBBY_GRACE_MS = 15_000;
 const ROOM_TTL_MS = 10 * 60_000;
+/** Zeitpunkte (Anteil der Rundenzeit), zu denen Buchstaben des Titels aufgedeckt werden. */
+const HINT_AT = [0.4, 0.6, 0.8];
+const SEARCH_WINDOW_MS = 30_000;
+const SEARCH_LIMIT = 20;
 
 interface Player {
   id: string;
@@ -28,6 +33,15 @@ interface Player {
   socketId?: string;
   picks: Track[];
   removeTimer?: NodeJS.Timeout;
+  searches: number[];
+}
+
+/** Buchstaben-Hinweise: zufällige Reihenfolge der Positionen und wie viele schon offen sind. */
+interface Hint {
+  order: number[];
+  revealed: number;
+  perStep: number;
+  max: number;
 }
 
 interface Round {
@@ -39,6 +53,9 @@ interface Round {
   gains: Map<string, number>;
   feed: FeedItem[];
   timer: NodeJS.Timeout;
+  titleHint: Hint;
+  artistHint: Hint;
+  hintTimers: NodeJS.Timeout[];
 }
 
 interface Room {
@@ -53,6 +70,8 @@ interface Room {
   revealNextAt: number;
   revealTimer?: NodeJS.Timeout;
   emptySince?: number;
+  /** Vom Host entfernte Spieler dürfen nicht wieder beitreten. */
+  banned: Set<string>;
 }
 
 const rooms = new Map<string, Room>();
@@ -123,6 +142,8 @@ function view(room: Room, playerId: string): RoomState {
   };
 
   if (room.phase === "round" && round) {
+    const isPicker = round.pickerId === playerId;
+    const mine = round.got.get(playerId);
     state.round = {
       index: room.roundIndex,
       total: room.queue.length,
@@ -130,7 +151,15 @@ function view(room: Room, playerId: string): RoomState {
       endsAt: round.endsAt,
       durationMs: round.endsAt - round.startedAt,
       youArePicker: round.pickerId === playerId,
-      titleMask: maskTitle(round.track.title),
+      // Wer etwas schon weiß (erraten oder selbst gewählt), sieht es im Klartext.
+      titleMask:
+        isPicker || mine?.title
+          ? cleanTitle(round.track.title)
+          : maskText(cleanTitle(round.track.title), opened(round.titleHint)),
+      artistMask:
+        isPicker || mine?.artist
+          ? round.track.artist
+          : maskText(round.track.artist, opened(round.artistHint)),
       feed: round.feed.slice(-40),
     };
   }
@@ -174,11 +203,6 @@ function startPicking(room: Room) {
   room.phase = "picking";
 }
 
-function allPicked(room: Room): boolean {
-  const active = connected(room);
-  return active.length >= 2 && active.every((p) => p.picks.length >= room.settings.songsPerPlayer);
-}
-
 function startRounds(room: Room) {
   room.queue = shuffle(
     [...room.players.values()].flatMap((p) => p.picks.map((track) => ({ track, pickerId: p.id }))),
@@ -193,11 +217,32 @@ function startRounds(room: Room) {
   startRound(room);
 }
 
+function newHint(text: string): Hint {
+  const letters = countLetters(text);
+  return {
+    order: shuffle(Array.from({ length: letters }, (_, i) => i)),
+    revealed: 0,
+    perStep: Math.max(1, Math.round(letters * 0.12)),
+    max: Math.floor(letters / 2), // höchstens die Hälfte verraten
+  };
+}
+
+function openMore(hint: Hint): boolean {
+  const next = Math.min(hint.max, hint.revealed + hint.perStep);
+  const changed = next !== hint.revealed;
+  hint.revealed = next;
+  return changed;
+}
+
+function opened(hint: Hint): Set<number> {
+  return new Set(hint.order.slice(0, hint.revealed));
+}
+
 function startRound(room: Room) {
   const entry = room.queue[room.roundIndex];
   const now = Date.now();
   const duration = room.settings.roundSeconds * 1000;
-  room.round = {
+  const round: Round = {
     track: entry.track,
     pickerId: entry.pickerId,
     startedAt: now,
@@ -206,7 +251,18 @@ function startRound(room: Room) {
     gains: new Map(),
     feed: [],
     timer: setTimeout(() => endRound(room), duration),
+    titleHint: newHint(cleanTitle(entry.track.title)),
+    artistHint: newHint(entry.track.artist),
+    hintTimers: [],
   };
+  round.hintTimers = HINT_AT.map((fraction) =>
+    setTimeout(() => {
+      if (room.round !== round || room.phase !== "round") return;
+      const changed = [round.titleHint, round.artistHint].map(openMore);
+      if (changed.some(Boolean)) broadcast(room);
+    }, duration * fraction),
+  );
+  room.round = round;
   room.phase = "round";
 }
 
@@ -214,6 +270,7 @@ function endRound(room: Room) {
   const round = room.round;
   if (!round || room.phase !== "round") return;
   clearTimeout(round.timer);
+  round.hintTimers.forEach(clearTimeout);
   room.phase = "reveal";
   room.revealNextAt = Date.now() + REVEAL_MS;
   room.revealTimer = setTimeout(() => nextRound(room), REVEAL_MS);
@@ -238,6 +295,17 @@ function addPoints(room: Room, round: Round, playerId: string, points: number) {
   if (!player) return;
   player.score += points;
   round.gains.set(playerId, (round.gains.get(playerId) ?? 0) + points);
+}
+
+function everyoneDone(room: Room, round: Round): boolean {
+  const guessers = connected(room).filter((p) => p.id !== round.pickerId);
+  return (
+    guessers.length > 0 &&
+    guessers.every((p) => {
+      const g = round.got.get(p.id);
+      return g?.title && g?.artist;
+    })
+  );
 }
 
 function handleGuess(room: Room, player: Player, raw: unknown) {
@@ -291,12 +359,7 @@ function handleGuess(room: Room, player: Player, raw: unknown) {
     else if (!spoils) push("wrong", true); // normaler Tipp bzw. Chatnachricht
   }
 
-  const guessers = connected(room).filter((p) => p.id !== round.pickerId);
-  const done = guessers.length > 0 && guessers.every((p) => {
-    const g = round.got.get(p.id);
-    return g?.title && g?.artist;
-  });
-  if (done) endRound(room);
+  if (everyoneDone(room, round)) endRound(room);
   else broadcast(room);
 }
 
@@ -333,7 +396,6 @@ function detach(socket: Socket, leave: boolean) {
   }
   ensureHost(room);
   if (connected(room).length === 0) room.emptySince = Date.now();
-  if (room.phase === "picking" && allPicked(room)) startRounds(room);
   broadcast(room);
 }
 
@@ -356,13 +418,14 @@ io.on("connection", (socket) => {
       code: newCode(),
       hostId: playerId,
       phase: "lobby",
-      settings: { songsPerPlayer: 3, roundSeconds: 30 },
+      settings: { songsPerPlayer: 3, roundSeconds: 30, theme: "" },
       players: new Map(),
       queue: [],
       roundIndex: 0,
       revealNextAt: 0,
+      banned: new Set(),
     };
-    const player: Player = { id: playerId, name, score: 0, picks: [] };
+    const player: Player = { id: playerId, name, score: 0, picks: [], searches: [] };
     room.players.set(playerId, player);
     rooms.set(room.code, room);
     attach(socket, room, player);
@@ -377,14 +440,13 @@ io.on("connection", (socket) => {
     const room = rooms.get(code);
     if (!room) return reply(cb, { ok: false, error: "room_not_found" });
     if (!name || playerId.length < 8) return reply(cb, { ok: false, error: "name_required" });
+    if (room.banned.has(playerId)) return reply(cb, { ok: false, error: "kicked" });
 
     let player = room.players.get(playerId);
     if (!player) {
       if (room.players.size >= MAX_PLAYERS) return reply(cb, { ok: false, error: "room_full" });
-      if (room.phase !== "lobby" && room.phase !== "finished") {
-        return reply(cb, { ok: false, error: "game_running" });
-      }
-      player = { id: playerId, name, score: 0, picks: [] };
+      // Später beitreten ist erlaubt: mitten im Spiel rät man ab sofort mit, nur ohne eigene Songs.
+      player = { id: playerId, name, score: 0, picks: [], searches: [] };
       room.players.set(playerId, player);
     } else {
       player.name = name;
@@ -405,6 +467,9 @@ io.on("connection", (socket) => {
     const seconds = Number(data?.roundSeconds);
     if (Number.isInteger(songs) && songs >= 1 && songs <= 5) c.room.settings.songsPerPlayer = songs;
     if ([15, 20, 30].includes(seconds)) c.room.settings.roundSeconds = seconds;
+    if (typeof data?.theme === "string") {
+      c.room.settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
+    }
     broadcast(c.room);
   });
 
@@ -437,8 +502,30 @@ io.on("connection", (socket) => {
     const c = ctx();
     const term = String(data?.term ?? "").trim().slice(0, 80);
     if (!c || term.length < 2) return reply(cb, { ok: true, tracks: [] });
+    const now = Date.now();
+    c.player.searches = c.player.searches.filter((at) => now - at < SEARCH_WINDOW_MS);
+    if (c.player.searches.length >= SEARCH_LIMIT) {
+      return reply(cb, { ok: false, error: "search_rate_limited" });
+    }
+    c.player.searches.push(now);
     try {
       reply(cb, { ok: true, tracks: await searchTracks(term) });
+    } catch {
+      reply(cb, { ok: false, error: "search_unavailable" });
+    }
+  });
+
+  socket.on("songs:suggest", async (data, cb) => {
+    const c = ctx();
+    if (!c || c.room.phase !== "picking") return;
+    const now = Date.now();
+    c.player.searches = c.player.searches.filter((at) => now - at < SEARCH_WINDOW_MS);
+    if (c.player.searches.length >= SEARCH_LIMIT) {
+      return reply(cb, { ok: false, error: "search_rate_limited" });
+    }
+    c.player.searches.push(now);
+    try {
+      reply(cb, { ok: true, tracks: await suggestTracks(String(data?.category ?? "")) });
     } catch {
       reply(cb, { ok: false, error: "search_unavailable" });
     }
@@ -484,6 +571,39 @@ io.on("connection", (socket) => {
     if (c) handleGuess(c.room, c.player, data?.text);
   });
 
+  // Host-Werkzeug: laufenden Song abbrechen und direkt auflösen.
+  socket.on("round:skip", () => {
+    const c = ctx();
+    if (c?.isHost) endRound(c.room);
+  });
+
+  // Host-Werkzeug: Spieler aus dem Raum entfernen.
+  socket.on("player:kick", (data) => {
+    const c = ctx();
+    const targetId = String(data?.playerId ?? "");
+    const target = c?.room.players.get(targetId);
+    if (!c || !c.isHost || !target || targetId === c.player.id) return;
+    const { room } = c;
+
+    clearTimeout(target.removeTimer);
+    room.players.delete(targetId);
+    room.banned.add(targetId);
+    const targetSocket = target.socketId ? io.sockets.sockets.get(target.socketId) : undefined;
+    if (targetSocket) {
+      targetSocket.data.code = undefined;
+      targetSocket.emit("room:kicked", { code: room.code });
+    }
+
+    // Seine noch nicht gespielten Songs fliegen aus der Warteschlange.
+    const played = room.phase === "picking" ? -1 : room.roundIndex;
+    room.queue = room.queue.filter((q, i) => i <= played || q.pickerId !== targetId);
+    const round = room.round;
+    if (room.phase === "round" && round) {
+      if (round.pickerId === targetId || everyoneDone(room, round)) return endRound(room);
+    }
+    broadcast(room);
+  });
+
   socket.on("round:next", () => {
     const c = ctx();
     if (c?.isHost) nextRound(c.room);
@@ -496,6 +616,7 @@ setInterval(() => {
   for (const room of rooms.values()) {
     if (room.emptySince && now - room.emptySince > ROOM_TTL_MS) {
       clearTimeout(room.round?.timer);
+      room.round?.hintTimers.forEach(clearTimeout);
       clearTimeout(room.revealTimer);
       rooms.delete(room.code);
     }

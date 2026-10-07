@@ -17,9 +17,9 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-(--bg-primary)/85 backdrop-blur dark:border-(--accent-soft)">
       <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="font-mono text-lg font-semibold tracking-tight">
-          <span className="text-(--accent)">&lt;</span>
+          <span className="text-(--accent)">&lt;/</span>
           games
-          <span className="text-(--accent)"> /&gt;</span>
+          <span className="text-(--accent)">&gt;</span>
         </Link>
         <div className="flex items-center gap-2">
           <button

@@ -16,7 +16,29 @@ interface ItunesResult {
   previewUrl?: string;
 }
 
-export async function searchTracks(term: string): Promise<Track[]> {
+/** Gleiche Suchbegriffe werden eine Weile aus dem Speicher beantwortet – schont das iTunes-Limit. */
+const searches = new Map<string, { at: number; result: Promise<Track[]> }>();
+const SEARCH_TTL_MS = 10 * 60_000;
+const MAX_SEARCHES = 300;
+
+export function searchTracks(term: string): Promise<Track[]> {
+  const key = term.toLowerCase().replace(/\s+/g, " ").trim();
+  const hit = searches.get(key);
+  if (hit && Date.now() - hit.at < SEARCH_TTL_MS) {
+    // Tracks wieder vormerken, falls sie inzwischen aus dem Track-Speicher gefallen sind.
+    void hit.result.then((tracks) => tracks.forEach((track) => cache.set(track.id, track)));
+    return hit.result;
+  }
+
+  const result = fetchTracks(key);
+  searches.delete(key);
+  searches.set(key, { at: Date.now(), result });
+  result.catch(() => searches.delete(key)); // Fehler nicht zwischenspeichern
+  while (searches.size > MAX_SEARCHES) searches.delete(searches.keys().next().value as string);
+  return result;
+}
+
+async function fetchTracks(term: string): Promise<Track[]> {
   const url = `${BASE}/search?media=music&entity=song&limit=15&country=${COUNTRY}&term=${encodeURIComponent(term)}`;
   const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
   if (!res.ok) throw new Error(`iTunes ${res.status}`);

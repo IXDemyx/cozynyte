@@ -8,6 +8,10 @@ import { useVolume } from "../hooks/useVolume";
 import { useLanguage } from "../lib/i18n";
 import { socket } from "../lib/socket";
 
+const SUGGESTIONS = [
+  "surprise", "current", "pop", "rock", "hiphop", "german", "80s", "90s", "2000s", "electronic",
+];
+
 function Picking({ state }: { state: RoomState }) {
   const { t, err } = useLanguage();
   const [term, setTerm] = useState("");
@@ -33,7 +37,8 @@ function Picking({ state }: { state: RoomState }) {
   useEffect(() => {
     const query = term.trim();
     if (query.length < 2) {
-      setResults([]);
+      // Leeres Feld: vorhandene Vorschläge stehen lassen, nur alte Suchtreffer entfernen.
+      if (query.length > 0) setResults([]);
       return;
     }
     let cancelled = false;
@@ -47,7 +52,7 @@ function Picking({ state }: { state: RoomState }) {
           setError("");
         } else setError(res.error);
       });
-    }, 350);
+    }, 450);
     return () => {
       cancelled = true;
       clearTimeout(id);
@@ -60,12 +65,24 @@ function Picking({ state }: { state: RoomState }) {
     if (previewId === track.id) {
       el.pause();
       setPreviewId(null);
-    } else {
-      el.src = track.previewUrl;
-      el.volume = volume;
-      void el.play();
-      setPreviewId(track.id);
+      return;
     }
+    el.src = track.previewUrl;
+    el.volume = volume;
+    void el.play();
+    setPreviewId(track.id);
+  };
+
+  const suggest = (category: string) => {
+    setTerm("");
+    setSearching(true);
+    socket.emit("songs:suggest", { category }, (res: Ack<{ tracks: Track[] }>) => {
+      setSearching(false);
+      if (res.ok) {
+        setResults(res.tracks);
+        setError("");
+      } else setError(res.error);
+    });
   };
 
   const add = (track: Track) =>
@@ -81,42 +98,64 @@ function Picking({ state }: { state: RoomState }) {
       <audio ref={audio} onEnded={() => setPreviewId(null)} />
 
       <section className={`${card} p-7 min-w-0 lg:col-span-2`}>
-        <p className={eyebrow}>{t.picking.eyebrow}</p>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight">
-          {t.picking.title(target)}
-        </h1>
-        <p className="mt-2 text-sm text-(--text-secondary)">
-          {t.picking.hint}
-        </p>
+        <div className="flex items-center justify-between gap-4">
+          <p className={eyebrow}>{t.picking.eyebrow}</p>
+          <label className="flex items-center gap-2 text-(--text-secondary)">
+            <FiVolume2 aria-hidden="true" />
+            <input
+              type="range"
+              aria-label={t.audio.volume}
+              min={0.05}
+              max={1}
+              step={0.05}
+              value={volume}
+              onChange={(e) => setVolume(Number(e.target.value))}
+              className="w-24 accent-(--accent) sm:w-28"
+            />
+          </label>
+        </div>
+        <h1 className="mt-3 text-2xl font-bold tracking-tight">{t.picking.title(target)}</h1>
+        {state.settings.theme && (
+          <p className="mt-3 inline-block rounded-full border border-(--accent-border) bg-(--accent-soft) px-3 py-1 text-sm">
+            <span className="text-(--text-secondary)">{t.lobby.theme}:</span>{" "}
+            <span className="font-semibold text-(--accent)">{state.settings.theme}</span>
+          </p>
+        )}
+        <p className="mt-2 text-sm text-(--text-secondary)">{t.picking.hint}</p>
 
         <ul className="mt-6 grid gap-2">
           {Array.from({ length: target }, (_, i) => {
             const track = picks[i];
-            return track ? (
+            if (!track) {
+              return (
+                <li
+                  key={`empty-${i}`}
+                  className="flex h-[62px] items-center rounded-xl border border-dashed border-slate-300 px-4 font-mono text-xs text-(--text-secondary) dark:border-slate-700"
+                >
+                  Song {i + 1}
+                </li>
+              );
+            }
+            return (
               <li
                 key={track.id}
-                className="flex items-center gap-3 rounded-xl border border-(--accent-border) bg-(--accent-soft) p-2 pr-3"
+                className="rounded-xl border border-(--accent-border) bg-(--accent-soft) p-2 pr-3"
               >
-                <img src={track.artwork} alt="" className="h-11 w-11 rounded-lg object-cover" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{track.title}</p>
-                  <p className="truncate text-xs text-(--text-secondary)">{track.artist}</p>
+                <div className="flex items-center gap-3">
+                  <img src={track.artwork} alt="" className="h-11 w-11 rounded-lg object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{track.title}</p>
+                    <p className="truncate text-xs text-(--text-secondary)">{track.artist}</p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label={t.picking.remove(track.title)}
+                    className="rounded-lg p-2 text-(--text-secondary) hover:text-red-500"
+                    onClick={() => socket.emit("songs:remove", { trackId: track.id })}
+                  >
+                    <FiX aria-hidden="true" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  aria-label={t.picking.remove(track.title)}
-                  className="rounded-lg p-2 text-(--text-secondary) hover:text-red-500"
-                  onClick={() => socket.emit("songs:remove", { trackId: track.id })}
-                >
-                  <FiX aria-hidden="true" />
-                </button>
-              </li>
-            ) : (
-              <li
-                key={`empty-${i}`}
-                className="flex h-[62px] items-center rounded-xl border border-dashed border-slate-300 px-4 font-mono text-xs text-(--text-secondary) dark:border-slate-700"
-              >
-                Song {i + 1}
               </li>
             );
           })}
@@ -128,34 +167,41 @@ function Picking({ state }: { state: RoomState }) {
           </p>
         ) : (
           <>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="relative flex-1">
-                <FiSearch
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-(--text-secondary)"
-                  aria-hidden="true"
-                />
-                <input
-                  autoFocus
-                  aria-label={t.picking.search}
-                  className={`${input} pl-11`}
-                  value={term}
-                  placeholder={t.picking.searchPlaceholder}
-                  onChange={(e) => setTerm(e.target.value)}
-                />
-              </div>
-              <label className="flex shrink-0 items-center gap-2 text-(--text-secondary)">
-                <FiVolume2 aria-hidden="true" />
-                <input
-                  type="range"
-                  aria-label={t.audio.volume}
-                  min={0.05}
-                  max={1}
-                  step={0.05}
-                  value={volume}
-                  onChange={(e) => setVolume(Number(e.target.value))}
-                  className="w-full accent-(--accent) sm:w-28"
-                />
-              </label>
+            <div className="relative mt-6">
+              <FiSearch
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-(--text-secondary)"
+                aria-hidden="true"
+              />
+              <input
+                autoFocus
+                aria-label={t.picking.search}
+                className={`${input} pl-11`}
+                value={term}
+                placeholder={t.picking.searchPlaceholder}
+                onChange={(e) => {
+                  setTerm(e.target.value);
+                  if (!e.target.value.trim()) setResults([]);
+                }}
+              />
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-(--text-secondary)">{t.picking.suggestions}</span>
+              {SUGGESTIONS.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  disabled={searching}
+                  onClick={() => suggest(category)}
+                  className={`rounded-full border px-3 py-1 font-mono text-xs transition disabled:opacity-50 ${
+                    category === "surprise"
+                      ? "border-(--accent) bg-(--accent) font-semibold text-slate-950 enabled:hover:bg-(--accent-hover)"
+                      : "border-slate-300 text-(--text-secondary) enabled:hover:border-(--accent) enabled:hover:text-(--accent) dark:border-slate-700"
+                  }`}
+                >
+                  {t.picking.categories[category]}
+                </button>
+              ))}
             </div>
 
             <ul className="mt-3 max-h-[420px] space-y-1 overflow-y-auto">
@@ -168,7 +214,9 @@ function Picking({ state }: { state: RoomState }) {
                   >
                     <button
                       type="button"
-                      aria-label={previewId === track.id ? t.audio.pause : t.picking.listen(track.title)}
+                      aria-label={
+                        previewId === track.id ? t.audio.pause : t.picking.listen(track.title)
+                      }
                       onClick={() => togglePreview(track)}
                       className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg"
                     >
@@ -224,9 +272,7 @@ function Picking({ state }: { state: RoomState }) {
               {everyoneReady ? t.picking.go : t.picking.force}
             </Button>
             {!everyoneReady && (
-              <p className="mt-2 text-center text-xs text-(--text-secondary)">
-                {t.picking.forceHint}
-              </p>
+              <p className="mt-2 text-center text-xs text-(--text-secondary)">{t.picking.forceHint}</p>
             )}
           </div>
         )}

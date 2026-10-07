@@ -94,7 +94,19 @@ export function matchGuess(
   };
 }
 
-/** "Hey Jude" -> "___ ____" */
-export function maskTitle(title: string): string {
-  return cleanTitle(title).replace(/[\p{L}\p{N}]/gu, "_");
+const LETTER = /[\p{L}\p{N}]/gu;
+
+/** Anzahl der Zeichen, die in der Maske verdeckt werden. */
+export function countLetters(text: string): number {
+  return (text.match(LETTER) ?? []).length;
+}
+
+/** "Hey Jude" -> "___ ____"; aufgedeckte Positionen (als Hinweis) bleiben lesbar. */
+export function maskText(text: string, revealed: ReadonlySet<number> = new Set()): string {
+  let index = 0;
+  return text.replace(LETTER, (char) => (revealed.has(index++) ? char : "_"));
+}
+
+export function maskTitle(title: string, revealed?: ReadonlySet<number>): string {
+  return maskText(cleanTitle(title), revealed);
 }

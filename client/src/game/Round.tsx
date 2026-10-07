@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { FiCheck } from "react-icons/fi";
+import { FiCheck, FiSkipForward } from "react-icons/fi";
 import type { FeedItem, RoomState, RoundView } from "../../../shared/types";
 import Button from "../components/Button";
 import PlayerList from "../components/PlayerList";
@@ -22,18 +22,30 @@ function Equalizer() {
   );
 }
 
-function Goal({ done, label }: { done: boolean; label: string }) {
+/** Eine Zeile "Titel"/"Interpret": verdeckte Buchstaben als Striche, Hinweise hervorgehoben. */
+function Mask({ label, mask, done }: { label: string; mask: string; done: boolean }) {
   return (
-    <span
-      className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
-        done
-          ? "border-(--success) text-(--success)"
-          : "border-slate-300 text-(--text-secondary) dark:border-slate-700"
-      }`}
-    >
-      {done && <FiCheck aria-hidden="true" />}
-      {label}
-    </span>
+    <div className="text-center">
+      <p
+        className={`flex items-center justify-center gap-1.5 font-mono text-xs uppercase tracking-widest ${
+          done ? "text-(--success)" : "text-(--text-secondary)"
+        }`}
+      >
+        {done && <FiCheck aria-hidden="true" />}
+        {label}
+      </p>
+      {done ? (
+        <p className="mt-1 break-words text-lg font-semibold text-(--success)">{mask}</p>
+      ) : (
+        <p className="mt-1 break-words font-mono text-xl tracking-[0.3em] text-(--text-secondary)">
+          {[...mask].map((char, i) => (
+            <span key={i} className={/[_\s]/.test(char) ? "" : "font-semibold text-(--accent)"}>
+              {char}
+            </span>
+          ))}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -77,6 +89,8 @@ function Round({ state, round, offset }: RoundProps) {
   const me = state.players.find((p) => p.id === state.you);
   const done = Boolean(me?.gotTitle && me?.gotArtist);
   const chatOnly = done || round.youArePicker;
+  const knowsTitle = round.youArePicker || Boolean(me?.gotTitle);
+  const knowsArtist = round.youArePicker || Boolean(me?.gotArtist);
   const remaining = Math.max(0, round.endsAt - now);
   const fraction = Math.min(1, remaining / round.durationMs);
 
@@ -114,12 +128,10 @@ function Round({ state, round, offset }: RoundProps) {
 
           <div className="mt-8">
             <Equalizer />
-            <p
-              className="mt-6 break-words text-center font-mono text-xl tracking-[0.3em] text-(--text-secondary)"
-              aria-label={t.round.mask}
-            >
-              {round.titleMask}
-            </p>
+            <div className="mt-6 space-y-4">
+              <Mask label={t.round.title} mask={round.titleMask} done={knowsTitle} />
+              <Mask label={t.round.artist} mask={round.artistMask} done={knowsArtist} />
+            </div>
           </div>
 
           {round.youArePicker ? (
@@ -127,10 +139,7 @@ function Round({ state, round, offset }: RoundProps) {
               <span className="font-semibold">{t.round.yourSong}</span> {t.round.yourSongRest}
             </p>
           ) : (
-            <div className="mt-8 flex justify-center gap-2">
-              <Goal done={Boolean(me?.gotTitle)} label={t.round.title} />
-              <Goal done={Boolean(me?.gotArtist)} label={t.round.artist} />
-            </div>
+            <div className="mt-6" />
           )}
 
           {/* Bleibt immer aktiv: nach dem Erraten (und beim eigenen Song) dient das Feld als Chat. */}
@@ -170,6 +179,14 @@ function Round({ state, round, offset }: RoundProps) {
             ))}
             <li ref={feedEnd} />
           </ul>
+
+          {state.hostId === state.you && (
+            <div className="mt-4 flex justify-end">
+              <Button size="small" variant="secondary" onClick={() => socket.emit("round:skip")}>
+                <FiSkipForward aria-hidden="true" /> {t.round.skip}
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 

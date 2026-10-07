@@ -3,7 +3,7 @@ import { FiCheck, FiCopy } from "react-icons/fi";
 import type { Ack, RoomState } from "../../../shared/types";
 import Button from "../components/Button";
 import PlayerList from "../components/PlayerList";
-import { card, eyebrow } from "../components/ui";
+import { card, eyebrow, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { socket } from "../lib/socket";
 
@@ -39,6 +39,8 @@ function Lobby({ state }: { state: RoomState }) {
   const { t, err } = useLanguage();
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
+  // Eigener Zustand fürs Tippen, damit die Antwort des Servers den Cursor nicht stört.
+  const [theme, setTheme] = useState(state.settings.theme);
   const isHost = state.hostId === state.you;
   const ready = state.players.filter((p) => p.connected).length >= 2;
 
@@ -101,6 +103,33 @@ function Lobby({ state }: { state: RoomState }) {
                 </Option>
               ))}
             </div>
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="theme" className="text-sm font-semibold">
+              {t.lobby.theme}
+            </label>
+            {isHost ? (
+              <input
+                id="theme"
+                className={`${input} mt-3`}
+                value={theme}
+                maxLength={40}
+                autoComplete="off"
+                placeholder={t.lobby.themePlaceholder}
+                onChange={(e) => {
+                  setTheme(e.target.value);
+                  update({ theme: e.target.value });
+                }}
+              />
+            ) : (
+              <p id="theme" className="mt-3 text-sm text-(--text-secondary)">
+                {state.settings.theme ? (
+                  <span className="font-semibold text-(--accent)">{state.settings.theme}</span>
+                ) : (
+                  t.lobby.noTheme
+                )}
+              </p>
+            )}
           </div>
         </div>
 

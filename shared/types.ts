@@ -12,6 +12,8 @@ export type Phase = "lobby" | "picking" | "round" | "reveal" | "finished";
 export interface Settings {
   songsPerPlayer: number;
   roundSeconds: number;
+  /** Motto der Partie, vom Host frei wählbar (leer = keins). */
+  theme: string;
 }
 
 export interface PlayerView {
@@ -44,6 +46,7 @@ export interface RoundView {
   durationMs: number;
   youArePicker: boolean;
   titleMask: string;
+  artistMask: string;
   feed: FeedItem[];
 }
 
