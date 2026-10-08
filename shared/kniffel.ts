@@ -67,7 +67,11 @@ export interface DigitalRoll {
 export const MAX_ROLLS = 3;
 
 /** Darf `playerId` in diese Spalte schreiben bzw. für sie würfeln? */
-export function canEditColumn(sheet: KniffelState, column: KniffelColumn, playerId: string): boolean {
+export function canEditColumn(
+  sheet: KniffelState,
+  column: KniffelColumn,
+  playerId: string,
+): boolean {
   return !sheet.locked || !column.playerId || column.playerId === playerId;
 }
 

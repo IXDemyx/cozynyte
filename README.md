@@ -72,6 +72,27 @@ The games container serves the frontend, the API and the WebSockets from one por
 | `server/` | Node + Express + Socket.IO (rooms, game logic, song search) |
 | `shared/` | Types and Yahtzee rules used by both client and server      |
 
+```
+client/src/
+  components/     shared UI building blocks (Button, PlayerList, Option, InviteButton, …)
+  games/music/    Guess the Song, Guess the Year and Song Timeline (lobby, picking, rounds, results)
+  games/kniffel/  Yahtzee score sheet (dice panel, sheet, entry dialog)
+  hooks/          room connection, server clock, theme, volume, two-click confirm
+  lib/            socket connection and translations (lib/i18n/de.ts, en.ts)
+  pages/          Home and Room
+
+server/src/
+  config.ts       limits and timings
+  state.ts        room and player state
+  view.ts         per-player view of a room (hides answers) and broadcasting
+  connection.ts   joining, leaving and host hand-over
+  handlers/       socket events per area (room, music, kniffel)
+  games/          game logic (music rounds and scoring, Yahtzee turns)
+  music/          iTunes search, answer matching, song suggestions
+```
+
+Run `npm run format` to format all code with Prettier.
+
 Songs come from the iTunes Search API (30-second previews, no account needed). The server
 queries it so that hidden answers (title, artist, year) are not sent to the players who
 still have to guess them.
@@ -121,7 +142,7 @@ under a sub-path.
   the neighbours (equal years count), the card stays; otherwise it is discarded.
 - Modes, chosen by the host: everyone places the same song at once (whoever picked it sits out),
   or players take turns and the others watch the active player's timeline.
-- The game ends when someone reaches the card goal (4, 6, 8 or 10) or the pile runs out; most
+- The game ends when someone reaches the card goal (4, 6, 8, 10 or no limit) or the pile runs out; most
   cards wins. Late joiners get a starting card from the pile.
 
 **Yahtzee (Kniffel)**

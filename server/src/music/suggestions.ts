@@ -1,4 +1,4 @@
-import type { Track } from "../../shared/types";
+import type { Track } from "../../../shared/types";
 import { searchTracks } from "./itunes";
 
 /**

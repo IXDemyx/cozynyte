@@ -1,12 +1,13 @@
 import { useState } from "react";
-import type { Ack, RoomState } from "../../../shared/types";
-import Button from "../components/Button";
-import { card, eyebrow } from "../components/ui";
-import { useLanguage } from "../lib/i18n";
-import { socket } from "../lib/socket";
+import type { Ack, RoomState } from "../../../../shared/types";
+import Button from "../../components/Button";
+import ErrorText from "../../components/ErrorText";
+import { card, eyebrow } from "../../components/ui";
+import { useLanguage } from "../../lib/i18n";
+import { socket } from "../../lib/socket";
 
 function Final({ state }: { state: RoomState }) {
-  const { t, err } = useLanguage();
+  const { t } = useLanguage();
   const [error, setError] = useState("");
   const ranking = [...state.players].sort((a, b) => b.score - a.score);
   const top = ranking[0]?.score ?? 0;
@@ -63,11 +64,7 @@ function Final({ state }: { state: RoomState }) {
             <p className="text-sm text-(--text-secondary)">{t.final.waitingHost}</p>
           )}
         </div>
-        {error && (
-          <p role="alert" className="mt-3 text-sm font-medium text-red-500">
-            {err(error)}
-          </p>
-        )}
+        <ErrorText code={error} className="mt-3" />
       </section>
 
       {state.game === "timeline" && state.timelines && (
@@ -85,7 +82,9 @@ function Final({ state }: { state: RoomState }) {
                     <h3 className="truncate font-semibold">
                       {p.name}
                       {p.id === state.you && (
-                        <span className="ml-1.5 text-xs font-normal text-(--text-secondary)">{t.you}</span>
+                        <span className="ml-1.5 text-xs font-normal text-(--text-secondary)">
+                          {t.you}
+                        </span>
                       )}
                     </h3>
                     <span className="shrink-0 font-mono text-sm text-(--text-secondary)">
@@ -95,7 +94,9 @@ function Final({ state }: { state: RoomState }) {
                   <ol className="mt-3 space-y-1">
                     {cards.map((item) => (
                       <li key={item.id} className="flex items-center gap-2 text-sm">
-                        <span className="w-11 shrink-0 font-mono font-semibold text-(--accent)">{item.year}</span>
+                        <span className="w-11 shrink-0 font-mono font-semibold text-(--accent)">
+                          {item.year}
+                        </span>
                         <span className="min-w-0 truncate">
                           {item.title}
                           <span className="text-(--text-secondary)"> · {item.artist}</span>

@@ -26,7 +26,7 @@ export interface Settings {
   showSong: boolean;
   /** Song-Timeline: alle gleichzeitig oder reihum. */
   timelineMode: TimelineMode;
-  /** Song-Timeline: so viele Karten braucht man zum Sieg. */
+  /** Song-Timeline: so viele Karten braucht man zum Sieg (0 = kein Limit). */
   timelineGoal: number;
 }
 

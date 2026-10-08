@@ -1,10 +1,10 @@
-import type { RevealView, RoomState } from "../../../shared/types";
-import Button from "../components/Button";
-import PlayerList from "../components/PlayerList";
-import { card, eyebrow } from "../components/ui";
-import { useNow } from "../hooks/useNow";
-import { useLanguage } from "../lib/i18n";
-import { socket } from "../lib/socket";
+import type { RevealView, RoomState } from "../../../../shared/types";
+import Button from "../../components/Button";
+import PlayerList from "../../components/PlayerList";
+import { card, eyebrow } from "../../components/ui";
+import { useNow } from "../../hooks/useNow";
+import { useLanguage } from "../../lib/i18n";
+import { socket } from "../../lib/socket";
 
 interface RevealProps {
   state: RoomState;
@@ -71,10 +71,12 @@ function Reveal({ state, reveal, offset }: RevealProps) {
         state={state}
         title={state.game === "timeline" ? t.timeline.cards : t.points}
         showScore
-        status={(p) =>
+        status={(p) => (
           <span className="flex items-center gap-2 font-mono">
             {reveal.placements?.[p.id] && (
-              <span className={reveal.placements[p.id].correct ? "text-(--success)" : "text-red-500"}>
+              <span
+                className={reveal.placements[p.id].correct ? "text-(--success)" : "text-red-500"}
+              >
                 {reveal.placements[p.id].correct ? "✓" : "✗"}
               </span>
             )}
@@ -83,7 +85,7 @@ function Reveal({ state, reveal, offset }: RevealProps) {
               <span className="font-semibold text-(--success)">+{reveal.gains[p.id]}</span>
             ) : null}
           </span>
-        }
+        )}
       />
     </div>
   );

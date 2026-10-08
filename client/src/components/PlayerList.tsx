@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { FaCrown } from "react-icons/fa";
 import { FiUserX } from "react-icons/fi";
 import type { PlayerView, RoomState } from "../../../shared/types";
+import { useConfirm } from "../hooks/useConfirm";
 import { useLanguage } from "../lib/i18n";
 import { socket } from "../lib/socket";
 import { card, eyebrow } from "./ui";
@@ -17,20 +18,12 @@ interface PlayerListProps {
 function PlayerList({ state, title, showScore = false, status }: PlayerListProps) {
   const { t } = useLanguage();
   // Entfernen braucht zwei Klicks, damit es nicht versehentlich passiert.
-  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const { armed, confirm } = useConfirm();
   const isHost = state.hostId === state.you;
-  const players = showScore
-    ? [...state.players].sort((a, b) => b.score - a.score)
-    : state.players;
+  const players = showScore ? [...state.players].sort((a, b) => b.score - a.score) : state.players;
 
   const kick = (id: string) => {
-    if (confirmId !== id) {
-      setConfirmId(id);
-      setTimeout(() => setConfirmId((current) => (current === id ? null : current)), 3000);
-      return;
-    }
-    socket.emit("player:kick", { playerId: id });
-    setConfirmId(null);
+    if (confirm(id)) socket.emit("player:kick", { playerId: id });
   };
 
   return (
@@ -59,12 +52,18 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
                 <FaCrown className="shrink-0 text-(--accent)" aria-label="Host" />
               )}
               {p.id === state.you && (
-                <span className="shrink-0 text-xs font-normal text-(--text-secondary)">{t.you}</span>
+                <span className="shrink-0 text-xs font-normal text-(--text-secondary)">
+                  {t.you}
+                </span>
               )}
             </span>
-            {status && <span className="shrink-0 text-xs text-(--text-secondary)">{status(p)}</span>}
+            {status && (
+              <span className="shrink-0 text-xs text-(--text-secondary)">{status(p)}</span>
+            )}
             {showScore && (
-              <span className="shrink-0 font-mono text-sm font-semibold tabular-nums">{p.score}</span>
+              <span className="shrink-0 font-mono text-sm font-semibold tabular-nums">
+                {p.score}
+              </span>
             )}
             {isHost && p.id !== state.you && (
               <button
@@ -73,12 +72,12 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
                 title={t.kick(p.name)}
                 onClick={() => kick(p.id)}
                 className={`shrink-0 rounded-md text-xs font-semibold transition ${
-                  confirmId === p.id
+                  armed === p.id
                     ? "bg-red-500 px-2 py-1 text-white"
                     : "p-1 text-(--text-secondary) hover:text-red-500"
                 }`}
               >
-                {confirmId === p.id ? t.kickConfirm : <FiUserX aria-hidden="true" />}
+                {armed === p.id ? t.kickConfirm : <FiUserX aria-hidden="true" />}
               </button>
             )}
           </li>

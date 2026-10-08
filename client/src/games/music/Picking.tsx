@@ -1,19 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { FiCheck, FiPause, FiPlay, FiPlus, FiSearch, FiVolume2, FiX } from "react-icons/fi";
-import type { Ack, RoomState, Track } from "../../../shared/types";
-import Button from "../components/Button";
-import PlayerList from "../components/PlayerList";
-import { card, eyebrow, input } from "../components/ui";
-import { useVolume } from "../hooks/useVolume";
-import { useLanguage } from "../lib/i18n";
-import { socket } from "../lib/socket";
+import type { Ack, RoomState, Track } from "../../../../shared/types";
+import Button from "../../components/Button";
+import ErrorText from "../../components/ErrorText";
+import PlayerList from "../../components/PlayerList";
+import { card, eyebrow, input } from "../../components/ui";
+import { useVolume } from "../../hooks/useVolume";
+import { useLanguage } from "../../lib/i18n";
+import { socket } from "../../lib/socket";
 
 const SUGGESTIONS = [
-  "surprise", "current", "pop", "rock", "hiphop", "german", "80s", "90s", "2000s", "electronic",
+  "surprise",
+  "current",
+  "pop",
+  "rock",
+  "hiphop",
+  "german",
+  "80s",
+  "90s",
+  "2000s",
+  "electronic",
 ];
 
 function Picking({ state }: { state: RoomState }) {
-  const { t, err } = useLanguage();
+  const { t } = useLanguage();
   const [term, setTerm] = useState("");
   const [results, setResults] = useState<Track[]>([]);
   const [searching, setSearching] = useState(false);
@@ -156,7 +166,10 @@ function Picking({ state }: { state: RoomState }) {
                     <p className="truncate text-xs text-(--text-secondary)">
                       {track.artist}
                       {isYear && track.year && (
-                        <span className="font-mono font-semibold text-(--accent)"> · {track.year}</span>
+                        <span className="font-mono font-semibold text-(--accent)">
+                          {" "}
+                          · {track.year}
+                        </span>
                       )}
                     </p>
                   </div>
@@ -250,7 +263,12 @@ function Picking({ state }: { state: RoomState }) {
                         {track.album && ` · ${track.album}`}
                       </p>
                     </div>
-                    <Button size="small" variant="secondary" disabled={mine || (isYear && !track.year)} onClick={() => add(track)}>
+                    <Button
+                      size="small"
+                      variant="secondary"
+                      disabled={mine || (isYear && !track.year)}
+                      onClick={() => add(track)}
+                    >
                       <FiPlus aria-label={t.picking.pick} />{" "}
                       <span className="hidden sm:inline">{t.picking.pick}</span>
                     </Button>
@@ -264,11 +282,7 @@ function Picking({ state }: { state: RoomState }) {
           </>
         )}
 
-        {error && (
-          <p role="alert" className="mt-4 text-sm font-medium text-red-500">
-            {err(error)}
-          </p>
-        )}
+        <ErrorText code={error} className="mt-4" />
       </section>
 
       <div className="space-y-4">
@@ -286,11 +300,17 @@ function Picking({ state }: { state: RoomState }) {
         />
         {isHost && (
           <div>
-            <Button className="w-full" onClick={finish} variant={everyoneReady ? "primary" : "secondary"}>
+            <Button
+              className="w-full"
+              onClick={finish}
+              variant={everyoneReady ? "primary" : "secondary"}
+            >
               {everyoneReady ? t.picking.go : t.picking.force}
             </Button>
             {!everyoneReady && (
-              <p className="mt-2 text-center text-xs text-(--text-secondary)">{t.picking.forceHint}</p>
+              <p className="mt-2 text-center text-xs text-(--text-secondary)">
+                {t.picking.forceHint}
+              </p>
             )}
           </div>
         )}

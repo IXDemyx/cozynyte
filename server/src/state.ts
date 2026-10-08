@@ -1,0 +1,160 @@
+/** Datenmodell des Servers: Räume, Spieler, Runden – und die Liste aller Räume. */
+
+import type { FeedItem, Game, Phase, Settings, Track } from "../../shared/types";
+import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
+
+export interface Player {
+  id: string;
+  name: string;
+  score: number;
+  socketId?: string;
+  picks: Track[];
+  removeTimer?: NodeJS.Timeout;
+  /** Zeitpunkte der letzten Songsuchen (für das Suchlimit). */
+  searches: number[];
+  /** Song-Timeline: nach Jahr sortierte Karten. */
+  timeline: Track[];
+}
+
+/** Buchstaben-Hinweise: zufällige Reihenfolge der Positionen und wie viele schon offen sind. */
+export interface Hint {
+  order: number[];
+  revealed: number;
+  perStep: number;
+  max: number;
+}
+
+export interface Round {
+  track: Track;
+  pickerId: string;
+  startedAt: number;
+  endsAt: number;
+  timer: NodeJS.Timeout;
+  feed: FeedItem[];
+  /** Punkte, die in dieser Runde dazukamen. */
+  gains: Map<string, number>;
+  /** Guess the Song: was jeder schon erraten hat. */
+  got: Map<string, { title: boolean; artist: boolean }>;
+  titleHint: Hint;
+  artistHint: Hint;
+  hintTimers: NodeJS.Timeout[];
+  /** Guess the Year: abgegebene Jahre je Spieler. */
+  years: Map<string, number>;
+  /** Song-Timeline: gewählte Lücke je Spieler, Ergebnis und wer reihum dran ist. */
+  placements: Map<string, number>;
+  results: Map<string, { position: number; correct: boolean }>;
+  activeId?: string;
+}
+
+/** Ein Kniffel-Eintrag mit allem, was zum Zurücknehmen nötig ist. */
+export interface KniffelStep {
+  column: string;
+  category: Category;
+  before: number | undefined;
+  current: string | null;
+  roll: DigitalRoll | null;
+}
+
+export interface Room {
+  code: string;
+  game: Game;
+  hostId: string;
+  phase: Phase;
+  settings: Settings;
+  players: Map<string, Player>;
+  /** Vom Host entfernte Spieler dürfen nicht wieder beitreten. */
+  banned: Set<string>;
+  emptySince?: number;
+
+  // Musikspiele
+  queue: { track: Track; pickerId: string }[];
+  roundIndex: number;
+  round?: Round;
+  revealNextAt: number;
+  revealTimer?: NodeJS.Timeout;
+
+  // Song-Timeline: Reihenfolge für den Reihum-Modus und ob jemand das Ziel erreicht hat.
+  turnOrder: string[];
+  turnPos: number;
+  activeId?: string;
+  timelineOver: boolean;
+
+  // Kniffel: gemeinsamer Block, Zähler für Spalten-IDs und Verlauf zum Rückgängigmachen.
+  kniffel?: KniffelState;
+  nextColumn: number;
+  kniffelHistory: KniffelStep[];
+}
+
+export const rooms = new Map<string, Room>();
+
+let feedId = 0;
+
+/** Fortlaufende ID für Einträge im Verlauf einer Runde. */
+export function nextFeedId(): number {
+  return ++feedId;
+}
+
+export function createRoom(code: string, game: Game, hostId: string): Room {
+  return {
+    code,
+    game,
+    hostId,
+    phase: "lobby",
+    settings: {
+      songsPerPlayer: 3,
+      roundSeconds: 30,
+      theme: "",
+      showSong: true,
+      timelineMode: "together",
+      timelineGoal: 6,
+    },
+    players: new Map(),
+    banned: new Set(),
+    queue: [],
+    roundIndex: 0,
+    revealNextAt: 0,
+    turnOrder: [],
+    turnPos: -1,
+    timelineOver: false,
+    kniffel:
+      game === "kniffel"
+        ? { columns: [], cells: {}, current: null, locked: false, roll: null, lastEntry: null }
+        : undefined,
+    nextColumn: 0,
+    kniffelHistory: [],
+  };
+}
+
+export function createPlayer(id: string, name: string): Player {
+  return { id, name, score: 0, picks: [], searches: [], timeline: [] };
+}
+
+/* ---------- Hilfsfunktionen ---------- */
+
+export function newCode(): string {
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  for (;;) {
+    let code = "";
+    for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * letters.length)];
+    if (!rooms.has(code)) return code;
+  }
+}
+
+export function cleanName(name: unknown): string {
+  return String(name ?? "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 16);
+}
+
+export function shuffle<T>(list: T[]): T[] {
+  for (let i = list.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+export function connected(room: Room): Player[] {
+  return [...room.players.values()].filter((p) => p.socketId);
+}

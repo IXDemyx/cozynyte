@@ -1,4 +1,4 @@
-import type { Track } from "../../shared/types";
+import type { Track } from "../../../shared/types";
 import { cleanTitle, normalize } from "./match";
 
 const BASE = process.env.ITUNES_BASE ?? "https://itunes.apple.com";

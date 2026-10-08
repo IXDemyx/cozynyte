@@ -2,12 +2,16 @@
   "name": "games",
   "private": true,
   "version": "0.1.0",
-  "workspaces": ["client", "server"],
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "scripts": {
     "dev": "concurrently -n server,client -c yellow,white \"npm -w server run dev\" \"npm -w client run dev\"",
     "build": "npm -w client run build",
     "start": "npm -w server run start",
-    "typecheck": "npm -w server run typecheck && npm -w client run typecheck"
+    "typecheck": "npm -w server run typecheck && npm -w client run typecheck",
+    "format": "npx --yes prettier@3 --write ."
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

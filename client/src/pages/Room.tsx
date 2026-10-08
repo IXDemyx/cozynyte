@@ -3,14 +3,14 @@ import { Link, useParams } from "react-router-dom";
 import AudioPlayer from "../components/AudioPlayer";
 import Button from "../components/Button";
 import { card, eyebrow, input } from "../components/ui";
-import Final from "../game/Final";
-import Lobby from "../game/Lobby";
-import Picking from "../game/Picking";
-import Reveal from "../game/Reveal";
-import Kniffel from "../game/Kniffel";
-import Round from "../game/Round";
-import TimelineRound from "../game/TimelineRound";
-import YearRound from "../game/YearRound";
+import Kniffel from "../games/kniffel/Kniffel";
+import Final from "../games/music/Final";
+import Lobby from "../games/music/Lobby";
+import Picking from "../games/music/Picking";
+import Reveal from "../games/music/Reveal";
+import SongRound from "../games/music/SongRound";
+import TimelineRound from "../games/music/TimelineRound";
+import YearRound from "../games/music/YearRound";
 import { useRoom } from "../hooks/useRoom";
 import { useLanguage } from "../lib/i18n";
 import { getName, saveName } from "../lib/socket";
@@ -88,7 +88,7 @@ function Room() {
         ) : state.game === "timeline" ? (
           <TimelineRound state={state} round={state.round} offset={offset} />
         ) : (
-          <Round state={state} round={state.round} offset={offset} />
+          <SongRound state={state} round={state.round} offset={offset} />
         ))}
       {state.phase === "reveal" && state.reveal && (
         <Reveal state={state} reveal={state.reveal} offset={offset} />
