@@ -7,6 +7,7 @@ import Final from "../game/Final";
 import Lobby from "../game/Lobby";
 import Picking from "../game/Picking";
 import Reveal from "../game/Reveal";
+import Kniffel from "../game/Kniffel";
 import Round from "../game/Round";
 import YearRound from "../game/YearRound";
 import { useRoom } from "../hooks/useRoom";
@@ -76,7 +77,8 @@ function Room() {
 
   return (
     <>
-      {state.phase === "lobby" && <Lobby state={state} />}
+      {state.game === "kniffel" && <Kniffel state={state} />}
+      {state.game !== "kniffel" && state.phase === "lobby" && <Lobby state={state} />}
       {state.phase === "picking" && <Picking state={state} />}
       {state.phase === "round" &&
         state.round &&

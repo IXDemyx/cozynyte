@@ -1,4 +1,5 @@
 import express from "express";
+import { randomInt } from "node:crypto";
 import { createServer } from "node:http";
 import { existsSync } from "node:fs";
 import path from "node:path";
@@ -16,6 +17,26 @@ import type {
 import { getCachedTrack, searchTracks } from "./itunes";
 import { cleanTitle, countLetters, maskText, matchGuess } from "./match";
 import { suggestTracks } from "./suggestions";
+import {
+  CATEGORIES,
+  MAX_ROLLS,
+  allowedValues,
+  canEditColumn,
+  nextTurn,
+  type Category,
+  type DigitalRoll,
+  type KniffelState,
+} from "../../shared/kniffel";
+
+/** Ein Kniffel-Eintrag mit allem, was zum Zurücknehmen nötig ist. */
+interface KniffelStep {
+  column: string;
+  category: Category;
+  before: number | undefined;
+  current: string | null;
+  roll: DigitalRoll | null;
+}
+const MAX_UNDO = 100;
 
 const PORT = Number(process.env.PORT ?? 3001);
 const REVEAL_MS = Number(process.env.REVEAL_MS ?? 9000);
@@ -64,6 +85,10 @@ interface Round {
 interface Room {
   code: string;
   game: Game;
+  /** Nur bei Kniffel: gemeinsamer Block und Zähler für Spalten-IDs. */
+  kniffel?: KniffelState;
+  nextColumn: number;
+  kniffelHistory: KniffelStep[];
   hostId: string;
   phase: Phase;
   settings: Settings;
@@ -144,6 +169,7 @@ function view(room: Room, playerId: string): RoomState {
       answered: round ? hasAnswered(room, round, p.id) : false,
     })),
     myPicks: room.phase === "picking" ? (me?.picks ?? []) : [],
+    kniffel: room.kniffel,
     serverNow: Date.now(),
   };
 
@@ -403,6 +429,28 @@ function handleGuess(room: Room, player: Player, raw: unknown) {
   else broadcast(room);
 }
 
+/* ---------- Kniffel ---------- */
+
+const MAX_COLUMNS = 16;
+
+/** Jeder Spieler im Raum bekommt automatisch eine eigene Spalte. */
+function ensureColumn(room: Room, player: Player) {
+  const sheet = room.kniffel;
+  if (!sheet) return;
+  const column = sheet.columns.find((c) => c.playerId === player.id);
+  if (column) column.name = player.name;
+  else if (sheet.columns.length < MAX_COLUMNS) {
+    sheet.columns.push({ id: `c${++room.nextColumn}`, name: player.name, playerId: player.id });
+    if (sheet.current === null) setTurn(sheet, sheet.columns.at(-1)!.id);
+  }
+}
+
+/** Zug wechseln – ein laufender digitaler Wurf gehört zum alten Zug und verfällt. */
+function setTurn(sheet: KniffelState, column: string | null) {
+  if (sheet.current !== column) sheet.roll = null;
+  sheet.current = column;
+}
+
 /* ---------- Verbindungen ---------- */
 
 function attach(socket: Socket, room: Room, player: Player) {
@@ -456,7 +504,10 @@ io.on("connection", (socket) => {
     detach(socket, true);
     const room: Room = {
       code: newCode(),
-      game: data?.game === "year" ? "year" : "song",
+      game: data?.game === "year" || data?.game === "kniffel" ? data.game : "song",
+      kniffel: data?.game === "kniffel" ? { columns: [], cells: {}, current: null, locked: false, roll: null, lastEntry: null } : undefined,
+      nextColumn: 0,
+      kniffelHistory: [],
       hostId: playerId,
       phase: "lobby",
       settings: { songsPerPlayer: 3, roundSeconds: 30, theme: "", showSong: true },
@@ -469,6 +520,7 @@ io.on("connection", (socket) => {
     const player: Player = { id: playerId, name, score: 0, picks: [], searches: [] };
     room.players.set(playerId, player);
     rooms.set(room.code, room);
+    ensureColumn(room, player);
     attach(socket, room, player);
     reply(cb, { ok: true, code: room.code });
     broadcast(room);
@@ -492,6 +544,7 @@ io.on("connection", (socket) => {
     } else {
       player.name = name;
     }
+    ensureColumn(room, player);
     if (socket.data.code && socket.data.code !== code) detach(socket, true);
     attach(socket, room, player);
     reply(cb, { ok: true });
@@ -508,7 +561,10 @@ io.on("connection", (socket) => {
     const seconds = Number(data?.roundSeconds);
     if (Number.isInteger(songs) && songs >= 1 && songs <= 5) c.room.settings.songsPerPlayer = songs;
     if ([15, 20, 30].includes(seconds)) c.room.settings.roundSeconds = seconds;
-    if (data?.game === "song" || data?.game === "year") c.room.game = data.game;
+    // Zwischen den Ratespielen umschalten; ein Kniffel-Raum bleibt ein Kniffel-Raum.
+    if ((data?.game === "song" || data?.game === "year") && c.room.game !== "kniffel") {
+      c.room.game = data.game;
+    }
     if (typeof data?.showSong === "boolean") c.room.settings.showSong = data.showSong;
     if (typeof data?.theme === "string") {
       c.room.settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
@@ -519,6 +575,7 @@ io.on("connection", (socket) => {
   socket.on("game:start", (cb) => {
     const c = ctx();
     if (!c || !c.isHost || (c.room.phase !== "lobby" && c.room.phase !== "finished")) return;
+    if (c.room.game === "kniffel") return;
     if (connected(c.room).length < 2) {
       return reply(cb, { ok: false, error: "need_two_players" });
     }
@@ -613,6 +670,145 @@ io.on("connection", (socket) => {
   socket.on("round:guess", (data) => {
     const c = ctx();
     if (c) handleGuess(c.room, c.player, data?.text);
+  });
+
+  // Kniffel: jeder darf jede Spalte bearbeiten – wie ein Block, der auf dem Tisch liegt.
+  socket.on("kniffel:set", (data) => {
+    const c = ctx();
+    const sheet = c?.room.kniffel;
+    const column = String(data?.column ?? "");
+    const category = String(data?.category ?? "") as Category;
+    const target = sheet?.columns.find((col) => col.id === column);
+    if (!c || !sheet || !target || !canEditColumn(sheet, target, c.player.id)) return;
+    if (!CATEGORIES.includes(category)) return;
+    const cells = (sheet.cells[column] ??= {});
+    const step: KniffelStep = {
+      column,
+      category,
+      before: cells[category],
+      current: sheet.current,
+      roll: sheet.roll && structuredClone(sheet.roll),
+    };
+    if (data?.value === null) delete cells[category];
+    else {
+      const value = Number(data?.value);
+      if (!allowedValues(category).includes(value)) return;
+      const isNew = cells[category] === undefined;
+      cells[category] = value;
+      // Ein neuer Eintrag beendet den Zug dieser Spalte; Korrekturen ändern nichts an der Reihenfolge.
+      if (isNew) setTurn(sheet, nextTurn(sheet, column));
+    }
+    if (sheet.current === null) setTurn(sheet, nextTurn(sheet, column)); // nach dem Löschen eines Eintrags
+    if (cells[category] !== step.before) {
+      c.room.kniffelHistory.push(step);
+      if (c.room.kniffelHistory.length > MAX_UNDO) c.room.kniffelHistory.shift();
+      sheet.lastEntry = { column, category };
+    }
+    broadcast(c.room);
+  });
+
+  // Letzten Eintrag zurücknehmen – inklusive Zug und digitalem Wurf von davor.
+  socket.on("kniffel:undo", () => {
+    const c = ctx();
+    const sheet = c?.room.kniffel;
+    const step = c?.room.kniffelHistory.at(-1);
+    const column = sheet?.columns.find((col) => col.id === step?.column);
+    if (!c || !sheet || !step || !column || !canEditColumn(sheet, column, c.player.id)) return;
+    c.room.kniffelHistory.pop();
+    const cells = (sheet.cells[step.column] ??= {});
+    if (step.before === undefined) delete cells[step.category];
+    else cells[step.category] = step.before;
+    sheet.current = step.current;
+    sheet.roll = step.roll;
+    const previous = c.room.kniffelHistory.at(-1);
+    sheet.lastEntry = previous ? { column: previous.column, category: previous.category } : null;
+    broadcast(c.room);
+  });
+
+  socket.on("kniffel:add", (data, cb) => {
+    const c = ctx();
+    const sheet = c?.room.kniffel;
+    const name = cleanName(data?.name);
+    if (!c || !sheet || !name) return;
+    if (sheet.columns.length >= MAX_COLUMNS) return reply(cb, { ok: false, error: "room_full" });
+    sheet.columns.push({ id: `c${++c.room.nextColumn}`, name });
+    if (sheet.current === null) setTurn(sheet, sheet.columns.at(-1)!.id);
+    reply(cb, { ok: true });
+    broadcast(c.room);
+  });
+
+  socket.on("kniffel:remove", (data) => {
+    const c = ctx();
+    const sheet = c?.room.kniffel;
+    if (!c || !c.isHost || !sheet) return;
+    const column = String(data?.column ?? "");
+    if (sheet.current === column) {
+      const next = nextTurn(sheet, column);
+      setTurn(sheet, next === column ? null : next);
+    }
+    sheet.columns = sheet.columns.filter((col) => col.id !== column);
+    delete sheet.cells[column];
+    c.room.kniffelHistory = c.room.kniffelHistory.filter((step) => step.column !== column);
+    const previous = c.room.kniffelHistory.at(-1);
+    sheet.lastEntry = previous ? { column: previous.column, category: previous.category } : null;
+    broadcast(c.room);
+  });
+
+  socket.on("kniffel:reset", () => {
+    const c = ctx();
+    if (!c || !c.isHost || !c.room.kniffel) return;
+    c.room.kniffel.cells = {};
+    setTurn(c.room.kniffel, c.room.kniffel.columns[0]?.id ?? null);
+    c.room.kniffel.roll = null;
+    c.room.kniffel.lastEntry = null;
+    c.room.kniffelHistory = [];
+    broadcast(c.room);
+  });
+
+  // Manuell festlegen, wer dran ist – falls die automatische Reihenfolge nicht passt.
+  socket.on("kniffel:turn", (data) => {
+    const c = ctx();
+    const sheet = c?.room.kniffel;
+    const column = String(data?.column ?? "");
+    if (!c || !sheet || !sheet.columns.some((col) => col.id === column)) return;
+    setTurn(sheet, column);
+    broadcast(c.room);
+  });
+
+  socket.on("kniffel:lock", (data) => {
+    const c = ctx();
+    if (!c || !c.isHost || !c.room.kniffel) return;
+    c.room.kniffel.locked = Boolean(data?.locked);
+    broadcast(c.room);
+  });
+
+  // Digitale Würfel: der Server würfelt, damit alle denselben Wurf sehen.
+  const rollContext = () => {
+    const c = ctx();
+    const sheet = c?.room.kniffel;
+    const column = sheet?.columns.find((col) => col.id === sheet.current);
+    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id)) return undefined;
+    return { room: c.room, sheet };
+  };
+
+  socket.on("kniffel:roll", () => {
+    const r = rollContext();
+    if (!r) return;
+    const roll = (r.sheet.roll ??= { dice: [1, 1, 1, 1, 1], held: [false, false, false, false, false], count: 0 });
+    if (roll.count >= MAX_ROLLS || (roll.count > 0 && roll.held.every(Boolean))) return;
+    roll.dice = roll.dice.map((d, i) => (roll.count > 0 && roll.held[i] ? d : randomInt(1, 7)));
+    roll.count++;
+    broadcast(r.room);
+  });
+
+  socket.on("kniffel:hold", (data) => {
+    const r = rollContext();
+    const roll = r?.sheet.roll;
+    const index = Number(data?.index);
+    if (!r || !roll || roll.count === 0 || roll.count >= MAX_ROLLS) return;
+    if (!Number.isInteger(index) || index < 0 || index > 4) return;
+    roll.held[index] = !roll.held[index];
+    broadcast(r.room);
   });
 
   // Guess the Year: ein Tipp pro Runde, danach gesperrt.

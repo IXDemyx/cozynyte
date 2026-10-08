@@ -50,6 +50,23 @@ button:not(:disabled) {
   animation: slideIn 0.35s ease both;
 }
 
+@keyframes dice-roll {
+  0% {
+    transform: rotate(-25deg) scale(0.7);
+    opacity: 0.4;
+  }
+  60% {
+    transform: rotate(12deg) scale(1.08);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.animate-roll {
+  animation: dice-roll 0.45s ease both;
+}
+
 @keyframes bar {
   0%,
   100% {
@@ -67,6 +84,7 @@ button:not(:disabled) {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-in,
+  .animate-roll,
   .eq-bar {
     animation: none;
   }

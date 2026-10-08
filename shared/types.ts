@@ -1,4 +1,6 @@
-export type Game = "song" | "year";
+import type { KniffelState } from "./kniffel";
+
+export type Game = "song" | "year" | "kniffel";
 
 export interface Track {
   id: number;
@@ -85,6 +87,8 @@ export interface RoomState {
   settings: Settings;
   players: PlayerView[];
   myPicks: Track[];
+  /** Nur in Kniffel-Räumen: der gemeinsame Block. */
+  kniffel?: KniffelState;
   round?: RoundView;
   reveal?: RevealView;
   serverNow: number;

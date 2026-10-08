@@ -35,7 +35,7 @@ function Option({
   );
 }
 
-const GAME_NAMES = { song: "Guess the Song", year: "Guess the Year" };
+const GAME_NAMES = { song: "Guess the Song", year: "Guess the Year", kniffel: "Kniffel" };
 
 function Lobby({ state }: { state: RoomState }) {
   const { t, err } = useLanguage();
