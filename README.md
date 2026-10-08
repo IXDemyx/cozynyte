@@ -9,9 +9,10 @@ No sign-up: create a room, share the four-letter code or the invite link, and pl
 | ------------------ | -------------------------------------------------------------------------------- |
 | **Guess the Song** | A 30-second clip plays; everyone types the title and artist as fast as possible. |
 | **Guess the Year** | A clip plays; everyone guesses the release year.                                 |
+| **Song Timeline**  | Place each song in your own timeline; the first with enough correct cards wins.  |
 | **Yahtzee**        | A shared score sheet for playing Yahtzee with real dice at the table.            |
 
-The two guessing games share the same flow: lobby → everyone picks their own songs → rounds → reveal →
+The three music games share the same flow: lobby → everyone picks their own songs → rounds → reveal →
 final scores. The host can switch between the games in the lobby, so a room can be reused
 for a different game without anyone leaving.
 
@@ -112,6 +113,16 @@ under a sub-path.
 - Exact year: 100 points, one year off: 80, then 10 fewer for each further year.
 - Whoever picked the song sits out and gets 10 points for each player who is at most 2 years off.
 - The host decides in the lobby whether title and artist are shown or the round is audio only.
+
+**Song Timeline**
+
+- Each player's first picked song becomes their face-up starting card; the rest form the shared pile.
+- A song plays and you choose the gap in your timeline where it belongs. If its year fits between
+  the neighbours (equal years count), the card stays; otherwise it is discarded.
+- Modes, chosen by the host: everyone places the same song at once (whoever picked it sits out),
+  or players take turns and the others watch the active player's timeline.
+- The game ends when someone reaches the card goal (4, 6, 8 or 10) or the pile runs out; most
+  cards wins. Late joiners get a starting card from the pile.
 
 **Yahtzee (Kniffel)**
 

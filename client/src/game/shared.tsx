@@ -31,6 +31,8 @@ export function FeedLine({ item, you }: { item: FeedItem; you: string }) {
       );
     case "close":
       return <span className="text-(--accent)">{t.round.close(item.name, me)}</span>;
+    case "placed":
+      return <span className="text-(--success)">{t.timeline.placedFeed(item.name, me)}</span>;
     case "locked":
       return <span className="text-(--success)">{t.year.locked(item.name, me)}</span>;
     default:

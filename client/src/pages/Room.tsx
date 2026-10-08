@@ -9,6 +9,7 @@ import Picking from "../game/Picking";
 import Reveal from "../game/Reveal";
 import Kniffel from "../game/Kniffel";
 import Round from "../game/Round";
+import TimelineRound from "../game/TimelineRound";
 import YearRound from "../game/YearRound";
 import { useRoom } from "../hooks/useRoom";
 import { useLanguage } from "../lib/i18n";
@@ -84,6 +85,8 @@ function Room() {
         state.round &&
         (state.game === "year" ? (
           <YearRound state={state} round={state.round} offset={offset} />
+        ) : state.game === "timeline" ? (
+          <TimelineRound state={state} round={state.round} offset={offset} />
         ) : (
           <Round state={state} round={state.round} offset={offset} />
         ))}

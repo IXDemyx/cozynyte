@@ -30,7 +30,8 @@ function Picking({ state }: { state: RoomState }) {
   const picks = state.myPicks;
   const full = picks.length >= target;
   const isHost = state.hostId === state.you;
-  const isYear = state.game === "year";
+  // Bei Jahres-Spielen muss jeder Song ein Jahr haben, und der Wählende sieht es.
+  const isYear = state.game === "year" || state.game === "timeline";
   const active = state.players.filter((p) => p.connected);
   const everyoneReady = active.every((p) => p.picked >= target);
 
@@ -123,7 +124,11 @@ function Picking({ state }: { state: RoomState }) {
           </p>
         )}
         <p className="mt-2 text-sm text-(--text-secondary)">
-          {isYear ? t.picking.hintYear : t.picking.hint}
+          {state.game === "timeline"
+            ? t.picking.hintTimeline
+            : isYear
+              ? t.picking.hintYear
+              : t.picking.hint}
         </p>
 
         <ul className="mt-6 grid gap-2">

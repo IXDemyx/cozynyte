@@ -56,6 +56,8 @@ interface Player {
   picks: Track[];
   removeTimer?: NodeJS.Timeout;
   searches: number[];
+  /** Song-Timeline: nach Jahr sortierte Karten. */
+  timeline: Track[];
 }
 
 /** Buchstaben-Hinweise: zufällige Reihenfolge der Positionen und wie viele schon offen sind. */
@@ -77,6 +79,10 @@ interface Round {
   timer: NodeJS.Timeout;
   /** Guess the Year: abgegebene Jahre je Spieler. */
   years: Map<string, number>;
+  /** Song-Timeline: gewählte Lücke je Spieler und wer reihum dran ist. */
+  placements: Map<string, number>;
+  results: Map<string, { position: number; correct: boolean }>;
+  activeId?: string;
   titleHint: Hint;
   artistHint: Hint;
   hintTimers: NodeJS.Timeout[];
@@ -101,6 +107,11 @@ interface Room {
   emptySince?: number;
   /** Vom Host entfernte Spieler dürfen nicht wieder beitreten. */
   banned: Set<string>;
+  /** Song-Timeline: Reihenfolge für den Reihum-Modus und ob jemand das Ziel erreicht hat. */
+  turnOrder: string[];
+  turnPos: number;
+  activeId?: string;
+  timelineOver: boolean;
 }
 
 const rooms = new Map<string, Room>();
@@ -167,9 +178,25 @@ function view(room: Room, playerId: string): RoomState {
       gotTitle: round?.got.get(p.id)?.title ?? false,
       gotArtist: round?.got.get(p.id)?.artist ?? false,
       answered: round ? hasAnswered(room, round, p.id) : false,
+      cards: p.timeline.length,
     })),
     myPicks: room.phase === "picking" ? (me?.picks ?? []) : [],
     kniffel: room.kniffel,
+    timelines:
+      room.game === "timeline" && room.phase !== "lobby" && room.phase !== "picking"
+        ? Object.fromEntries(
+            [...room.players.values()].map((p) => [
+              p.id,
+              p.timeline.map((t) => ({
+                id: t.id,
+                title: t.title,
+                artist: t.artist,
+                artwork: t.artwork,
+                year: t.year ?? 0,
+              })),
+            ]),
+          )
+        : undefined,
     serverNow: Date.now(),
   };
 
@@ -183,13 +210,21 @@ function view(room: Room, playerId: string): RoomState {
       endsAt: round.endsAt,
       durationMs: round.endsAt - round.startedAt,
       youArePicker: round.pickerId === playerId,
-      ...(room.game === "year"
+      ...(room.game === "timeline"
+        ? {
+            activeId: round.activeId,
+            canPlace: canPlace(room, round, playerId),
+            yourPosition: round.placements.get(playerId),
+            activePosition: round.activeId ? round.placements.get(round.activeId) : undefined,
+          }
+        : {}),
+      ...(room.game === "year" || room.game === "timeline"
         ? {
             song:
               room.settings.showSong || isPicker
                 ? { title: round.track.title, artist: round.track.artist }
                 : undefined,
-            yourYear: round.years.get(playerId),
+            yourYear: room.game === "year" ? round.years.get(playerId) : undefined,
             answerYear: isPicker ? round.track.year : undefined,
           }
         : {}),
@@ -213,8 +248,9 @@ function view(room: Room, playerId: string): RoomState {
       pickerId: round.pickerId,
       gains: Object.fromEntries(round.gains),
       yearGuesses: room.game === "year" ? Object.fromEntries(round.years) : undefined,
+      placements: room.game === "timeline" ? Object.fromEntries(round.results) : undefined,
       nextAt: room.revealNextAt,
-      isLast: room.roundIndex >= room.queue.length - 1,
+      isLast: room.timelineOver || room.roundIndex >= room.queue.length - 1,
     };
   }
   return state;
@@ -239,17 +275,28 @@ function startPicking(room: Room) {
   for (const p of room.players.values()) {
     p.picks = [];
     p.score = 0;
+    p.timeline = [];
   }
   room.queue = [];
+  room.timelineOver = false;
   room.roundIndex = 0;
   room.round = undefined;
   room.phase = "picking";
 }
 
 function startRounds(room: Room) {
-  room.queue = shuffle(
-    [...room.players.values()].flatMap((p) => p.picks.map((track) => ({ track, pickerId: p.id }))),
-  );
+  const players = [...room.players.values()];
+  if (room.game === "timeline") {
+    // Der erste gewählte Song wird die offene Startkarte, der Rest kommt in den Stapel.
+    for (const p of players) p.timeline = p.picks.slice(0, 1);
+    room.queue = shuffle(
+      players.flatMap((p) => p.picks.slice(1).map((track) => ({ track, pickerId: p.id }))),
+    );
+  } else {
+    room.queue = shuffle(
+      players.flatMap((p) => p.picks.map((track) => ({ track, pickerId: p.id }))),
+    );
+  }
   // Möglichst nicht zweimal hintereinander ein Song desselben Spielers.
   for (let i = 1; i < room.queue.length; i++) {
     if (room.queue[i].pickerId !== room.queue[i - 1].pickerId) continue;
@@ -257,7 +304,53 @@ function startRounds(room: Room) {
     if (swap > 0) [room.queue[i], room.queue[swap]] = [room.queue[swap], room.queue[i]];
   }
   room.roundIndex = 0;
+  if (room.game === "timeline") {
+    for (const p of players) if (!p.timeline.length) drawStartCard(room, p);
+    for (const p of players) p.score = p.timeline.length;
+    room.turnOrder = players.map((p) => p.id);
+    room.turnPos = -1;
+    room.timelineOver = false;
+  }
+  if (!prepareRound(room)) {
+    room.phase = "finished";
+    return;
+  }
   startRound(room);
+}
+
+/** Song-Timeline: Spieler ohne Startkarte bekommen eine vom Ende des Stapels. */
+function drawStartCard(room: Room, player: Player) {
+  if (room.queue.length - 1 <= room.roundIndex) return;
+  player.timeline = [room.queue.pop()!.track];
+  player.score = player.timeline.length;
+}
+
+/**
+ * Bereitet die Runde an `roundIndex` vor. Reihum: nächster verbundener Spieler, dazu ein Song,
+ * den er nicht selbst gewählt hat. false = keine spielbare Runde mehr.
+ */
+function prepareRound(room: Room): boolean {
+  if (room.roundIndex >= room.queue.length) return false;
+  room.activeId = undefined;
+  if (room.game !== "timeline" || room.settings.timelineMode !== "turns") return true;
+  for (let tries = 0; tries < room.turnOrder.length; tries++) {
+    room.turnPos = (room.turnPos + 1) % room.turnOrder.length;
+    const id = room.turnOrder[room.turnPos];
+    if (!room.players.get(id)?.socketId) continue;
+    const j = room.queue.findIndex((q, k) => k >= room.roundIndex && q.pickerId !== id);
+    if (j < 0) continue;
+    [room.queue[room.roundIndex], room.queue[j]] = [room.queue[j], room.queue[room.roundIndex]];
+    room.activeId = id;
+    return true;
+  }
+  return false;
+}
+
+/** Song-Timeline: darf dieser Spieler in dieser Runde (noch) einordnen? */
+function canPlace(room: Room, round: Round, playerId: string): boolean {
+  if (round.placements.has(playerId) || round.pickerId === playerId) return false;
+  if (!room.players.has(playerId)) return false;
+  return room.settings.timelineMode === "turns" ? round.activeId === playerId : true;
 }
 
 function newHint(text: string): Hint {
@@ -294,6 +387,9 @@ function startRound(room: Room) {
     gains: new Map(),
     feed: [],
     years: new Map(),
+    placements: new Map(),
+    results: new Map(),
+    activeId: room.activeId,
     timer: setTimeout(() => endRound(room), duration),
     titleHint: newHint(cleanTitle(entry.track.title)),
     artistHint: newHint(entry.track.artist),
@@ -323,6 +419,26 @@ function endRound(room: Room) {
       if (off <= 2) addPoints(room, round, round.pickerId, 10); // Bonus für gut schätzbare Songs
     }
   }
+  if (room.game === "timeline" && round.track.year) {
+    const year = round.track.year;
+    for (const [playerId, position] of round.placements) {
+      const player = room.players.get(playerId);
+      if (!player) continue;
+      const before = player.timeline[position - 1]?.year ?? -Infinity;
+      const after = player.timeline[position]?.year ?? Infinity;
+      // Gleiches Jahr wie ein Nachbar zählt als richtig.
+      const correct = before <= year && year <= after;
+      round.results.set(playerId, { position, correct });
+      if (correct) {
+        player.timeline.splice(position, 0, round.track);
+        round.gains.set(playerId, 1);
+      }
+    }
+    for (const p of room.players.values()) p.score = p.timeline.length;
+    if ([...room.players.values()].some((p) => p.timeline.length >= room.settings.timelineGoal)) {
+      room.timelineOver = true;
+    }
+  }
   room.phase = "reveal";
   room.revealNextAt = Date.now() + REVEAL_MS;
   room.revealTimer = setTimeout(() => nextRound(room), REVEAL_MS);
@@ -332,11 +448,11 @@ function endRound(room: Room) {
 function nextRound(room: Room) {
   if (room.phase !== "reveal") return;
   clearTimeout(room.revealTimer);
-  if (room.roundIndex >= room.queue.length - 1) {
+  room.roundIndex++;
+  if (room.timelineOver || !prepareRound(room)) {
     room.phase = "finished";
     room.round = undefined;
   } else {
-    room.roundIndex++;
     startRound(room);
   }
   broadcast(room);
@@ -356,11 +472,16 @@ function yearPoints(off: number): number {
 
 function hasAnswered(room: Room, round: Round, playerId: string): boolean {
   if (room.game === "year") return round.years.has(playerId);
+  if (room.game === "timeline") return round.placements.has(playerId);
   const got = round.got.get(playerId);
   return Boolean(got?.title && got?.artist);
 }
 
 function everyoneDone(room: Room, round: Round): boolean {
+  if (room.game === "timeline" && room.settings.timelineMode === "turns") {
+    const active = round.activeId ? room.players.get(round.activeId) : undefined;
+    return !active?.socketId || round.placements.has(active.id);
+  }
   const guessers = connected(room).filter((p) => p.id !== round.pickerId);
   return guessers.length > 0 && guessers.every((p) => hasAnswered(room, round, p.id));
 }
@@ -377,7 +498,7 @@ function handleGuess(room: Room, player: Player, raw: unknown) {
 
   // Guess the Year: das Textfeld ist reiner Chat. Die Jahreszahl darf nicht fallen, und bei
   // verdecktem Song auch weder Titel noch Interpret.
-  if (room.game === "year") {
+  if (room.game === "year" || room.game === "timeline") {
     const year = String(round.track.year ?? "");
     if ((year && text.includes(year)) || (!room.settings.showSong && spoils)) return;
     round.feed.push({ id: ++feedId, playerId: player.id, name: player.name, kind: "wrong", text });
@@ -504,20 +625,30 @@ io.on("connection", (socket) => {
     detach(socket, true);
     const room: Room = {
       code: newCode(),
-      game: data?.game === "year" || data?.game === "kniffel" ? data.game : "song",
+      game: ["year", "timeline", "kniffel"].includes(data?.game) ? data.game : "song",
       kniffel: data?.game === "kniffel" ? { columns: [], cells: {}, current: null, locked: false, roll: null, lastEntry: null } : undefined,
       nextColumn: 0,
       kniffelHistory: [],
       hostId: playerId,
       phase: "lobby",
-      settings: { songsPerPlayer: 3, roundSeconds: 30, theme: "", showSong: true },
+      settings: {
+        songsPerPlayer: 3,
+        roundSeconds: 30,
+        theme: "",
+        showSong: true,
+        timelineMode: "together",
+        timelineGoal: 6,
+      },
       players: new Map(),
       queue: [],
       roundIndex: 0,
       revealNextAt: 0,
       banned: new Set(),
+      turnOrder: [],
+      turnPos: -1,
+      timelineOver: false,
     };
-    const player: Player = { id: playerId, name, score: 0, picks: [], searches: [] };
+    const player: Player = { id: playerId, name, score: 0, picks: [], searches: [], timeline: [] };
     room.players.set(playerId, player);
     rooms.set(room.code, room);
     ensureColumn(room, player);
@@ -539,8 +670,12 @@ io.on("connection", (socket) => {
     if (!player) {
       if (room.players.size >= MAX_PLAYERS) return reply(cb, { ok: false, error: "room_full" });
       // Später beitreten ist erlaubt: mitten im Spiel rät man ab sofort mit, nur ohne eigene Songs.
-      player = { id: playerId, name, score: 0, picks: [], searches: [] };
+      player = { id: playerId, name, score: 0, picks: [], searches: [], timeline: [] };
       room.players.set(playerId, player);
+      if (room.game === "timeline" && (room.phase === "round" || room.phase === "reveal")) {
+        drawStartCard(room, player);
+        room.turnOrder.push(player.id);
+      }
     } else {
       player.name = name;
     }
@@ -559,10 +694,14 @@ io.on("connection", (socket) => {
     if (!c || !c.isHost || c.room.phase !== "lobby") return;
     const songs = Number(data?.songsPerPlayer);
     const seconds = Number(data?.roundSeconds);
-    if (Number.isInteger(songs) && songs >= 1 && songs <= 5) c.room.settings.songsPerPlayer = songs;
-    if ([15, 20, 30].includes(seconds)) c.room.settings.roundSeconds = seconds;
+    if (Number.isInteger(songs) && songs >= 1 && songs <= 10) c.room.settings.songsPerPlayer = songs;
+    if ([15, 20, 30, 45].includes(seconds)) c.room.settings.roundSeconds = seconds;
+    if (data?.timelineMode === "together" || data?.timelineMode === "turns") {
+      c.room.settings.timelineMode = data.timelineMode;
+    }
+    if ([4, 6, 8, 10].includes(Number(data?.timelineGoal))) c.room.settings.timelineGoal = Number(data.timelineGoal);
     // Zwischen den Ratespielen umschalten; ein Kniffel-Raum bleibt ein Kniffel-Raum.
-    if ((data?.game === "song" || data?.game === "year") && c.room.game !== "kniffel") {
+    if (["song", "year", "timeline"].includes(data?.game) && c.room.game !== "kniffel") {
       c.room.game = data.game;
     }
     if (typeof data?.showSong === "boolean") c.room.settings.showSong = data.showSong;
@@ -593,6 +732,7 @@ io.on("connection", (socket) => {
     for (const p of [...c.room.players.values()]) {
       p.score = 0;
       p.picks = [];
+      p.timeline = [];
       if (!p.socketId) c.room.players.delete(p.id);
     }
     broadcast(c.room);
@@ -636,7 +776,9 @@ io.on("connection", (socket) => {
     if (!c || c.room.phase !== "picking") return;
     const track = getCachedTrack(Number(data?.trackId));
     if (!track) return reply(cb, { ok: false, error: "track_not_found" });
-    if (c.room.game === "year" && !track.year) return reply(cb, { ok: false, error: "track_no_year" });
+    if ((c.room.game === "year" || c.room.game === "timeline") && !track.year) {
+      return reply(cb, { ok: false, error: "track_no_year" });
+    }
     if (c.player.picks.length >= c.room.settings.songsPerPlayer) {
       return reply(cb, { ok: false, error: "picks_full" });
     }
@@ -809,6 +951,20 @@ io.on("connection", (socket) => {
     if (!Number.isInteger(index) || index < 0 || index > 4) return;
     roll.held[index] = !roll.held[index];
     broadcast(r.room);
+  });
+
+  // Song-Timeline: Lücke in der eigenen Zeitleiste wählen (0 = ganz vorn).
+  socket.on("round:place", (data) => {
+    const c = ctx();
+    const round = c?.room.round;
+    if (!c || !round || c.room.game !== "timeline" || c.room.phase !== "round") return;
+    if (!canPlace(c.room, round, c.player.id)) return;
+    const position = Number(data?.position);
+    if (!Number.isInteger(position) || position < 0 || position > c.player.timeline.length) return;
+    round.placements.set(c.player.id, position);
+    round.feed.push({ id: ++feedId, playerId: c.player.id, name: c.player.name, kind: "placed" });
+    if (everyoneDone(c.room, round)) endRound(c.room);
+    else broadcast(c.room);
   });
 
   // Guess the Year: ein Tipp pro Runde, danach gesperrt.

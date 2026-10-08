@@ -24,7 +24,9 @@ function Reveal({ state, reveal, offset }: RevealProps) {
     <div className="animate-in grid gap-6 lg:grid-cols-3">
       <section className={`${card} p-7 min-w-0 lg:col-span-2`}>
         <p className={eyebrow}>
-          {t.reveal.eyebrow(reveal.index + 1, reveal.total)}
+          {state.game === "timeline"
+            ? t.reveal.eyebrowShort(reveal.index + 1)
+            : t.reveal.eyebrow(reveal.index + 1, reveal.total)}
         </p>
 
         <div className="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
@@ -39,7 +41,7 @@ function Reveal({ state, reveal, offset }: RevealProps) {
             {reveal.track.album && (
               <p className="mt-1 text-sm text-(--text-secondary)">{reveal.track.album}</p>
             )}
-            {state.game === "year" && reveal.track.year && (
+            {(state.game === "year" || state.game === "timeline") && reveal.track.year && (
               <p className="mt-4 font-mono text-5xl font-semibold text-(--accent)">
                 {reveal.track.year}
               </p>
@@ -67,10 +69,15 @@ function Reveal({ state, reveal, offset }: RevealProps) {
 
       <PlayerList
         state={state}
-        title={t.points}
+        title={state.game === "timeline" ? t.timeline.cards : t.points}
         showScore
         status={(p) =>
           <span className="flex items-center gap-2 font-mono">
+            {reveal.placements?.[p.id] && (
+              <span className={reveal.placements[p.id].correct ? "text-(--success)" : "text-red-500"}>
+                {reveal.placements[p.id].correct ? "✓" : "✗"}
+              </span>
+            )}
             {reveal.yearGuesses?.[p.id] !== undefined && <span>{reveal.yearGuesses[p.id]}</span>}
             {reveal.gains[p.id] ? (
               <span className="font-semibold text-(--success)">+{reveal.gains[p.id]}</span>

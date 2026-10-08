@@ -35,7 +35,12 @@ function Option({
   );
 }
 
-const GAME_NAMES = { song: "Guess the Song", year: "Guess the Year", kniffel: "Kniffel" };
+const GAME_NAMES = {
+  song: "Guess the Song",
+  year: "Guess the Year",
+  timeline: "Song Timeline",
+  kniffel: "Kniffel",
+};
 
 function Lobby({ state }: { state: RoomState }) {
   const { t, err } = useLanguage();
@@ -44,6 +49,7 @@ function Lobby({ state }: { state: RoomState }) {
   // Eigener Zustand fürs Tippen, damit die Antwort des Servers den Cursor nicht stört.
   const [theme, setTheme] = useState(state.settings.theme);
   const isHost = state.hostId === state.you;
+  const isTimeline = state.game === "timeline";
   const ready = state.players.filter((p) => p.connected).length >= 2;
 
   const copyLink = async () => {
@@ -79,7 +85,7 @@ function Lobby({ state }: { state: RoomState }) {
           <div className="sm:col-span-2">
             <p className="text-sm font-semibold">{t.lobby.game}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {(["song", "year"] as const).map((game) => (
+              {(["song", "year", "timeline"] as const).map((game) => (
                 <Option
                   key={game}
                   active={state.game === game}
@@ -94,7 +100,7 @@ function Lobby({ state }: { state: RoomState }) {
           <div>
             <p className="text-sm font-semibold">{t.lobby.songsPerPlayer}</p>
             <div className="mt-3 flex gap-2">
-              {[1, 2, 3, 4, 5].map((n) => (
+              {(isTimeline ? [3, 4, 5, 6, 8, 10] : [1, 2, 3, 4, 5]).map((n) => (
                 <Option
                   key={n}
                   active={state.settings.songsPerPlayer === n}
@@ -109,7 +115,7 @@ function Lobby({ state }: { state: RoomState }) {
           <div>
             <p className="text-sm font-semibold">{t.lobby.timePerSong}</p>
             <div className="mt-3 flex gap-2">
-              {[15, 20, 30].map((n) => (
+              {(isTimeline ? [20, 30, 45] : [15, 20, 30]).map((n) => (
                 <Option
                   key={n}
                   active={state.settings.roundSeconds === n}
@@ -121,7 +127,41 @@ function Lobby({ state }: { state: RoomState }) {
               ))}
             </div>
           </div>
-          {state.game === "year" && (
+          {isTimeline && (
+            <>
+              <div>
+                <p className="text-sm font-semibold">{t.lobby.mode}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {(["together", "turns"] as const).map((mode) => (
+                    <Option
+                      key={mode}
+                      active={state.settings.timelineMode === mode}
+                      disabled={!isHost}
+                      onClick={() => update({ timelineMode: mode })}
+                    >
+                      {t.lobby[mode]}
+                    </Option>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-semibold">{t.lobby.goal}</p>
+                <div className="mt-3 flex gap-2">
+                  {[4, 6, 8, 10].map((n) => (
+                    <Option
+                      key={n}
+                      active={state.settings.timelineGoal === n}
+                      disabled={!isHost}
+                      onClick={() => update({ timelineGoal: n })}
+                    >
+                      {n}
+                    </Option>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          {(state.game === "year" || isTimeline) && (
             <div className="sm:col-span-2">
               <p className="text-sm font-semibold">{t.lobby.showSong}</p>
               <div className="mt-3 flex gap-2">

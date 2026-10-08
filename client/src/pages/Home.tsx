@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { FaDiceFive } from "react-icons/fa";
-import { FiCalendar, FiMusic, FiPenTool } from "react-icons/fi";
+import { FiCalendar, FiClock, FiMusic, FiPenTool } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import type { Ack, Game } from "../../../shared/types";
 import Button from "../components/Button";
@@ -19,6 +19,7 @@ function Home() {
   const games = [
     { id: "song" as Game, icon: FiMusic, title: "Guess the Song", meta: t.home.meta, text: t.home.songText },
     { id: "year" as Game, icon: FiCalendar, title: "Guess the Year", meta: t.home.meta, text: t.home.yearText },
+    { id: "timeline" as Game, icon: FiClock, title: "Song Timeline", meta: t.home.meta, text: t.home.timelineText },
     { id: "kniffel" as Game, icon: FaDiceFive, title: t.home.kniffelTitle, meta: t.home.kniffelMeta, text: t.home.kniffelText },
   ];
   const validName = name.trim().length > 0;
