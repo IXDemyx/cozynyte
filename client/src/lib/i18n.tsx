@@ -211,6 +211,7 @@ const de = {
     placedFeed: (name: string, me: boolean) => (me ? "Du hast eingeordnet." : `${name} hat eingeordnet.`),
     choice: "Tipp",
     cards: "Karten",
+    cardCount: (n: number) => (n === 1 ? "1 Karte" : `${n} Karten`),
     older: "Älter",
     newer: "Neuer",
     before: (year: number) => `Vor ${year}`,
@@ -234,6 +235,7 @@ const de = {
     wins: (count: number): string => (count > 1 ? " gewinnen!" : " gewinnt!"),
     again: "Nochmal spielen",
     lobby: "Zurück zur Lobby",
+    timelines: "Alle Zeitleisten",
     waitingHost: "Der Host entscheidet, wie es weitergeht …",
   },
   audio: {
@@ -466,6 +468,7 @@ const en: typeof de = {
     placedFeed: (name, me) => (me ? "You placed the song." : `${name} placed the song.`),
     choice: "Guess",
     cards: "Cards",
+    cardCount: (n) => (n === 1 ? "1 card" : `${n} cards`),
     older: "Older",
     newer: "Newer",
     before: (year) => `Before ${year}`,
@@ -489,6 +492,7 @@ const en: typeof de = {
     wins: (count) => (count > 1 ? " win!" : " wins!"),
     again: "Play again",
     lobby: "Back to lobby",
+    timelines: "All timelines",
     waitingHost: "The host decides what happens next …",
   },
   audio: {
