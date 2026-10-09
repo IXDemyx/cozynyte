@@ -4,7 +4,14 @@ import { useLanguage } from "../lib/i18n";
 import Button from "./Button";
 
 /** Kopiert den Einladungslink zum Raum in die Zwischenablage. */
-function InviteButton({ code }: { code: string }) {
+interface InviteButtonProps {
+  code: string;
+  /** Kurze Beschriftung für schmale Spalten. */
+  short?: boolean;
+  className?: string;
+}
+
+function InviteButton({ code, short = false, className = "" }: InviteButtonProps) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
@@ -15,9 +22,9 @@ function InviteButton({ code }: { code: string }) {
   };
 
   return (
-    <Button variant="secondary" size="small" onClick={copy}>
+    <Button variant="secondary" size="small" onClick={copy} className={className}>
       {copied ? <FiCheck aria-hidden="true" /> : <FiCopy aria-hidden="true" />}
-      {copied ? t.lobby.copied : t.lobby.copy}
+      {copied ? t.lobby.copied : short ? t.lobby.copyShort : t.lobby.copy}
     </Button>
   );
 }

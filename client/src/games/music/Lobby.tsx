@@ -5,6 +5,7 @@ import ErrorText from "../../components/ErrorText";
 import InviteButton from "../../components/InviteButton";
 import { OptionGroup } from "../../components/Option";
 import PlayerList from "../../components/PlayerList";
+import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow, input } from "../../components/ui";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
@@ -31,10 +32,11 @@ function Lobby({ state }: { state: RoomState }) {
     values.map((n) => ({ value: n, label: `${n}${suffix}` }));
 
   return (
-    <div className="animate-in grid gap-6 lg:grid-cols-3">
-      <section className={`${card} min-w-0 p-7 lg:col-span-2`}>
+    <RoomLayout state={state} players={<PlayerList state={state} />}>
+      <section className={`${card} animate-in min-w-0 p-7`}>
         <p className={eyebrow}>{t.games[state.game]} · Lobby</p>
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+        {/* Auf breiten Bildschirmen stehen Code und Einladung in der linken Leiste. */}
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-4 xl:hidden">
           <div>
             <p className="text-sm text-(--text-secondary)">{t.home.code}</p>
             <p className="font-mono text-5xl font-semibold tracking-[0.25em] text-(--accent)">
@@ -44,7 +46,7 @@ function Lobby({ state }: { state: RoomState }) {
           <InviteButton code={state.code} />
         </div>
 
-        <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 sm:grid-cols-2 dark:border-(--accent-soft)">
+        <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 sm:grid-cols-2 xl:mt-6 xl:border-t-0 xl:pt-0 dark:border-(--accent-soft)">
           <OptionGroup
             wide
             label={t.lobby.game}
@@ -160,9 +162,7 @@ function Lobby({ state }: { state: RoomState }) {
           <ErrorText code={error} className="mt-3" />
         </div>
       </section>
-
-      <PlayerList state={state} />
-    </div>
+    </RoomLayout>
   );
 }
 

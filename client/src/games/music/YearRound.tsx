@@ -3,10 +3,10 @@ import { FiCheck } from "react-icons/fi";
 import type { RoomState, RoundView } from "../../../../shared/types";
 import Button from "../../components/Button";
 import PlayerList from "../../components/PlayerList";
+import RoomLayout from "../../components/RoomLayout";
 import { input } from "../../components/ui";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
-import { ChatFeed, ChatInput } from "./Chat";
 import Equalizer from "./Equalizer";
 import RoundFrame from "./RoundFrame";
 import SkipButton from "./SkipButton";
@@ -32,7 +32,17 @@ function YearRound({ state, round, offset }: YearRoundProps) {
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <RoomLayout
+      state={state}
+      players={
+        <PlayerList
+          state={state}
+          title={t.points}
+          showScore
+          status={(p) => p.answered && <span className="font-semibold text-(--success)">✓</span>}
+        />
+      }
+    >
       <RoundFrame
         title={t.round.song(round.index + 1, round.total)}
         endsAt={round.endsAt}
@@ -103,19 +113,9 @@ function YearRound({ state, round, offset }: YearRoundProps) {
           </form>
         )}
 
-        <ChatFeed feed={round.feed} you={state.you} height="h-32" />
-        <ChatInput />
-
         <SkipButton isHost={state.hostId === state.you} />
       </RoundFrame>
-
-      <PlayerList
-        state={state}
-        title={t.points}
-        showScore
-        status={(p) => p.answered && <span className="font-semibold text-(--success)">✓</span>}
-      />
-    </div>
+    </RoomLayout>
   );
 }
 

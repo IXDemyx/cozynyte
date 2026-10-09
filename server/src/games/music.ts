@@ -4,6 +4,7 @@
  */
 
 import type { FeedItem } from "../../../shared/types";
+import { addChatMessage } from "../chat";
 import { HINT_AT, REVEAL_MS } from "../config";
 import { cleanTitle, countLetters, matchGuess } from "../music/match";
 import {
@@ -195,6 +196,12 @@ export function pushFeed(round: Round, player: Player, kind: FeedItem["kind"], t
   });
 }
 
+/** Freier Text aus einer Runde: kommt in den Rundenverlauf und bleibt im Raum-Chat erhalten. */
+function say(room: Room, round: Round, player: Player, text: string) {
+  pushFeed(round, player, "wrong", text);
+  addChatMessage(room, player, text);
+}
+
 /* ---------- Guess the Song ---------- */
 
 function newHint(text: string): Hint {
@@ -236,14 +243,14 @@ export function handleGuess(room: Room, player: Player, raw: unknown) {
   if (room.game === "year" || room.game === "timeline") {
     const year = String(round.track.year ?? "");
     if ((year && text.includes(year)) || (!room.settings.showSong && spoils)) return;
-    pushFeed(round, player, "wrong", text);
+    say(room, round, player, text);
     return broadcast(room);
   }
 
   // Wer den Song gewählt hat, rät nicht mit, darf aber chatten.
   if (round.pickerId === player.id) {
     if (spoils) return;
-    pushFeed(round, player, "wrong", text);
+    say(room, round, player, text);
     return broadcast(room);
   }
 
@@ -269,13 +276,20 @@ export function handleGuess(room: Room, player: Player, raw: unknown) {
     const close =
       (result.title === "close" && !got.title) || (result.artist === "close" && !got.artist);
     if (close) pushFeed(round, player, "close");
-    else if (!spoils) pushFeed(round, player, "wrong", text); // normaler Tipp bzw. Chatnachricht
+    else if (!spoils) say(room, round, player, text); // normaler Tipp bzw. Chatnachricht
   }
 
   endRoundIfDone(room, round);
 }
 
 /* ---------- Guess the Year ---------- */
+
+/** Tipp abgeben – einer pro Runde, danach gesperrt. Gültigkeit prüft der Aufrufer. */
+export function submitYear(room: Room, round: Round, player: Player, year: number) {
+  round.years.set(player.id, year);
+  pushFeed(round, player, "locked");
+  endRoundIfDone(room, round);
+}
 
 /** Genau = 100, ein Jahr daneben = 80, dann je Jahr 10 weniger. */
 function yearPoints(off: number): number {
@@ -293,6 +307,13 @@ function scoreYears(room: Room, round: Round) {
 }
 
 /* ---------- Song-Timeline ---------- */
+
+/** Karte in die gewählte Lücke legen (0 = ganz vorn). Gültigkeit prüft der Aufrufer. */
+export function placeCard(room: Room, round: Round, player: Player, position: number) {
+  round.placements.set(player.id, position);
+  pushFeed(round, player, "placed");
+  endRoundIfDone(room, round);
+}
 
 /** Spieler ohne Startkarte bekommen eine vom Ende des Stapels. */
 export function drawStartCard(room: Room, player: Player) {

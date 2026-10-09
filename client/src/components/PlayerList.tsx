@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { FaCrown } from "react-icons/fa";
-import { FiUserX } from "react-icons/fi";
+import { FiCpu, FiUserX } from "react-icons/fi";
 import type { PlayerView, RoomState } from "../../../shared/types";
 import { useConfirm } from "../hooks/useConfirm";
 import { useLanguage } from "../lib/i18n";
@@ -27,7 +27,8 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
   };
 
   return (
-    <aside className={`${card} p-5`}>
+    // In der ganzhohen linken Leiste (breite Bildschirme) füllt die Liste den freien Platz.
+    <aside className={`${card} p-5 xl:min-h-0 xl:flex-1 xl:overflow-y-auto`}>
       <h2 className={eyebrow}>
         {title ?? t.players} · {players.length}
       </h2>
@@ -48,6 +49,9 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
               }`}
             >
               <span className="truncate">{p.name}</span>
+              {p.bot && (
+                <FiCpu className="shrink-0 text-(--text-secondary)" aria-label={t.dev.bot} />
+              )}
               {p.id === state.hostId && (
                 <FaCrown className="shrink-0 text-(--accent)" aria-label="Host" />
               )}

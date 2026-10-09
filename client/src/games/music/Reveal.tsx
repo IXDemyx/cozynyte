@@ -1,6 +1,7 @@
 import type { RevealView, RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import PlayerList from "../../components/PlayerList";
+import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow } from "../../components/ui";
 import { useNow } from "../../hooks/useNow";
 import { useLanguage } from "../../lib/i18n";
@@ -21,8 +22,32 @@ function Reveal({ state, reveal, offset }: RevealProps) {
   const nextLabel = reveal.isLast ? t.reveal.toFinal : t.reveal.next;
 
   return (
-    <div className="animate-in grid gap-6 lg:grid-cols-3">
-      <section className={`${card} p-7 min-w-0 lg:col-span-2`}>
+    <RoomLayout
+      state={state}
+      players={
+        <PlayerList
+          state={state}
+          title={state.game === "timeline" ? t.timeline.cards : t.points}
+          showScore
+          status={(p) => (
+            <span className="flex items-center gap-2 font-mono">
+              {reveal.placements?.[p.id] && (
+                <span
+                  className={reveal.placements[p.id].correct ? "text-(--success)" : "text-red-500"}
+                >
+                  {reveal.placements[p.id].correct ? "✓" : "✗"}
+                </span>
+              )}
+              {reveal.yearGuesses?.[p.id] !== undefined && <span>{reveal.yearGuesses[p.id]}</span>}
+              {reveal.gains[p.id] ? (
+                <span className="font-semibold text-(--success)">+{reveal.gains[p.id]}</span>
+              ) : null}
+            </span>
+          )}
+        />
+      }
+    >
+      <section className={`${card} animate-in min-w-0 p-7`}>
         <p className={eyebrow}>
           {state.game === "timeline"
             ? t.reveal.eyebrowShort(reveal.index + 1)
@@ -66,28 +91,7 @@ function Reveal({ state, reveal, offset }: RevealProps) {
           </p>
         </div>
       </section>
-
-      <PlayerList
-        state={state}
-        title={state.game === "timeline" ? t.timeline.cards : t.points}
-        showScore
-        status={(p) => (
-          <span className="flex items-center gap-2 font-mono">
-            {reveal.placements?.[p.id] && (
-              <span
-                className={reveal.placements[p.id].correct ? "text-(--success)" : "text-red-500"}
-              >
-                {reveal.placements[p.id].correct ? "✓" : "✗"}
-              </span>
-            )}
-            {reveal.yearGuesses?.[p.id] !== undefined && <span>{reveal.yearGuesses[p.id]}</span>}
-            {reveal.gains[p.id] ? (
-              <span className="font-semibold text-(--success)">+{reveal.gains[p.id]}</span>
-            ) : null}
-          </span>
-        )}
-      />
-    </div>
+    </RoomLayout>
   );
 }
 

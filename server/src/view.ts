@@ -1,6 +1,7 @@
 /** Was jeder Spieler vom Raum sehen darf – und das Verschicken an alle. */
 
 import type { RoomState } from "../../shared/types";
+import { DEV_TOOLS } from "./config";
 import { canPlace, hasAnswered, opened } from "./games/music";
 import { cleanTitle, maskText } from "./music/match";
 import { io } from "./server";
@@ -27,10 +28,12 @@ export function view(room: Room, playerId: string): RoomState {
       gotArtist: round?.got.get(p.id)?.artist ?? false,
       answered: round ? hasAnswered(room, round, p.id) : false,
       cards: p.timeline.length,
+      bot: Boolean(p.bot),
     })),
     myPicks: room.phase === "picking" ? (me?.picks ?? []) : [],
     kniffel: room.kniffel,
     chat: room.chat,
+    devTools: DEV_TOOLS,
     timelines:
       room.game === "timeline" && room.phase !== "lobby" && room.phase !== "picking"
         ? Object.fromEntries(
@@ -107,9 +110,13 @@ export function view(room: Room, playerId: string): RoomState {
   return state;
 }
 
+/** Wird nach jedem Verschicken aufgerufen (z. B. damit Testbots reagieren). */
+export const broadcastListeners: ((room: Room) => void)[] = [];
+
 /** Schickt jedem verbundenen Spieler seine aktuelle Sicht. */
 export function broadcast(room: Room) {
   for (const p of room.players.values()) {
-    if (p.socketId) io.to(p.socketId).emit("room:state", view(room, p.id));
+    if (p.socketId && !p.bot) io.to(p.socketId).emit("room:state", view(room, p.id));
   }
+  for (const listener of broadcastListeners) listener(room);
 }

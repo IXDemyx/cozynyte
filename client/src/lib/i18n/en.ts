@@ -56,6 +56,7 @@ export const en: Dictionary = {
     showSongOn: "Show",
     showSongOff: "Audio only",
     copy: "Copy invite link",
+    copyShort: "Copy link",
     copied: "Copied",
     songsPerPlayer: "Songs per player",
     timePerSong: "Time per song",
@@ -112,8 +113,8 @@ export const en: Dictionary = {
     placeholderChat: "All guessed – now you can chat …",
     placeholderPicker: "Chat with the others …",
     guess: "Guess",
+    chatHint: "Type the title or artist into the chat – correct guesses stay hidden.",
     send: "Send",
-    empty: "No guesses yet …",
     skip: "Skip song",
     gotTitle: (name, me) => (me ? "You guessed the title!" : `${name} guessed the title!`),
     gotArtist: (name, me) => (me ? "You guessed the artist!" : `${name} guessed the artist!`),
@@ -129,7 +130,6 @@ export const en: Dictionary = {
     yourSongRest: (year) =>
       `Released ${year ?? "?"}. You earn points for everyone who is at most 2 years off.`,
     locked: (name, me) => (me ? "You locked in a guess." : `${name} locked in a guess.`),
-    chat: "Write a message …",
   },
   kniffel: {
     categories: {
@@ -254,13 +254,18 @@ export const en: Dictionary = {
     effectsOn: "Sound effects on",
     effectsOff: "Sound effects off",
   },
+  dev: {
+    heading: "Test mode",
+    hint: "Only visible with npm run dev – off on the server.",
+    addBot: "Add test bot",
+    botSays: "Make a bot chat",
+    removeBots: "Remove all bots",
+    bot: "Test bot",
+  },
   chat: {
     title: "Chat",
-    open: "Open chat",
-    close: "Close chat",
     placeholder: "Write a message …",
     empty: "No messages yet – say hi!",
-    unread: (n) => (n === 1 ? "1 new message" : `${n} new messages`),
   },
   errors: {
     chat_rate_limited: "Not so fast – wait a moment.",

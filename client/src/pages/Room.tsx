@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import AudioPlayer from "../components/AudioPlayer";
 import Button from "../components/Button";
-import ChatWindow from "../components/ChatWindow";
 import { card, eyebrow, input } from "../components/ui";
 import Kniffel from "../games/kniffel/Kniffel";
 import Final from "../games/music/Final";
@@ -96,8 +95,6 @@ function Room() {
       )}
       {state.phase === "finished" && <Final state={state} />}
       {audioSrc && <AudioPlayer src={audioSrc} />}
-      {/* In den Raterunden läuft der Chat im Rundenverlauf, sonst im Chatfenster. */}
-      {state.phase !== "round" && <ChatWindow state={state} />}
     </>
   );
 }

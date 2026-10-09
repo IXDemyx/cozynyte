@@ -16,6 +16,8 @@ export interface Player {
   chats: number[];
   /** Song-Timeline: nach Jahr sortierte Karten. */
   timeline: Track[];
+  /** Testbot (nur im Testmodus): gilt als verbunden, wird aber nie Host. */
+  bot?: boolean;
 }
 
 /** Buchstaben-Hinweise: zufällige Reihenfolge der Positionen und wie viele schon offen sind. */
@@ -159,6 +161,12 @@ export function shuffle<T>(list: T[]): T[] {
   return list;
 }
 
+/** Verbundene Spieler – Testbots zählen mit. */
 export function connected(room: Room): Player[] {
   return [...room.players.values()].filter((p) => p.socketId);
+}
+
+/** Verbundene echte Menschen (ohne Testbots). */
+export function humans(room: Room): Player[] {
+  return connected(room).filter((p) => !p.bot);
 }

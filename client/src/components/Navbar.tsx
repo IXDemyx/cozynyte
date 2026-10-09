@@ -6,16 +6,18 @@ import { useLanguage } from "../lib/i18n";
 interface NavbarProps {
   theme: Theme;
   onToggleTheme: () => void;
+  /** Maximale Breite, passend zum Seiteninhalt (z. B. "max-w-5xl"). */
+  width: string;
 }
 
-function Navbar({ theme, onToggleTheme }: NavbarProps) {
+function Navbar({ theme, onToggleTheme, width }: NavbarProps) {
   const { language, toggleLanguage, t } = useLanguage();
   const control =
     "flex h-10 min-w-10 items-center justify-center rounded-lg border border-slate-300 px-2.5 text-(--text-secondary) transition hover:border-(--accent) hover:text-(--accent) dark:border-slate-700";
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-(--bg-primary)/85 backdrop-blur dark:border-(--accent-soft)">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+      <div className={`mx-auto flex h-16 ${width} items-center justify-between px-4 sm:px-6`}>
         <Link to="/" className="font-mono text-lg font-semibold tracking-tight">
           <span className="text-(--accent)">&lt;/</span>
           games

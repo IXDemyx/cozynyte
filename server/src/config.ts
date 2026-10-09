@@ -2,6 +2,14 @@
 
 export const PORT = Number(process.env.PORT ?? 3001);
 
+/**
+ * Testmodus mit Testbots, damit man alles auch allein ausprobieren kann. Standardmäßig an bei
+ * `npm run dev`, aus im Docker-Image (NODE_ENV=production); mit DEV_TOOLS=1 bzw. 0 erzwingen.
+ */
+export const DEV_TOOLS = process.env.DEV_TOOLS
+  ? process.env.DEV_TOOLS === "1"
+  : process.env.NODE_ENV !== "production";
+
 /** Wie lange die Auflösung stehen bleibt, bevor der nächste Song startet. */
 export const REVEAL_MS = Number(process.env.REVEAL_MS ?? 9000);
 

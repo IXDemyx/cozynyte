@@ -1,12 +1,8 @@
-import { useState, type FormEvent } from "react";
 import { FiCheck } from "react-icons/fi";
 import type { RoomState, RoundView } from "../../../../shared/types";
-import Button from "../../components/Button";
 import PlayerList from "../../components/PlayerList";
-import { input } from "../../components/ui";
+import RoomLayout from "../../components/RoomLayout";
 import { useLanguage } from "../../lib/i18n";
-import { socket } from "../../lib/socket";
-import { ChatFeed } from "./Chat";
 import Equalizer from "./Equalizer";
 import RoundFrame from "./RoundFrame";
 import SkipButton from "./SkipButton";
@@ -47,23 +43,27 @@ interface SongRoundProps {
 /** Guess the Song: Titel und Interpret erraten. */
 function SongRound({ state, round, offset }: SongRoundProps) {
   const { t } = useLanguage();
-  const [guess, setGuess] = useState("");
 
   const me = state.players.find((p) => p.id === state.you);
-  const done = Boolean(me?.gotTitle && me?.gotArtist);
-  const chatOnly = done || round.youArePicker;
   const knowsTitle = round.youArePicker || Boolean(me?.gotTitle);
   const knowsArtist = round.youArePicker || Boolean(me?.gotArtist);
 
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (!guess.trim()) return;
-    socket.emit("round:guess", { text: guess });
-    setGuess("");
-  };
-
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <RoomLayout
+      state={state}
+      players={
+        <PlayerList
+          state={state}
+          title={t.points}
+          showScore
+          status={(p) =>
+            (p.gotTitle || p.gotArtist) && (
+              <span className="font-semibold text-(--success)">{p.answered ? "✓✓" : "✓"}</span>
+            )
+          }
+        />
+      }
+    >
       <RoundFrame
         title={t.round.song(round.index + 1, round.total)}
         endsAt={round.endsAt}
@@ -83,49 +83,11 @@ function SongRound({ state, round, offset }: SongRoundProps) {
             <span className="font-semibold">{t.round.yourSong}</span> {t.round.yourSongRest}
           </p>
         ) : (
-          <div className="mt-6" />
+          <p className="mt-8 text-center text-sm text-(--text-secondary)">{t.round.chatHint}</p>
         )}
-
-        {/* Bleibt immer aktiv: nach dem Erraten (und beim eigenen Song) dient das Feld als Chat. */}
-        <form onSubmit={submit} className="mt-4 flex gap-2">
-          <input
-            autoFocus
-            aria-label={chatOnly ? t.round.send : t.round.input}
-            className={input}
-            value={guess}
-            maxLength={80}
-            autoComplete="off"
-            placeholder={
-              round.youArePicker
-                ? t.round.placeholderPicker
-                : done
-                  ? t.round.placeholderChat
-                  : me?.gotTitle
-                    ? t.round.placeholderArtist
-                    : t.round.placeholderGuess
-            }
-            onChange={(e) => setGuess(e.target.value)}
-          />
-          <Button type="submit" variant={chatOnly ? "secondary" : "primary"}>
-            {chatOnly ? t.round.send : t.round.guess}
-          </Button>
-        </form>
-
-        <ChatFeed feed={round.feed} you={state.you} height="h-40" empty={t.round.empty} />
         <SkipButton isHost={state.hostId === state.you} />
       </RoundFrame>
-
-      <PlayerList
-        state={state}
-        title={t.points}
-        showScore
-        status={(p) =>
-          (p.gotTitle || p.gotArtist) && (
-            <span className="font-semibold text-(--success)">{p.answered ? "✓✓" : "✓"}</span>
-          )
-        }
-      />
-    </div>
+    </RoomLayout>
   );
 }
 

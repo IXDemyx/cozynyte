@@ -1,8 +1,16 @@
 /** Kniffel-Block: Spalten, Zugreihenfolge und Verlauf zum Rückgängigmachen. */
 
-import type { KniffelState } from "../../../shared/kniffel";
-import { MAX_COLUMNS } from "../config";
-import type { Player, Room } from "../state";
+import { randomInt } from "node:crypto";
+import {
+  CATEGORIES,
+  MAX_ROLLS,
+  allowedValues,
+  nextTurn,
+  type Category,
+  type KniffelState,
+} from "../../../shared/kniffel";
+import { MAX_COLUMNS, MAX_UNDO } from "../config";
+import type { KniffelStep, Player, Room } from "../state";
 
 /** Jeder Spieler im Raum bekommt automatisch eine eigene Spalte. */
 export function ensureColumn(room: Room, player: Player) {
@@ -36,4 +44,70 @@ export function syncLastEntry(room: Room) {
   room.kniffel.lastEntry = previous
     ? { column: previous.column, category: previous.category }
     : null;
+}
+
+/**
+ * Feld eintragen (null = leeren). Ein neuer Eintrag beendet den Zug dieser Spalte, Korrekturen
+ * ändern nichts an der Reihenfolge. false = ungültiger Wert. Die Berechtigung prüft der Aufrufer.
+ */
+export function writeCell(
+  room: Room,
+  column: string,
+  category: Category,
+  value: number | null,
+): boolean {
+  const sheet = room.kniffel;
+  if (!sheet || !CATEGORIES.includes(category)) return false;
+  if (value !== null && !allowedValues(category).includes(value)) return false;
+
+  const cells = (sheet.cells[column] ??= {});
+  const step: KniffelStep = {
+    column,
+    category,
+    before: cells[category],
+    current: sheet.current,
+    roll: sheet.roll && structuredClone(sheet.roll),
+  };
+  if (value === null) delete cells[category];
+  else {
+    const isNew = cells[category] === undefined;
+    cells[category] = value;
+    if (isNew) setTurn(sheet, nextTurn(sheet, column));
+  }
+  // Nach dem Löschen eines Eintrags kann wieder jemand dran sein.
+  if (sheet.current === null) setTurn(sheet, nextTurn(sheet, column));
+
+  if (cells[category] !== step.before) {
+    room.kniffelHistory.push(step);
+    if (room.kniffelHistory.length > MAX_UNDO) room.kniffelHistory.shift();
+    syncLastEntry(room);
+  }
+  return true;
+}
+
+/** Spalte samt Einträgen und Verlauf entfernen; war sie dran, ist die nächste dran. */
+export function removeColumn(room: Room, column: string) {
+  const sheet = room.kniffel;
+  if (!sheet) return;
+  if (sheet.current === column) {
+    const next = nextTurn(sheet, column);
+    setTurn(sheet, next === column ? null : next);
+  }
+  sheet.columns = sheet.columns.filter((col) => col.id !== column);
+  delete sheet.cells[column];
+  room.kniffelHistory = room.kniffelHistory.filter((step) => step.column !== column);
+  syncLastEntry(room);
+}
+
+/** Digital würfeln (gehaltene Würfel bleiben liegen). false = kein Wurf mehr übrig. */
+export function rollDice(sheet: KniffelState): boolean {
+  const roll = (sheet.roll ??= {
+    dice: [1, 1, 1, 1, 1],
+    held: [false, false, false, false, false],
+    count: 0,
+  });
+  if (roll.count >= MAX_ROLLS || (roll.count > 0 && roll.held.every(Boolean))) return false;
+  roll.dice = roll.dice.map((d, i) => (roll.count > 0 && roll.held[i] ? d : randomInt(1, 7)));
+  roll.count++;
+  return true;
 }

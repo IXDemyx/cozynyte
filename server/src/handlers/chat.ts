@@ -1,7 +1,8 @@
 /** Raum-Chat: Nachrichten außerhalb der Raterunden (dort läuft der Chat über den Rundenverlauf). */
 
-import { CHAT_HISTORY, CHAT_LIMIT, CHAT_MAX_LENGTH, CHAT_WINDOW_MS } from "../config";
-import { nextFeedId, type Player } from "../state";
+import { addChatMessage } from "../chat";
+import { CHAT_LIMIT, CHAT_MAX_LENGTH, CHAT_WINDOW_MS } from "../config";
+import type { Player } from "../state";
 import { broadcast } from "../view";
 import type { Handlers } from "./context";
 
@@ -24,9 +25,7 @@ export function registerChatHandlers({ socket, ctx, reply }: Handlers) {
     if (!c || !text) return;
     if (!allowChat(c.player)) return reply(cb, { ok: false, error: "chat_rate_limited" });
 
-    const { chat } = c.room;
-    chat.push({ id: nextFeedId(), playerId: c.player.id, name: c.player.name, text });
-    if (chat.length > CHAT_HISTORY) chat.splice(0, chat.length - CHAT_HISTORY);
+    addChatMessage(c.room, c.player, text);
     reply(cb, { ok: true });
     broadcast(c.room);
   });

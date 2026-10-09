@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 import { FACE, FIXED, allowedValues, isUpper, type Category } from "../../../../shared/kniffel";
 import Button from "../../components/Button";
@@ -20,7 +22,21 @@ interface EntryDialogProps {
 function EntryDialog({ columnName, category, value, hint, onChoose, onClose }: EntryDialogProps) {
   const { t } = useLanguage();
 
-  return (
+  // Solange der Dialog offen ist: Seite dahinter nicht scrollen, Esc schließt.
+  useEffect(() => {
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  // Per Portal direkt in <body>: Eltern mit Animation (transform) würden „fixed" sonst an sich
+  // statt am Bildschirm ausrichten – am Handy landete der Dialog dann unterhalb des Sichtbereichs.
+  return createPortal(
     <div
       className="fixed inset-0 z-40 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
       onClick={onClose}
@@ -29,7 +45,7 @@ function EntryDialog({ columnName, category, value, hint, onChoose, onClose }: E
         role="dialog"
         aria-modal="true"
         aria-label={t.kniffel.categories[category]}
-        className={`${card} animate-in w-full max-w-md rounded-b-none p-5 sm:rounded-b-2xl`}
+        className={`${card} animate-in max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-b-none p-5 sm:rounded-b-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4">
@@ -94,7 +110,8 @@ function EntryDialog({ columnName, category, value, hint, onChoose, onClose }: E
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

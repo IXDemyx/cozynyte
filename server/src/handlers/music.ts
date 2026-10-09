@@ -1,7 +1,7 @@
 /** Musikspiele: Songsuche, Songauswahl und Eingaben während einer Runde. */
 
 import { SEARCH_LIMIT, SEARCH_WINDOW_MS } from "../config";
-import { canPlace, endRoundIfDone, handleGuess, pushFeed, startRounds } from "../games/music";
+import { canPlace, handleGuess, placeCard, startRounds, submitYear } from "../games/music";
 import { getCachedTrack, searchTracks } from "../music/itunes";
 import { suggestTracks } from "../music/suggestions";
 import type { Player } from "../state";
@@ -93,9 +93,7 @@ export function registerMusicHandlers({ socket, ctx, reply }: Handlers) {
     if (round.pickerId === c.player.id || round.years.has(c.player.id)) return;
     const year = Math.round(Number(data?.year));
     if (!Number.isFinite(year) || year < 1900 || year > new Date().getFullYear() + 1) return;
-    round.years.set(c.player.id, year);
-    pushFeed(round, c.player, "locked");
-    endRoundIfDone(c.room, round);
+    submitYear(c.room, round, c.player, year);
   });
 
   // Song-Timeline: Lücke in der eigenen Zeitleiste wählen (0 = ganz vorn).
@@ -106,8 +104,6 @@ export function registerMusicHandlers({ socket, ctx, reply }: Handlers) {
     if (!canPlace(c.room, round, c.player.id)) return;
     const position = Number(data?.position);
     if (!Number.isInteger(position) || position < 0 || position > c.player.timeline.length) return;
-    round.placements.set(c.player.id, position);
-    pushFeed(round, c.player, "placed");
-    endRoundIfDone(c.room, round);
+    placeCard(c.room, round, c.player, position);
   });
 }

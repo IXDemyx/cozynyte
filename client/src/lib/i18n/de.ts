@@ -54,6 +54,7 @@ export const de = {
     showSongOn: "Anzeigen",
     showSongOff: "Nur hören",
     copy: "Einladungslink kopieren",
+    copyShort: "Link kopieren",
     copied: "Kopiert",
     songsPerPlayer: "Songs pro Spieler",
     timePerSong: "Zeit pro Song",
@@ -110,8 +111,8 @@ export const de = {
     placeholderChat: "Alles erraten – jetzt kannst du chatten …",
     placeholderPicker: "Mit den anderen chatten …",
     guess: "Raten",
+    chatHint: "Tippe Titel oder Interpret in den Chat – richtige Tipps sieht niemand.",
     send: "Senden",
-    empty: "Noch keine Tipps …",
     skip: "Song überspringen",
     gotTitle: (name: string, me: boolean) =>
       me ? "Du hast den Titel erraten!" : `${name} hat den Titel erraten!`,
@@ -130,7 +131,6 @@ export const de = {
     yourSongRest: (year: number | undefined) =>
       `Erschienen ${year ?? "?"}. Du bekommst Punkte für jeden, der höchstens 2 Jahre danebenliegt.`,
     locked: (name: string, me: boolean) => (me ? "Du hast getippt." : `${name} hat getippt.`),
-    chat: "Nachricht schreiben …",
   },
   kniffel: {
     categories: {
@@ -257,13 +257,18 @@ export const de = {
     effectsOn: "Soundeffekte an",
     effectsOff: "Soundeffekte aus",
   },
+  dev: {
+    heading: "Testmodus",
+    hint: "Nur bei npm run dev sichtbar – auf dem Server ist das aus.",
+    addBot: "Testbot hinzufügen",
+    botSays: "Bot schreibt etwas",
+    removeBots: "Alle Bots entfernen",
+    bot: "Testbot",
+  },
   chat: {
     title: "Chat",
-    open: "Chat öffnen",
-    close: "Chat schließen",
     placeholder: "Nachricht schreiben …",
     empty: "Noch keine Nachrichten – sag hallo!",
-    unread: (n: number) => (n === 1 ? "1 neue Nachricht" : `${n} neue Nachrichten`),
   },
   errors: {
     chat_rate_limited: "Nicht so schnell – warte kurz.",

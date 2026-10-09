@@ -53,6 +53,8 @@ export interface PlayerView {
   answered: boolean;
   /** Song-Timeline: Karten in der eigenen Zeitleiste. */
   cards: number;
+  /** Testbot (nur im Testmodus). */
+  bot: boolean;
 }
 
 export type FeedKind = "wrong" | "close" | "title" | "artist" | "locked" | "placed";
@@ -128,6 +130,8 @@ export interface RoomState {
   reveal?: RevealView;
   /** Raum-Chat, die letzten Nachrichten. */
   chat: ChatMessage[];
+  /** Testmodus des Servers: Testbots können hinzugefügt werden. */
+  devTools: boolean;
   serverNow: number;
 }
 

@@ -19,7 +19,7 @@ function RoundFrame({ title, endsAt, durationMs, offset, children }: RoundFrameP
   const fraction = Math.min(1, remaining / durationMs);
 
   return (
-    <section className={`${card} min-w-0 overflow-hidden lg:col-span-2`}>
+    <section className={`${card} min-w-0 overflow-hidden`}>
       <div className="h-1.5 bg-slate-200 dark:bg-slate-800">
         <div
           className="h-full bg-(--accent) transition-[width] duration-100 ease-linear"

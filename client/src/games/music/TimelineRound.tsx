@@ -3,10 +3,10 @@ import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 import type { RoomState, RoundView, TimelineCard } from "../../../../shared/types";
 import Button from "../../components/Button";
 import PlayerList from "../../components/PlayerList";
+import RoomLayout from "../../components/RoomLayout";
 import { eyebrow } from "../../components/ui";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
-import { ChatFeed, ChatInput } from "./Chat";
 import Equalizer from "./Equalizer";
 import RoundFrame from "./RoundFrame";
 import SkipButton from "./SkipButton";
@@ -90,7 +90,23 @@ function TimelineRound({ state, round, offset }: TimelineRoundProps) {
           : null;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <RoomLayout
+      state={state}
+      players={
+        <PlayerList
+          state={state}
+          title={t.timeline.cards}
+          showScore
+          status={(p) =>
+            turns && p.id === round.activeId ? (
+              <span className="font-semibold text-(--accent)">●</span>
+            ) : (
+              p.answered && <span className="font-semibold text-(--success)">✓</span>
+            )
+          }
+        />
+      }
+    >
       <RoundFrame
         title={
           <>
@@ -171,25 +187,9 @@ function TimelineRound({ state, round, offset }: TimelineRoundProps) {
           )}
         </div>
 
-        <ChatFeed feed={round.feed} you={state.you} height="h-28" />
-        <ChatInput />
-
         <SkipButton isHost={state.hostId === state.you} />
       </RoundFrame>
-
-      <PlayerList
-        state={state}
-        title={t.timeline.cards}
-        showScore
-        status={(p) =>
-          turns && p.id === round.activeId ? (
-            <span className="font-semibold text-(--accent)">●</span>
-          ) : (
-            p.answered && <span className="font-semibold text-(--success)">✓</span>
-          )
-        }
-      />
-    </div>
+    </RoomLayout>
   );
 }
 

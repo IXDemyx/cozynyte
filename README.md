@@ -27,9 +27,10 @@ up for everyone right away.
 - Song suggestions by category ("Surprise me", Pop, Rock, 80s, …)
 - Optional theme set by the host (e.g. "2000s only"), shown during song selection
 - Letter hints for title and artist during a Guess the Song round
-- Chat during rounds; messages that would give away the answer are not passed on
-- Chat window in the lobby, during song selection, on the results screens and in Yahtzee
-  (last 50 messages, with an unread counter)
+- Room layout like skribbl: players on the left, the game in the middle, chat on the right
+  (on phones: game, chat, players). The chat is on every room screen; during Guess the Song you
+  guess right in the chat, and messages that would give away the answer are never passed on
+- Room chat keeps the last 50 messages, also across rounds and games
 - Joining late is possible: mid-game joiners guess along, just without songs of their own
 - Host tools: remove a player, skip the current song
 - Reconnecting after a reload or a dropped connection keeps your score
@@ -49,6 +50,20 @@ npm run dev
 
 Then open <http://localhost:5174>. To try it alone, open a second tab and join with the
 room code – each tab counts as a separate player.
+
+### Test mode
+
+During `npm run dev` the host sees a dashed **Test mode** box below the player list. It adds
+test bots to the room, so you can try the lobby, chat and games without a second person:
+
+- Bots count as players, so you can start a game alone.
+- They pick songs from the suggestions, guess titles and artists, enter years, place timeline
+  cards and play their Yahtzee turn (roll three times, take the best free box).
+- They answer chat messages now and then; "Make a bot chat" sends a message on demand.
+- "Remove all bots" takes them (and their Yahtzee columns) out again. Bots never become host.
+
+Test mode is off in the Docker image (`NODE_ENV=production`). Force it with `DEV_TOOLS=1` or
+`DEV_TOOLS=0`.
 
 ### Together with the portfolio
 
@@ -90,7 +105,8 @@ server/src/
   state.ts        room and player state
   view.ts         per-player view of a room (hides answers) and broadcasting
   connection.ts   joining, leaving and host hand-over
-  handlers/       socket events per area (room, chat, music, kniffel)
+  handlers/       socket events per area (room, chat, music, kniffel, dev)
+  dev/            test bots for test mode
   games/          game logic (music rounds and scoring, Yahtzee turns)
   music/          iTunes search, answer matching, song suggestions
 ```
@@ -110,8 +126,9 @@ Environment variables for the server, all optional:
 | `PORT`           | `3001`  | Port the server listens on                        |
 | `ITUNES_COUNTRY` | `DE`    | iTunes store used for search results              |
 | `REVEAL_MS`      | `9000`  | How long the reveal is shown before the next song |
+| `DEV_TOOLS`      | –       | `1`/`0` turns test mode with test bots on/off     |
 
-The suggestion categories and their artists live in `server/src/suggestions.ts`.
+The suggestion categories and their artists live in `server/src/music/suggestions.ts`.
 
 ## Production
 

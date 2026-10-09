@@ -1,9 +1,9 @@
 /** Räume: erstellen, beitreten, verlassen, Einstellungen, Partie starten und Host-Werkzeuge. */
 
 import { MAX_PLAYERS, MAX_SONGS_PER_PLAYER, ROUND_SECONDS, TIMELINE_GOALS } from "../config";
-import { attach, detach } from "../connection";
+import { attach, detach, removePlayer } from "../connection";
 import { ensureColumn } from "../games/kniffel";
-import { drawStartCard, endRound, everyoneDone, nextRound, startPicking } from "../games/music";
+import { drawStartCard, endRound, nextRound, startPicking } from "../games/music";
 import { io } from "../server";
 import { cleanName, connected, createPlayer, createRoom, newCode, rooms } from "../state";
 import { broadcast } from "../view";
@@ -130,22 +130,13 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!c || !c.isHost || !target || targetId === c.player.id) return;
     const { room } = c;
 
-    clearTimeout(target.removeTimer);
-    room.players.delete(targetId);
     room.banned.add(targetId);
     const targetSocket = target.socketId ? io.sockets.sockets.get(target.socketId) : undefined;
     if (targetSocket) {
       targetSocket.data.code = undefined;
       targetSocket.emit("room:kicked", { code: room.code });
     }
-
-    // Seine noch nicht gespielten Songs fliegen aus der Warteschlange.
-    const played = room.phase === "picking" ? -1 : room.roundIndex;
-    room.queue = room.queue.filter((q, i) => i <= played || q.pickerId !== targetId);
-    const { round } = room;
-    if (room.phase === "round" && round) {
-      if (round.pickerId === targetId || everyoneDone(room, round)) return endRound(room);
-    }
+    removePlayer(room, targetId);
     broadcast(room);
   });
 }

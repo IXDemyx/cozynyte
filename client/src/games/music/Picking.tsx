@@ -4,6 +4,7 @@ import type { Ack, RoomState, Track } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
 import PlayerList from "../../components/PlayerList";
+import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow, input } from "../../components/ui";
 import { useVolume } from "../../hooks/useVolume";
 import { useLanguage } from "../../lib/i18n";
@@ -106,10 +107,44 @@ function Picking({ state }: { state: RoomState }) {
     socket.emit("picking:finish", (res: Ack) => setError(res.ok ? "" : res.error));
 
   return (
-    <div className="animate-in grid gap-6 lg:grid-cols-3">
+    <RoomLayout
+      state={state}
+      players={
+        <>
+          <PlayerList
+            state={state}
+            status={(p) =>
+              p.picked >= target ? (
+                <span className="font-semibold text-(--success)">{t.picking.ready}</span>
+              ) : (
+                <span className="font-mono">
+                  {p.picked}/{target}
+                </span>
+              )
+            }
+          />
+          {isHost && (
+            <div>
+              <Button
+                className="w-full"
+                onClick={finish}
+                variant={everyoneReady ? "primary" : "secondary"}
+              >
+                {everyoneReady ? t.picking.go : t.picking.force}
+              </Button>
+              {!everyoneReady && (
+                <p className="mt-2 text-center text-xs text-(--text-secondary)">
+                  {t.picking.forceHint}
+                </p>
+              )}
+            </div>
+          )}
+        </>
+      }
+    >
       <audio ref={audio} onEnded={() => setPreviewId(null)} />
 
-      <section className={`${card} p-7 min-w-0 lg:col-span-2`}>
+      <section className={`${card} animate-in min-w-0 p-7`}>
         <div className="flex items-center justify-between gap-4">
           <p className={eyebrow}>{t.picking.eyebrow}</p>
           <label className="flex items-center gap-2 text-(--text-secondary)">
@@ -284,38 +319,7 @@ function Picking({ state }: { state: RoomState }) {
 
         <ErrorText code={error} className="mt-4" />
       </section>
-
-      <div className="space-y-4">
-        <PlayerList
-          state={state}
-          status={(p) =>
-            p.picked >= target ? (
-              <span className="font-semibold text-(--success)">{t.picking.ready}</span>
-            ) : (
-              <span className="font-mono">
-                {p.picked}/{target}
-              </span>
-            )
-          }
-        />
-        {isHost && (
-          <div>
-            <Button
-              className="w-full"
-              onClick={finish}
-              variant={everyoneReady ? "primary" : "secondary"}
-            >
-              {everyoneReady ? t.picking.go : t.picking.force}
-            </Button>
-            {!everyoneReady && (
-              <p className="mt-2 text-center text-xs text-(--text-secondary)">
-                {t.picking.forceHint}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+    </RoomLayout>
   );
 }
 

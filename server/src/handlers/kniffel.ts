@@ -1,17 +1,15 @@
 /** Kniffel: Einträge, Rückgängig, Spalten, Zugreihenfolge, Sperre und digitale Würfel. */
 
-import { randomInt } from "node:crypto";
+import { MAX_ROLLS, canEditColumn, type Category } from "../../../shared/kniffel";
 import {
-  CATEGORIES,
-  MAX_ROLLS,
-  allowedValues,
-  canEditColumn,
-  nextTurn,
-  type Category,
-} from "../../../shared/kniffel";
-import { MAX_UNDO } from "../config";
-import { addColumn, setTurn, syncLastEntry } from "../games/kniffel";
-import { cleanName, type KniffelStep } from "../state";
+  addColumn,
+  removeColumn,
+  rollDice,
+  setTurn,
+  syncLastEntry,
+  writeCell,
+} from "../games/kniffel";
+import { cleanName } from "../state";
 import { broadcast } from "../view";
 import type { Handlers } from "./context";
 
@@ -20,38 +18,11 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
   socket.on("kniffel:set", (data) => {
     const c = ctx();
     const sheet = c?.room.kniffel;
-    const column = String(data?.column ?? "");
+    const column = sheet?.columns.find((col) => col.id === String(data?.column ?? ""));
+    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id)) return;
+    const value = data?.value === null ? null : Number(data?.value);
     const category = String(data?.category ?? "") as Category;
-    const target = sheet?.columns.find((col) => col.id === column);
-    if (!c || !sheet || !target || !canEditColumn(sheet, target, c.player.id)) return;
-    if (!CATEGORIES.includes(category)) return;
-
-    const cells = (sheet.cells[column] ??= {});
-    const step: KniffelStep = {
-      column,
-      category,
-      before: cells[category],
-      current: sheet.current,
-      roll: sheet.roll && structuredClone(sheet.roll),
-    };
-    if (data?.value === null) delete cells[category];
-    else {
-      const value = Number(data?.value);
-      if (!allowedValues(category).includes(value)) return;
-      const isNew = cells[category] === undefined;
-      cells[category] = value;
-      // Ein neuer Eintrag beendet den Zug dieser Spalte; Korrekturen ändern nichts an der Reihenfolge.
-      if (isNew) setTurn(sheet, nextTurn(sheet, column));
-    }
-    // Nach dem Löschen eines Eintrags kann wieder jemand dran sein.
-    if (sheet.current === null) setTurn(sheet, nextTurn(sheet, column));
-
-    if (cells[category] !== step.before) {
-      c.room.kniffelHistory.push(step);
-      if (c.room.kniffelHistory.length > MAX_UNDO) c.room.kniffelHistory.shift();
-      syncLastEntry(c.room);
-    }
-    broadcast(c.room);
+    if (writeCell(c.room, column.id, category, value)) broadcast(c.room);
   });
 
   // Letzten Eintrag zurücknehmen – inklusive Zug und digitalem Wurf von davor.
@@ -83,17 +54,8 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
 
   socket.on("kniffel:remove", (data) => {
     const c = ctx();
-    const sheet = c?.room.kniffel;
-    if (!c || !c.isHost || !sheet) return;
-    const column = String(data?.column ?? "");
-    if (sheet.current === column) {
-      const next = nextTurn(sheet, column);
-      setTurn(sheet, next === column ? null : next);
-    }
-    sheet.columns = sheet.columns.filter((col) => col.id !== column);
-    delete sheet.cells[column];
-    c.room.kniffelHistory = c.room.kniffelHistory.filter((step) => step.column !== column);
-    syncLastEntry(c.room);
+    if (!c || !c.isHost || !c.room.kniffel) return;
+    removeColumn(c.room, String(data?.column ?? ""));
     broadcast(c.room);
   });
 
@@ -137,16 +99,7 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
 
   socket.on("kniffel:roll", () => {
     const r = rollContext();
-    if (!r) return;
-    const roll = (r.sheet.roll ??= {
-      dice: [1, 1, 1, 1, 1],
-      held: [false, false, false, false, false],
-      count: 0,
-    });
-    if (roll.count >= MAX_ROLLS || (roll.count > 0 && roll.held.every(Boolean))) return;
-    roll.dice = roll.dice.map((d, i) => (roll.count > 0 && roll.held[i] ? d : randomInt(1, 7)));
-    roll.count++;
-    broadcast(r.room);
+    if (r && rollDice(r.sheet)) broadcast(r.room);
   });
 
   socket.on("kniffel:hold", (data) => {
