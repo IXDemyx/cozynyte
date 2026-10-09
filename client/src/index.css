@@ -17,6 +17,43 @@ body {
     background-color 200ms ease;
 }
 
+/* Schmale Scrollleisten im Stil der Seite statt der grauen Standardleisten. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--accent-border) padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent) padding-box;
+}
+
+/* Nebensächliche Knöpfe (z. B. Spieler entfernen): mit Maus erst beim Drüberfahren der Zeile
+   sichtbar, auf Touch-Geräten immer. */
+@media (hover: hover) {
+  .reveal-on-hover {
+    opacity: 0;
+  }
+  .group:hover .reveal-on-hover,
+  .reveal-on-hover:focus-visible {
+    opacity: 1;
+  }
+}
+
 ::selection {
   color: #ffffff;
   background: var(--accent);

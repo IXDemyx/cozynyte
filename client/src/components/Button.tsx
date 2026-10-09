@@ -17,7 +17,9 @@ function Button({
   const base =
     "inline-flex items-center justify-center gap-2 rounded-lg font-semibold shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-primary) disabled:cursor-not-allowed disabled:opacity-40";
   const variants = {
-    primary: "bg-(--accent) text-slate-950 enabled:hover:bg-(--accent-hover)",
+    // Deaktiviert wie ein dezenter Rahmen-Knopf – ausgegrautes Orange wirkt sonst wie kaputt.
+    primary:
+      "bg-(--accent) text-slate-950 enabled:hover:bg-(--accent-hover) disabled:border disabled:border-slate-300 disabled:bg-transparent disabled:text-(--text-primary) disabled:shadow-none dark:disabled:border-slate-700",
     secondary:
       "border border-slate-300 bg-transparent text-(--text-primary) enabled:hover:border-(--accent) enabled:hover:text-(--accent-hover) dark:border-slate-700",
   };

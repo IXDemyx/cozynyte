@@ -25,6 +25,7 @@ export function startPicking(room: Room) {
     p.picks = [];
     p.score = 0;
     p.timeline = [];
+    p.misses = [];
   }
   room.queue = [];
   room.timelineOver = false;
@@ -340,7 +341,9 @@ function scoreTimeline(room: Room, round: Round) {
     // Gleiches Jahr wie ein Nachbar zählt als richtig.
     const correct = before <= year && year <= after;
     round.results.set(playerId, { position, correct });
-    if (correct) {
+    if (!correct) {
+      player.misses.push({ track: round.track, beforeId: player.timeline[position]?.id ?? null });
+    } else {
       player.timeline.splice(position, 0, round.track);
       round.gains.set(playerId, 1);
     }

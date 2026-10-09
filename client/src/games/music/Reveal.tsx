@@ -2,6 +2,7 @@ import type { RevealView, RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import PlayerList from "../../components/PlayerList";
 import RoomLayout from "../../components/RoomLayout";
+import VolumeControl from "../../components/VolumeControl";
 import { card, eyebrow } from "../../components/ui";
 import { useNow } from "../../hooks/useNow";
 import { useLanguage } from "../../lib/i18n";
@@ -47,12 +48,15 @@ function Reveal({ state, reveal, offset }: RevealProps) {
         />
       }
     >
-      <section className={`${card} animate-in min-w-0 p-7`}>
-        <p className={eyebrow}>
-          {state.game === "timeline"
-            ? t.reveal.eyebrowShort(reveal.index + 1)
-            : t.reveal.eyebrow(reveal.index + 1, reveal.total)}
-        </p>
+      <section className={`${card} animate-in min-w-0 xl:flex-1 p-7`}>
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <p className={eyebrow}>
+            {state.game === "timeline"
+              ? t.reveal.eyebrowShort(reveal.index + 1)
+              : t.reveal.eyebrow(reveal.index + 1, reveal.total)}
+          </p>
+          <VolumeControl />
+        </div>
 
         <div className="mt-6 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
           <img

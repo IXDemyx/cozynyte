@@ -16,6 +16,11 @@ export interface Player {
   chats: number[];
   /** Song-Timeline: nach Jahr sortierte Karten. */
   timeline: Track[];
+  /**
+   * Song-Timeline: falsch gelegte Karten und wo sie lagen – vor der Karte `beforeId` der
+   * Zeitleiste (null = ganz hinten). So lassen sie sich im Endstand an der Stelle zeigen.
+   */
+  misses: { track: Track; beforeId: number | null }[];
   /** Testbot (nur im Testmodus): gilt als verbunden, wird aber nie Host. */
   bot?: boolean;
 }
@@ -132,7 +137,7 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
 }
 
 export function createPlayer(id: string, name: string): Player {
-  return { id, name, score: 0, picks: [], searches: [], chats: [], timeline: [] };
+  return { id, name, score: 0, picks: [], searches: [], chats: [], timeline: [], misses: [] };
 }
 
 /* ---------- Hilfsfunktionen ---------- */

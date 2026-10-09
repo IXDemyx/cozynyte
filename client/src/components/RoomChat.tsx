@@ -1,10 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { FiSend } from "react-icons/fi";
 import type { Ack, ChatMessage, FeedItem, RoomState } from "../../../shared/types";
 import FeedLine from "../games/music/FeedLine";
 import { useLanguage } from "../lib/i18n";
 import { socket } from "../lib/socket";
-import Button from "./Button";
 import ErrorText from "./ErrorText";
 import { card, eyebrow, input } from "./ui";
 
@@ -86,11 +84,9 @@ function ChatForm({ state }: { state: RoomState }) {
       ? t.chat.placeholder
       : round.youArePicker
         ? t.round.placeholderPicker
-        : !guessing
-          ? t.round.placeholderChat
-          : me?.gotTitle
-            ? t.round.placeholderArtist
-            : t.round.placeholderGuess;
+        : guessing
+          ? t.round.placeholderGuess
+          : t.round.placeholderChat;
 
   // Neue Runde: am großen Bildschirm direkt ins Ratefeld. Am Handy nicht – das Feld steht dort
   // unter dem Spiel, die Seite würde springen und die Tastatur alles verdecken.
@@ -112,7 +108,8 @@ function ChatForm({ state }: { state: RoomState }) {
 
   return (
     <>
-      <form onSubmit={send} className="mt-3 flex gap-2">
+      {/* Abschicken mit Enter (am Handy mit der Senden-Taste der Tastatur) – ohne extra Knopf. */}
+      <form onSubmit={send} className="mt-3">
         <input
           ref={field}
           aria-label={guessing ? t.round.input : t.chat.placeholder}
@@ -120,18 +117,10 @@ function ChatForm({ state }: { state: RoomState }) {
           value={message}
           maxLength={round ? 80 : 200}
           autoComplete="off"
+          enterKeyHint="send"
           placeholder={placeholder}
           onChange={(e) => setMessage(e.target.value)}
         />
-        <Button
-          type="submit"
-          size="small"
-          disabled={!message.trim()}
-          aria-label={guessing ? t.round.guess : t.round.send}
-          title={guessing ? t.round.guess : t.round.send}
-        >
-          {guessing ? t.round.guess : <FiSend aria-hidden="true" />}
-        </Button>
       </form>
       <ErrorText code={error} className="mt-2" />
     </>

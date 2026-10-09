@@ -33,8 +33,11 @@ function Lobby({ state }: { state: RoomState }) {
 
   return (
     <RoomLayout state={state} players={<PlayerList state={state} />}>
-      <section className={`${card} animate-in min-w-0 p-7`}>
-        <p className={eyebrow}>{t.games[state.game]} · Lobby</p>
+      <section className={`${card} animate-in min-w-0 xl:flex-1 p-7`}>
+        <p className={eyebrow}>
+          {/* Breit steht der Spielname schon links über dem Raumcode. */}
+          <span className="xl:hidden">{t.games[state.game]} · </span>Lobby
+        </p>
         {/* Auf breiten Bildschirmen stehen Code und Einladung in der linken Leiste. */}
         <div className="mt-4 flex flex-wrap items-end justify-between gap-4 xl:hidden">
           <div>

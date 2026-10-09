@@ -1,11 +1,34 @@
 /** Was jeder Spieler vom Raum sehen darf – und das Verschicken an alle. */
 
-import type { RoomState } from "../../shared/types";
+import type { RoomState, TimelineCard, Track } from "../../shared/types";
 import { DEV_TOOLS } from "./config";
 import { canPlace, hasAnswered, opened } from "./games/music";
 import { cleanTitle, maskText } from "./music/match";
 import { io } from "./server";
-import type { Room } from "./state";
+import type { Player, Room } from "./state";
+
+function card(track: Track, wrong = false): TimelineCard {
+  return {
+    id: track.id,
+    title: track.title,
+    artist: track.artist,
+    artwork: track.artwork,
+    year: track.year ?? 0,
+    ...(wrong ? { wrong } : {}),
+  };
+}
+
+/** Zeitleiste eines Spielers; im Endstand mit den falsch gelegten Karten an ihrer Stelle. */
+function timelineView(player: Player, withMisses: boolean): TimelineCard[] {
+  const missesBefore = (id: number | null) =>
+    withMisses
+      ? player.misses.filter((m) => m.beforeId === id).map((m) => card(m.track, true))
+      : [];
+  return [
+    ...player.timeline.flatMap((track) => [...missesBefore(track.id), card(track)]),
+    ...missesBefore(null),
+  ];
+}
 
 /** Sicht eines Spielers auf den Raum. Lösungen verlassen den Server nur, wenn er sie kennen darf. */
 export function view(room: Room, playerId: string): RoomState {
@@ -39,13 +62,7 @@ export function view(room: Room, playerId: string): RoomState {
         ? Object.fromEntries(
             [...room.players.values()].map((p) => [
               p.id,
-              p.timeline.map((t) => ({
-                id: t.id,
-                title: t.title,
-                artist: t.artist,
-                artwork: t.artwork,
-                year: t.year ?? 0,
-              })),
+              timelineView(p, room.phase === "finished"),
             ]),
           )
         : undefined,

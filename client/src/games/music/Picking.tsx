@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { FiCheck, FiPause, FiPlay, FiPlus, FiSearch, FiVolume2, FiX } from "react-icons/fi";
+import { FiCheck, FiPause, FiPlay, FiPlus, FiSearch, FiX } from "react-icons/fi";
 import type { Ack, RoomState, Track } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
 import PlayerList from "../../components/PlayerList";
 import RoomLayout from "../../components/RoomLayout";
+import VolumeControl from "../../components/VolumeControl";
 import { card, eyebrow, input } from "../../components/ui";
 import { useVolume } from "../../hooks/useVolume";
 import { useLanguage } from "../../lib/i18n";
@@ -31,7 +32,7 @@ function Picking({ state }: { state: RoomState }) {
   const [error, setError] = useState("");
   const [previewId, setPreviewId] = useState<number | null>(null);
   const audio = useRef<HTMLAudioElement>(null);
-  const [volume, setVolume] = useVolume();
+  const [volume] = useVolume();
 
   useEffect(() => {
     if (audio.current) audio.current.volume = volume;
@@ -144,22 +145,10 @@ function Picking({ state }: { state: RoomState }) {
     >
       <audio ref={audio} onEnded={() => setPreviewId(null)} />
 
-      <section className={`${card} animate-in min-w-0 p-7`}>
+      <section className={`${card} animate-in min-w-0 xl:flex-1 p-7`}>
         <div className="flex items-center justify-between gap-4">
           <p className={eyebrow}>{t.picking.eyebrow}</p>
-          <label className="flex items-center gap-2 text-(--text-secondary)">
-            <FiVolume2 aria-hidden="true" />
-            <input
-              type="range"
-              aria-label={t.audio.volume}
-              min={0.05}
-              max={1}
-              step={0.05}
-              value={volume}
-              onChange={(e) => setVolume(Number(e.target.value))}
-              className="w-24 accent-(--accent) sm:w-28"
-            />
-          </label>
+          <VolumeControl />
         </div>
         <h1 className="mt-3 text-2xl font-bold tracking-tight">{t.picking.title(target)}</h1>
         {state.settings.theme && (

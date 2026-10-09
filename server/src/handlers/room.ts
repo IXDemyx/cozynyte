@@ -106,6 +106,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
       p.score = 0;
       p.picks = [];
       p.timeline = [];
+      p.misses = [];
       if (!p.socketId) c.room.players.delete(p.id);
     }
     broadcast(c.room);

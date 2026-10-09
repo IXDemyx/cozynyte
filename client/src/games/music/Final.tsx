@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FiX } from "react-icons/fi";
 import type { Ack, RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
@@ -78,6 +79,8 @@ function Final({ state }: { state: RoomState }) {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {ranking.map((p) => {
                 const cards = state.timelines?.[p.id] ?? [];
+                const right = cards.filter((c) => !c.wrong).length;
+                const missed = cards.length - right;
                 return (
                   <article
                     key={p.id}
@@ -93,19 +96,40 @@ function Final({ state }: { state: RoomState }) {
                         )}
                       </h3>
                       <span className="shrink-0 font-mono text-sm text-(--text-secondary)">
-                        {t.timeline.cardCount(cards.length)}
+                        {t.timeline.cardCount(right)}
+                        {missed > 0 && (
+                          <span className="text-red-500"> · {t.final.missed(missed)}</span>
+                        )}
                       </span>
                     </div>
                     <ol className="mt-3 space-y-1">
+                      {/* Falsch gelegte Karten stehen rot dort, wo sie hingelegt wurden. */}
                       {cards.map((item) => (
-                        <li key={item.id} className="flex items-center gap-2 text-sm">
-                          <span className="w-11 shrink-0 font-mono font-semibold text-(--accent)">
+                        <li
+                          key={item.id}
+                          className={`flex items-center gap-2 text-sm ${
+                            item.wrong ? "-mx-1.5 rounded-md bg-red-500/10 px-1.5 text-red-500" : ""
+                          }`}
+                        >
+                          <span
+                            className={`w-11 shrink-0 font-mono font-semibold ${
+                              item.wrong ? "text-red-500" : "text-(--accent)"
+                            }`}
+                          >
                             {item.year}
                           </span>
-                          <span className="min-w-0 truncate">
+                          <span className="min-w-0 flex-1 truncate">
                             {item.title}
-                            <span className="text-(--text-secondary)"> · {item.artist}</span>
+                            <span
+                              className={item.wrong ? "text-red-500/70" : "text-(--text-secondary)"}
+                            >
+                              {" "}
+                              · {item.artist}
+                            </span>
                           </span>
+                          {item.wrong && (
+                            <FiX className="shrink-0" aria-label={t.final.wrongCard} />
+                          )}
                         </li>
                       ))}
                     </ol>

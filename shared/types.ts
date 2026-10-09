@@ -37,6 +37,8 @@ export interface TimelineCard {
   artist: string;
   artwork: string;
   year: number;
+  /** Nur im Endstand: falsch gelegt – steht dort, wo der Spieler sie hingelegt hat. */
+  wrong?: boolean;
 }
 
 export interface PlayerView {

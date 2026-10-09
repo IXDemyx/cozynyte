@@ -36,7 +36,7 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
         {players.map((p, i) => (
           <li
             key={p.id}
-            className={`flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+            className={`group flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm ${
               p.id === state.you ? "bg-(--accent-soft)" : ""
             }`}
           >
@@ -55,11 +55,8 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
               {p.id === state.hostId && (
                 <FaCrown className="shrink-0 text-(--accent)" aria-label="Host" />
               )}
-              {p.id === state.you && (
-                <span className="shrink-0 text-xs font-normal text-(--text-secondary)">
-                  {t.you}
-                </span>
-              )}
+              {/* Die eigene Zeile ist farbig hinterlegt – „(du)" nur für Screenreader. */}
+              {p.id === state.you && <span className="sr-only">{t.you}</span>}
             </span>
             {status && (
               <span className="shrink-0 text-xs text-(--text-secondary)">{status(p)}</span>
@@ -78,7 +75,8 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
                 className={`shrink-0 rounded-md text-xs font-semibold transition ${
                   armed === p.id
                     ? "bg-red-500 px-2 py-1 text-white"
-                    : "p-1 text-(--text-secondary) hover:text-red-500"
+                    : // Mit Maus erst beim Drüberfahren sichtbar, am Handy immer.
+                      "reveal-on-hover p-1 text-(--text-secondary) hover:text-red-500"
                 }`}
               >
                 {armed === p.id ? t.kickConfirm : <FiUserX aria-hidden="true" />}

@@ -40,7 +40,7 @@ function RoomLayout({ state, players, children }: RoomLayoutProps) {
 
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[15rem_minmax(0,1fr)_20rem]">
-      <div className="order-1 min-w-0 lg:order-none lg:col-start-1 lg:row-span-2 lg:row-start-1 xl:col-start-2 xl:row-span-1">
+      <div className="order-1 flex min-w-0 flex-col lg:order-none lg:col-start-1 lg:row-span-2 lg:row-start-1 xl:col-start-2 xl:row-span-1 xl:self-stretch">
         {children}
       </div>
       {/* Breit: ganzhohe Leiste mit Raumcode oben und Spielern darunter (Liste füllt den Rest). */}
