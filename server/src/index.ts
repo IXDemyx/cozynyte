@@ -1,6 +1,7 @@
 /** Einstiegspunkt: Socket-Handler registrieren, verlassene Räume aufräumen, Server starten. */
 
 import { PORT, ROOM_TTL_MS } from "./config";
+import { registerChatHandlers } from "./handlers/chat";
 import { createHandlers } from "./handlers/context";
 import { registerKniffelHandlers } from "./handlers/kniffel";
 import { registerMusicHandlers } from "./handlers/music";
@@ -13,6 +14,7 @@ io.on("connection", (socket) => {
   registerRoomHandlers(handlers);
   registerMusicHandlers(handlers);
   registerKniffelHandlers(handlers);
+  registerChatHandlers(handlers);
 });
 
 // Verlassene Räume aufräumen.

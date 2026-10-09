@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { FiLock, FiRotateCcw, FiUnlock, FiUserPlus } from "react-icons/fi";
+import { FiLock, FiRotateCcw, FiUnlock, FiUserPlus, FiVolume2, FiVolumeX } from "react-icons/fi";
 import {
   CATEGORIES,
   canEditColumn,
@@ -14,11 +14,13 @@ import Button from "../../components/Button";
 import InviteButton from "../../components/InviteButton";
 import { card, eyebrow, input } from "../../components/ui";
 import { useConfirm } from "../../hooks/useConfirm";
+import { useSoundEffects } from "../../hooks/useSoundEffects";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
 import DicePanel from "./DicePanel";
 import EntryDialog from "./EntryDialog";
 import ScoreSheet from "./ScoreSheet";
+import { useKniffelSounds } from "./useKniffelSounds";
 
 const EMPTY_SHEET: KniffelState = {
   columns: [],
@@ -44,6 +46,8 @@ function Kniffel({ state }: { state: RoomState }) {
   const [editing, setEditing] = useState<Editing | null>(null);
   const [newName, setNewName] = useState("");
   const { armed, confirm } = useConfirm();
+  const [sounds, setSounds] = useSoundEffects();
+  useKniffelSounds(sheet, state.you, sounds);
 
   const targetId = sheet.current ?? undefined;
   const currentColumn = sheet.columns.find((c) => c.id === targetId);
@@ -118,6 +122,16 @@ function Kniffel({ state }: { state: RoomState }) {
             <FiRotateCcw aria-hidden="true" /> {t.kniffel.undo}
           </Button>
           <InviteButton code={state.code} />
+          <Button
+            variant="secondary"
+            size="small"
+            title={sounds ? t.audio.effectsOn : t.audio.effectsOff}
+            aria-label={t.audio.effectsOn}
+            aria-pressed={sounds}
+            onClick={() => setSounds(!sounds)}
+          >
+            {sounds ? <FiVolume2 aria-hidden="true" /> : <FiVolumeX aria-hidden="true" />}
+          </Button>
           {isHost ? (
             <Button
               variant="secondary"

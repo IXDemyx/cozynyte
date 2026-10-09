@@ -20,6 +20,13 @@ export const HINT_AT = [0.4, 0.6, 0.8];
 export const SEARCH_WINDOW_MS = 30_000;
 export const SEARCH_LIMIT = 20;
 
+/** Raum-Chat: so viele Nachrichten bleiben erhalten, so lang darf eine sein, höchstens
+ * CHAT_LIMIT Nachrichten pro Spieler in CHAT_WINDOW_MS. */
+export const CHAT_HISTORY = 50;
+export const CHAT_MAX_LENGTH = 200;
+export const CHAT_WINDOW_MS = 5_000;
+export const CHAT_LIMIT = 5;
+
 /** Kniffel: höchstens so viele Spalten und rückgängig machbare Einträge. */
 export const MAX_COLUMNS = 16;
 export const MAX_UNDO = 100;

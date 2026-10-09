@@ -28,11 +28,15 @@ up for everyone right away.
 - Optional theme set by the host (e.g. "2000s only"), shown during song selection
 - Letter hints for title and artist during a Guess the Song round
 - Chat during rounds; messages that would give away the answer are not passed on
+- Chat window in the lobby, during song selection, on the results screens and in Yahtzee
+  (last 50 messages, with an unread counter)
 - Joining late is possible: mid-game joiners guess along, just without songs of their own
 - Host tools: remove a player, skip the current song
 - Reconnecting after a reload or a dropped connection keeps your score
 - Yahtzee: roll digitally (three rolls, hold dice in between) or enter real dice; every empty box shows what the roll would score;
   sums, the upper bonus and the grand total are calculated automatically
+- Yahtzee sound effects (rolling, holding, entries, a Yahtzee, your turn, the win), generated in
+  the browser and switchable on/off
 - German and English UI, light and dark theme
 
 ## Getting started
@@ -77,8 +81,8 @@ client/src/
   components/     shared UI building blocks (Button, PlayerList, Option, InviteButton, …)
   games/music/    Guess the Song, Guess the Year and Song Timeline (lobby, picking, rounds, results)
   games/kniffel/  Yahtzee score sheet (dice panel, sheet, entry dialog)
-  hooks/          room connection, server clock, theme, volume, two-click confirm
-  lib/            socket connection and translations (lib/i18n/de.ts, en.ts)
+  hooks/          room connection, server clock, theme, volume, sound effects, two-click confirm
+  lib/            socket connection, sound effects and translations (lib/i18n/de.ts, en.ts)
   pages/          Home and Room
 
 server/src/
@@ -86,7 +90,7 @@ server/src/
   state.ts        room and player state
   view.ts         per-player view of a room (hides answers) and broadcasting
   connection.ts   joining, leaving and host hand-over
-  handlers/       socket events per area (room, music, kniffel)
+  handlers/       socket events per area (room, chat, music, kniffel)
   games/          game logic (music rounds and scoring, Yahtzee turns)
   music/          iTunes search, answer matching, song suggestions
 ```

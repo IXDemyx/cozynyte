@@ -30,6 +30,7 @@ export function view(room: Room, playerId: string): RoomState {
     })),
     myPicks: room.phase === "picking" ? (me?.picks ?? []) : [],
     kniffel: room.kniffel,
+    chat: room.chat,
     timelines:
       room.game === "timeline" && room.phase !== "lobby" && room.phase !== "picking"
         ? Object.fromEntries(

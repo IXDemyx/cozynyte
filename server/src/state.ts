@@ -1,6 +1,6 @@
 /** Datenmodell des Servers: Räume, Spieler, Runden – und die Liste aller Räume. */
 
-import type { FeedItem, Game, Phase, Settings, Track } from "../../shared/types";
+import type { ChatMessage, FeedItem, Game, Phase, Settings, Track } from "../../shared/types";
 import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
 
 export interface Player {
@@ -12,6 +12,8 @@ export interface Player {
   removeTimer?: NodeJS.Timeout;
   /** Zeitpunkte der letzten Songsuchen (für das Suchlimit). */
   searches: number[];
+  /** Zeitpunkte der letzten Chatnachrichten (gegen Spam). */
+  chats: number[];
   /** Song-Timeline: nach Jahr sortierte Karten. */
   timeline: Track[];
 }
@@ -65,6 +67,7 @@ export interface Room {
   /** Vom Host entfernte Spieler dürfen nicht wieder beitreten. */
   banned: Set<string>;
   emptySince?: number;
+  chat: ChatMessage[];
 
   // Musikspiele
   queue: { track: Track; pickerId: string }[];
@@ -110,6 +113,7 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
     },
     players: new Map(),
     banned: new Set(),
+    chat: [],
     queue: [],
     roundIndex: 0,
     revealNextAt: 0,
@@ -126,7 +130,7 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
 }
 
 export function createPlayer(id: string, name: string): Player {
-  return { id, name, score: 0, picks: [], searches: [], timeline: [] };
+  return { id, name, score: 0, picks: [], searches: [], chats: [], timeline: [] };
 }
 
 /* ---------- Hilfsfunktionen ---------- */

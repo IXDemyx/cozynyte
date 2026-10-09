@@ -65,6 +65,14 @@ export interface FeedItem {
   text?: string;
 }
 
+/** Nachricht im Raum-Chat (Lobby, Songauswahl, Auflösung, Endstand, Kniffel). */
+export interface ChatMessage {
+  id: number;
+  playerId: string;
+  name: string;
+  text: string;
+}
+
 export interface RoundView {
   index: number;
   total: number;
@@ -118,6 +126,8 @@ export interface RoomState {
   kniffel?: KniffelState;
   round?: RoundView;
   reveal?: RevealView;
+  /** Raum-Chat, die letzten Nachrichten. */
+  chat: ChatMessage[];
   serverNow: number;
 }
 
