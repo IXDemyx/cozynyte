@@ -8,6 +8,7 @@ import { registerDevHandlers } from "./handlers/dev";
 import { registerKniffelHandlers } from "./handlers/kniffel";
 import { registerMusicHandlers } from "./handlers/music";
 import { registerRoomHandlers } from "./handlers/room";
+import { registerSlfHandlers } from "./handlers/slf";
 import { http, io } from "./server";
 import { rooms } from "./state";
 
@@ -18,6 +19,7 @@ io.on("connection", (socket) => {
   registerRoomHandlers(handlers);
   registerMusicHandlers(handlers);
   registerKniffelHandlers(handlers);
+  registerSlfHandlers(handlers);
   registerChatHandlers(handlers);
   if (DEV_TOOLS) registerDevHandlers(handlers);
 });
@@ -30,6 +32,7 @@ setInterval(() => {
       clearTimeout(room.round?.timer);
       room.round?.hintTimers.forEach(clearTimeout);
       clearTimeout(room.revealTimer);
+      clearTimeout(room.slf?.timer);
       rooms.delete(room.code);
     }
   }

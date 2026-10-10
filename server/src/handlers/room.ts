@@ -1,9 +1,18 @@
 /** Räume: erstellen, beitreten, verlassen, Einstellungen, Partie starten und Host-Werkzeuge. */
 
+import {
+  MAX_CATEGORIES,
+  MAX_CATEGORY_LENGTH,
+  MIN_CATEGORIES,
+  SLF_ROUNDS,
+  SLF_SECONDS,
+} from "../../../shared/slf";
+import { MUSIC_GAMES } from "../../../shared/types";
 import { MAX_PLAYERS, MAX_SONGS_PER_PLAYER, ROUND_SECONDS, TIMELINE_GOALS } from "../config";
 import { attach, detach, removePlayer } from "../connection";
 import { ensureColumn } from "../games/kniffel";
 import { drawStartCard, endRound, nextRound, startPicking } from "../games/music";
+import { startSlf } from "../games/slf";
 import { io } from "../server";
 import { cleanName, connected, createPlayer, createRoom, newCode, rooms } from "../state";
 import { broadcast } from "../view";
@@ -16,7 +25,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!name || playerId.length < 8) return reply(cb, { ok: false, error: "name_required" });
     detach(socket, true);
 
-    const game = ["year", "timeline", "kniffel"].includes(data?.game) ? data.game : "song";
+    const game = ["year", "timeline", "kniffel", "slf"].includes(data?.game) ? data.game : "song";
     const room = createRoom(newCode(), game, playerId);
     const player = createPlayer(playerId, name);
     room.players.set(playerId, player);
@@ -76,11 +85,34 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     const goal = Number(data?.timelineGoal);
     if (TIMELINE_GOALS.includes(goal)) settings.timelineGoal = goal;
     if (typeof data?.showSong === "boolean") settings.showSong = data.showSong;
+    // Stadt Land Fluss
+    if (Array.isArray(data?.slfCategories)) {
+      const categories = [
+        ...new Set(
+          data.slfCategories
+            .map((c: unknown) =>
+              String(c ?? "")
+                .replace(/\s+/g, " ")
+                .trim()
+                .slice(0, MAX_CATEGORY_LENGTH),
+            )
+            .filter(Boolean),
+        ),
+      ] as string[];
+      if (categories.length >= MIN_CATEGORIES && categories.length <= MAX_CATEGORIES) {
+        settings.slfCategories = categories;
+      }
+    }
+    const slfRounds = Number(data?.slfRounds);
+    if (SLF_ROUNDS.includes(slfRounds)) settings.slfRounds = slfRounds;
+    const slfSeconds = Number(data?.slfSeconds);
+    if (SLF_SECONDS.includes(slfSeconds)) settings.slfSeconds = slfSeconds;
+    if (typeof data?.slfHardLetters === "boolean") settings.slfHardLetters = data.slfHardLetters;
     if (typeof data?.theme === "string") {
       settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
     }
-    // Zwischen den Musikspielen umschalten; ein Kniffel-Raum bleibt ein Kniffel-Raum.
-    if (["song", "year", "timeline"].includes(data?.game) && c.room.game !== "kniffel") {
+    // Zwischen den Musikspielen umschalten; Kniffel- und Stadt-Land-Fluss-Räume bleiben, was sie sind.
+    if (MUSIC_GAMES.includes(data?.game) && MUSIC_GAMES.includes(c.room.game)) {
       c.room.game = data.game;
     }
     broadcast(c.room);
@@ -93,7 +125,8 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (connected(c.room).length < 2) return reply(cb, { ok: false, error: "need_two_players" });
     // Wer nicht mehr verbunden ist, spielt die neue Partie nicht mit.
     for (const p of [...c.room.players.values()]) if (!p.socketId) c.room.players.delete(p.id);
-    startPicking(c.room);
+    if (c.room.game === "slf") startSlf(c.room);
+    else startPicking(c.room);
     reply(cb, { ok: true });
     broadcast(c.room);
   });
@@ -102,6 +135,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     const c = ctx();
     if (!c || !c.isHost || c.room.phase !== "finished") return;
     c.room.phase = "lobby";
+    c.room.slf = undefined;
     for (const p of [...c.room.players.values()]) {
       p.score = 0;
       p.picks = [];
@@ -115,12 +149,12 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
   // Host-Werkzeug: laufenden Song abbrechen und direkt auflösen.
   socket.on("round:skip", () => {
     const c = ctx();
-    if (c?.isHost) endRound(c.room);
+    if (c?.isHost && MUSIC_GAMES.includes(c.room.game)) endRound(c.room);
   });
 
   socket.on("round:next", () => {
     const c = ctx();
-    if (c?.isHost) nextRound(c.room);
+    if (c?.isHost && MUSIC_GAMES.includes(c.room.game)) nextRound(c.room);
   });
 
   // Host-Werkzeug: Spieler aus dem Raum entfernen.

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
+import { MUSIC_GAMES } from "../../../shared/types";
 import AudioPlayer from "../components/AudioPlayer";
 import Button from "../components/Button";
 import { card, eyebrow, input } from "../components/ui";
@@ -11,6 +12,9 @@ import Reveal from "../games/music/Reveal";
 import SongRound from "../games/music/SongRound";
 import TimelineRound from "../games/music/TimelineRound";
 import YearRound from "../games/music/YearRound";
+import SlfLobby from "../games/slf/SlfLobby";
+import SlfReview from "../games/slf/SlfReview";
+import SlfRound from "../games/slf/SlfRound";
 import { useRoom } from "../hooks/useRoom";
 import { useLanguage } from "../lib/i18n";
 import { getName, saveName } from "../lib/socket";
@@ -75,11 +79,21 @@ function Room() {
   }
 
   const audioSrc = state.round?.previewUrl ?? state.reveal?.track.previewUrl;
+  const isMusic = MUSIC_GAMES.includes(state.game);
 
   return (
     <>
       {state.game === "kniffel" && <Kniffel state={state} />}
-      {state.game !== "kniffel" && state.phase === "lobby" && <Lobby state={state} />}
+
+      {state.game === "slf" && state.phase === "lobby" && <SlfLobby state={state} />}
+      {state.game === "slf" && state.phase === "round" && state.slf && (
+        <SlfRound state={state} slf={state.slf} offset={offset} />
+      )}
+      {state.game === "slf" && state.phase === "reveal" && state.slf && (
+        <SlfReview state={state} slf={state.slf} />
+      )}
+
+      {isMusic && state.phase === "lobby" && <Lobby state={state} />}
       {state.phase === "picking" && <Picking state={state} />}
       {state.phase === "round" &&
         state.round &&

@@ -43,9 +43,13 @@ body {
 }
 
 /* Nebensächliche Knöpfe (z. B. Spieler entfernen): mit Maus erst beim Drüberfahren der Zeile
-   sichtbar, auf Touch-Geräten immer. */
+   sichtbar und dann über das Zeilenende gelegt – so nehmen sie dem Namen keinen Platz weg.
+   Auf Touch-Geräten stehen sie ganz normal in der Zeile. */
 @media (hover: hover) {
   .reveal-on-hover {
+    position: absolute;
+    right: 0.5rem;
+    background: var(--bg-secondary);
     opacity: 0;
   }
   .group:hover .reveal-on-hover,

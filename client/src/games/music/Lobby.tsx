@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Ack, RoomState } from "../../../../shared/types";
+import { MUSIC_GAMES, type Ack, type RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
 import InviteButton from "../../components/InviteButton";
@@ -9,8 +9,6 @@ import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow, input } from "../../components/ui";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
-
-const MUSIC_GAMES = ["song", "year", "timeline"] as const;
 
 /** Lobby der Musikspiele: Raumcode, Spiel und Einstellungen; der Host startet. */
 function Lobby({ state }: { state: RoomState }) {

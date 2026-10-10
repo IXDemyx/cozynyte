@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { FaCrown } from "react-icons/fa";
-import { FiCpu, FiUserX } from "react-icons/fi";
+import { FiUserX } from "react-icons/fi";
 import type { PlayerView, RoomState } from "../../../shared/types";
 import { useConfirm } from "../hooks/useConfirm";
 import { useLanguage } from "../lib/i18n";
@@ -36,7 +36,7 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
         {players.map((p, i) => (
           <li
             key={p.id}
-            className={`group flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+            className={`group relative flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm ${
               p.id === state.you ? "bg-(--accent-soft)" : ""
             }`}
           >
@@ -49,9 +49,8 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
               }`}
             >
               <span className="truncate">{p.name}</span>
-              {p.bot && (
-                <FiCpu className="shrink-0 text-(--text-secondary)" aria-label={t.dev.bot} />
-              )}
+              {/* Bots heißen „Bot …" – ein Symbol würde nur den Namen abschneiden. */}
+              {p.bot && <span className="sr-only">{t.dev.bot}</span>}
               {p.id === state.hostId && (
                 <FaCrown className="shrink-0 text-(--accent)" aria-label="Host" />
               )}

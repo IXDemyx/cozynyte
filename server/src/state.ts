@@ -2,6 +2,7 @@
 
 import type { ChatMessage, FeedItem, Game, Phase, Settings, Track } from "../../shared/types";
 import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
+import { DEFAULT_CATEGORIES } from "../../shared/slf";
 
 export interface Player {
   id: string;
@@ -64,6 +65,25 @@ export interface KniffelStep {
   roll: DigitalRoll | null;
 }
 
+/** Stadt Land Fluss: Zustand der Partie. */
+export interface SlfGame {
+  /** Laufende Runde (1-basiert). */
+  round: number;
+  letter: string;
+  /** Schon gespielte Buchstaben – jeder kommt pro Partie nur einmal. */
+  used: string[];
+  /** Kategorien dieser Partie (beim Start festgehalten). */
+  categories: string[];
+  answers: Map<string, string[]>;
+  /** Gegenstimmen: Schlüssel „spielerId:kategorieIndex" → wer abgelehnt hat. */
+  votes: Map<string, Set<string>>;
+  startedAt: number;
+  endsAt: number;
+  stopAt?: number;
+  stoppedBy?: string;
+  timer?: NodeJS.Timeout;
+}
+
 export interface Room {
   code: string;
   game: Game;
@@ -93,6 +113,9 @@ export interface Room {
   kniffel?: KniffelState;
   nextColumn: number;
   kniffelHistory: KniffelStep[];
+
+  // Stadt Land Fluss
+  slf?: SlfGame;
 }
 
 export const rooms = new Map<string, Room>();
@@ -117,6 +140,10 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
       showSong: true,
       timelineMode: "together",
       timelineGoal: 6,
+      slfCategories: [...DEFAULT_CATEGORIES],
+      slfRounds: 5,
+      slfSeconds: 120,
+      slfHardLetters: false,
     },
     players: new Map(),
     banned: new Set(),

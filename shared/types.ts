@@ -1,6 +1,10 @@
 import type { KniffelState } from "./kniffel";
+import type { SlfVerdict } from "./slf";
 
-export type Game = "song" | "year" | "timeline" | "kniffel";
+export type Game = "song" | "year" | "timeline" | "kniffel" | "slf";
+
+/** Die Musikspiele teilen sich Lobby, Songauswahl und Runden – und lassen sich im Raum umschalten. */
+export const MUSIC_GAMES: Game[] = ["song", "year", "timeline"];
 
 export type TimelineMode = "together" | "turns";
 
@@ -28,6 +32,13 @@ export interface Settings {
   timelineMode: TimelineMode;
   /** Song-Timeline: so viele Karten braucht man zum Sieg (0 = kein Limit). */
   timelineGoal: number;
+  /** Stadt Land Fluss: Kategorien („@city" = vordefiniert, sonst eigener Text). */
+  slfCategories: string[];
+  slfRounds: number;
+  /** Zeitlimit einer Runde in Sekunden. */
+  slfSeconds: number;
+  /** Q, X und Y mitspielen? */
+  slfHardLetters: boolean;
 }
 
 /** Eine Karte in der Song-Timeline – das Jahr ist sichtbar. */
@@ -115,6 +126,36 @@ export interface RevealView {
   isLast: boolean;
 }
 
+/** Stadt Land Fluss: eine bewertete Antwort in der Auswertung. */
+export interface SlfCell {
+  text: string;
+  verdict: SlfVerdict;
+  points: number;
+  /** Wer die Antwort abgelehnt hat. */
+  votes: string[];
+}
+
+/** Stadt Land Fluss: Stand der laufenden Runde (Schreiben bzw. Auswertung). */
+export interface SlfView {
+  round: number;
+  rounds: number;
+  letter: string;
+  categories: string[];
+  endsAt: number;
+  durationMs: number;
+  /** Jemand hat „Stopp!" gerufen: Schluss um stopAt. */
+  stopAt?: number;
+  stoppedBy?: string;
+  /** Beim Schreiben: wie viele Felder jeder schon ausgefüllt hat (nicht was). */
+  filled: Record<string, number>;
+  /** Die eigenen Antworten (nach Neuladen wieder da). */
+  mine: string[];
+  /** Auswertung: alle Antworten, je Spieler eine Zelle pro Kategorie. */
+  cells?: Record<string, SlfCell[]>;
+  /** Auswertung: Punkte dieser Runde je Spieler. */
+  gains?: Record<string, number>;
+}
+
 export interface RoomState {
   code: string;
   game: Game;
@@ -128,6 +169,8 @@ export interface RoomState {
   timelines?: Record<string, TimelineCard[]>;
   /** Nur in Kniffel-Räumen: der gemeinsame Block. */
   kniffel?: KniffelState;
+  /** Nur bei Stadt Land Fluss während Runde und Auswertung. */
+  slf?: SlfView;
   round?: RoundView;
   reveal?: RevealView;
   /** Raum-Chat, die letzten Nachrichten. */

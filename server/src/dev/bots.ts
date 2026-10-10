@@ -6,15 +6,18 @@
 
 import { randomInt } from "node:crypto";
 import { CATEGORIES, scoreDice, type Category } from "../../../shared/kniffel";
+import { presetId, startsWithLetter } from "../../../shared/slf";
 import { addChatMessage, chatListeners } from "../chat";
 import { MAX_PLAYERS } from "../config";
 import { removePlayer } from "../connection";
 import { ensureColumn, rollDice, writeCell } from "../games/kniffel";
 import { canPlace, drawStartCard, handleGuess, placeCard, submitYear } from "../games/music";
+import { callStop, saveAnswers } from "../games/slf";
 import { getCachedTrack } from "../music/itunes";
 import { SUGGESTION_CATEGORIES, suggestTracks } from "../music/suggestions";
 import { createPlayer, rooms, type Player, type Room } from "../state";
 import { broadcast, broadcastListeners } from "../view";
+import { SLF_WORDS } from "./slfWords";
 
 const NAMES = ["Bot Bernd", "Bot Berta", "Bot Kalle", "Bot Uschi", "Bot Horst", "Bot Gabi"];
 
@@ -97,7 +100,8 @@ function act(room: Room) {
     if (room.phase === "finished" || (room.phase === "lobby" && !room.kniffel)) {
       progress.delete(bot);
     }
-    if (room.phase === "picking") pickSongs(room, bot);
+    if (room.game === "slf") playSlf(room, bot);
+    else if (room.phase === "picking") pickSongs(room, bot);
     else if (room.phase === "round") playRound(room, bot);
     if (room.kniffel) playKniffel(room, bot);
   }
@@ -161,6 +165,27 @@ function playRound(room: Room, bot: Player) {
       placeCard(room, round, bot, position);
     });
   }
+}
+
+/** Stadt Land Fluss: nach einer Weile die Felder füllen, die die Wortliste hergibt – manchmal „Stopp!". */
+function playSlf(room: Room, bot: Player) {
+  const game = room.slf;
+  if (!game || room.phase !== "round") return;
+  if (!claim(bot, `slf:${game.round}`, "write")) return;
+  const round = game.round;
+  later(room, bot, between(6000, 16000), () => {
+    if (room.phase !== "round" || room.slf?.round !== round) return;
+    const answers = game.categories.map((category) => {
+      const id = presetId(category);
+      const words = (id && SLF_WORDS[id]) || [];
+      const fitting = words.filter((w) => startsWithLetter(w, game.letter));
+      // Nicht immer alles wissen – sonst wären Bots unschlagbar.
+      return fitting.length && randomInt(5) ? pick(fitting) : "";
+    });
+    saveAnswers(room, bot, answers);
+    if (answers.every(Boolean) && randomInt(3) === 0) callStop(room, bot, answers);
+    broadcast(room);
+  });
 }
 
 /** Kniffel: dreimal würfeln (die häufigste Zahl halten) und das beste freie Feld nehmen. */

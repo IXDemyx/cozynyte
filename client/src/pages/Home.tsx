@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { FaDiceFive } from "react-icons/fa";
-import { FiCalendar, FiClock, FiMusic, FiPenTool } from "react-icons/fi";
+import { FiCalendar, FiClock, FiEdit3, FiMusic, FiPenTool } from "react-icons/fi";
 import type { IconType } from "react-icons";
 import { useNavigate } from "react-router-dom";
 import type { Ack, Game } from "../../../shared/types";
@@ -22,6 +22,7 @@ function Home() {
     { id: "song", icon: FiMusic, meta: t.home.meta, text: t.home.songText },
     { id: "year", icon: FiCalendar, meta: t.home.meta, text: t.home.yearText },
     { id: "timeline", icon: FiClock, meta: t.home.meta, text: t.home.timelineText },
+    { id: "slf", icon: FiEdit3, meta: t.home.meta, text: t.home.slfText },
     { id: "kniffel", icon: FaDiceFive, meta: t.home.kniffelMeta, text: t.home.kniffelText },
   ];
   const validName = name.trim().length > 0;

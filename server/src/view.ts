@@ -1,8 +1,9 @@
 /** Was jeder Spieler vom Raum sehen darf – und das Verschicken an alle. */
 
-import type { RoomState, TimelineCard, Track } from "../../shared/types";
+import type { RoomState, SlfView, TimelineCard, Track } from "../../shared/types";
 import { DEV_TOOLS } from "./config";
 import { canPlace, hasAnswered, opened } from "./games/music";
+import { judgeRound } from "./games/slf";
 import { cleanTitle, maskText } from "./music/match";
 import { io } from "./server";
 import type { Player, Room } from "./state";
@@ -28,6 +29,31 @@ function timelineView(player: Player, withMisses: boolean): TimelineCard[] {
     ...player.timeline.flatMap((track) => [...missesBefore(track.id), card(track)]),
     ...missesBefore(null),
   ];
+}
+
+/** Stadt Land Fluss: beim Schreiben nur Füllstände der anderen, in der Auswertung alles. */
+function slfView(room: Room, playerId: string): SlfView {
+  const game = room.slf!;
+  const writing = room.phase === "round";
+  const filled = Object.fromEntries(
+    [...room.players.keys()].map((id) => [
+      id,
+      (game.answers.get(id) ?? []).filter((a) => a.trim()).length,
+    ]),
+  );
+  return {
+    round: game.round,
+    rounds: room.settings.slfRounds,
+    letter: game.letter,
+    categories: game.categories,
+    endsAt: game.endsAt,
+    durationMs: game.endsAt - game.startedAt,
+    stopAt: game.stopAt,
+    stoppedBy: game.stoppedBy,
+    filled,
+    mine: game.answers.get(playerId) ?? [],
+    ...(writing ? {} : judgeRound(room)),
+  };
 }
 
 /** Sicht eines Spielers auf den Raum. Lösungen verlassen den Server nur, wenn er sie kennen darf. */
@@ -68,6 +94,10 @@ export function view(room: Room, playerId: string): RoomState {
         : undefined,
     serverNow: Date.now(),
   };
+
+  if (room.slf && (room.phase === "round" || room.phase === "reveal")) {
+    state.slf = slfView(room, playerId);
+  }
 
   if (room.phase === "round" && round) {
     const isPicker = round.pickerId === playerId;

@@ -5,16 +5,21 @@ No sign-up: create a room, share the four-letter code or the invite link, and pl
 
 ## Games
 
-| Game               | What you do                                                                      |
-| ------------------ | -------------------------------------------------------------------------------- |
-| **Guess the Song** | A 30-second clip plays; everyone types the title and artist as fast as possible. |
-| **Guess the Year** | A clip plays; everyone guesses the release year.                                 |
-| **Song Timeline**  | Place each song in your own timeline; the first with enough correct cards wins.  |
-| **Yahtzee**        | A shared score sheet for playing Yahtzee with real dice at the table.            |
+| Game                 | What you do                                                                      |
+| -------------------- | -------------------------------------------------------------------------------- |
+| **Guess the Song**   | A 30-second clip plays; everyone types the title and artist as fast as possible. |
+| **Guess the Year**   | A clip plays; everyone guesses the release year.                                 |
+| **Song Timeline**    | Place each song in your own timeline; the first with enough correct cards wins.  |
+| **Stadt Land Fluss** | A letter is drawn; fill in a word for every category before someone calls stop.  |
+| **Yahtzee**          | A shared score sheet for playing Yahtzee with real dice at the table.            |
 
 The three music games share the same flow: lobby → everyone picks their own songs → rounds → reveal →
 final scores. The host can switch between the games in the lobby, so a room can be reused
 for a different game without anyone leaving.
+
+Stadt Land Fluss ("Name, Place, Animal, Thing" in the English UI) has its own lobby: the host picks the
+categories (presets plus custom ones), the number of rounds, the time limit and whether Q, X and Y
+are played.
 
 Yahtzee rooms (called Kniffel in the German UI) work differently: there are no rounds, just one shared sheet. Everyone who joins
 gets their own column, players without a phone can be added by name, and every change shows
@@ -96,6 +101,7 @@ client/src/
   components/     shared UI building blocks (Button, PlayerList, Option, InviteButton, …)
   games/music/    Guess the Song, Guess the Year and Song Timeline (lobby, picking, rounds, results)
   games/kniffel/  Yahtzee score sheet (dice panel, sheet, entry dialog)
+  games/slf/      Stadt Land Fluss (lobby, writing round, review)
   hooks/          room connection, server clock, theme, volume, sound effects, two-click confirm
   lib/            socket connection, sound effects and translations (lib/i18n/de.ts, en.ts)
   pages/          Home and Room
@@ -107,7 +113,7 @@ server/src/
   connection.ts   joining, leaving and host hand-over
   handlers/       socket events per area (room, chat, music, kniffel, dev)
   dev/            test bots for test mode
-  games/          game logic (music rounds and scoring, Yahtzee turns)
+  games/          game logic (music rounds and scoring, Stadt Land Fluss, Yahtzee turns)
   music/          iTunes search, answer matching, song suggestions
 ```
 
@@ -165,6 +171,18 @@ under a sub-path.
   or players take turns and the others watch the active player's timeline.
 - The game ends when someone reaches the card goal (4, 6, 8, 10 or no limit) or the pile runs out; most
   cards wins. Late joiners get a starting card from the pile.
+
+**Stadt Land Fluss**
+
+- Each round draws a letter that has not been played yet in this game.
+- Everyone fills in one answer per category. Whoever has filled in every field can call
+  **Stop!** – the others then get 5 more seconds; otherwise the round ends with the time limit.
+- In the review, all answers are shown per category. Empty answers and answers with the wrong
+  first letter score 0 automatically; matching answers are detected regardless of case,
+  accents and spaces. Players can reject doubtful answers with 👎 – with votes from more than
+  half of the other players, the answer scores 0.
+- 10 points for an answer, 5 if someone else has the same one, 20 if it is the only valid
+  answer in that category.
 
 **Yahtzee (Kniffel)**
 
