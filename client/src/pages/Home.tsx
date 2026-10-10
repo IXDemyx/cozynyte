@@ -1,7 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { FaDiceFive } from "react-icons/fa";
-import { FiCalendar, FiClock, FiEdit3, FiMusic, FiPenTool } from "react-icons/fi";
 import type { IconType } from "react-icons";
+import {
+  LuCalendarDays,
+  LuDice5,
+  LuHeadphones,
+  LuHistory,
+  LuNotebookPen,
+  LuPalette,
+} from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import type { Ack, Game } from "../../../shared/types";
 import Button from "../components/Button";
@@ -24,18 +30,18 @@ function Home() {
       title: t.home.music,
       text: t.home.musicText,
       games: [
-        { id: "song", icon: FiMusic, meta: t.home.meta, text: t.home.songText },
-        { id: "year", icon: FiCalendar, meta: t.home.meta, text: t.home.yearText },
-        { id: "timeline", icon: FiClock, meta: t.home.meta, text: t.home.timelineText },
+        { id: "song", icon: LuHeadphones, meta: t.home.meta, text: t.home.songText },
+        { id: "year", icon: LuCalendarDays, meta: t.home.meta, text: t.home.yearText },
+        { id: "timeline", icon: LuHistory, meta: t.home.meta, text: t.home.timelineText },
       ],
     },
     {
       title: t.home.classics,
       text: t.home.classicsText,
       games: [
-        { id: "slf", icon: FiEdit3, meta: t.home.meta, text: t.home.slfText },
-        { id: "kniffel", icon: FaDiceFive, meta: t.home.kniffelMeta, text: t.home.kniffelText },
-        { id: "draw", icon: FiPenTool, meta: t.home.meta, text: t.home.drawText },
+        { id: "slf", icon: LuNotebookPen, meta: t.home.meta, text: t.home.slfText },
+        { id: "kniffel", icon: LuDice5, meta: t.home.kniffelMeta, text: t.home.kniffelText },
+        { id: "draw", icon: LuPalette, meta: t.home.meta, text: t.home.drawText },
       ],
     },
   ];
