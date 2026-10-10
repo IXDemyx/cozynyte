@@ -13,6 +13,10 @@ export type Sound =
   | "turn"
   | "undo"
   | "win"
+  // Musikspiele
+  | "correct"
+  | "blip"
+  | "miss"
   // Stadt Land Fluss
   | "count"
   | "tick"
@@ -23,6 +27,8 @@ export type Sound =
   | "beep"
   | "gong"
   | "vote";
+
+import { effectsVolume } from "../hooks/useVolume";
 
 let context: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -148,6 +154,19 @@ export function playSound(sound: Sound, volume = 1, step = 0) {
         tone(a, f / 2, at, len, { type: "square", volume: 0.06 });
       });
       break;
+    case "correct":
+      // Selbst erraten bzw. richtig gelegen: zwei helle Töne nach oben.
+      tone(a, 784, 0, 0.12, { type: "sine", volume: 0.35 });
+      tone(a, 1175, 0.09, 0.28, { type: "sine", volume: 0.35 });
+      break;
+    case "blip":
+      // Jemand anderes hat etwas erraten: ganz leise, nur als Hinweis.
+      tone(a, 988, 0, 0.09, { type: "sine", volume: 0.15 });
+      break;
+    case "miss":
+      tone(a, 392, 0, 0.14, { type: "sine", volume: 0.25 });
+      tone(a, 311, 0.11, 0.24, { type: "sine", volume: 0.25 });
+      break;
     case "count":
       // Countdown: kurzer, runder Ton pro Zahl.
       tone(a, 587, 0, 0.18, { type: "sine", volume: 0.45 });
@@ -190,4 +209,9 @@ export function playSound(sound: Sound, volume = 1, step = 0) {
       tone(a, 330, 0, 0.12, { type: "triangle", volume: 0.35, slideTo: 220 });
       break;
   }
+}
+
+/** Sound in der Lautstärke des Reglers (stumm = still) – für alles außer Kniffel. */
+export function playEffect(sound: Sound, step = 0) {
+  playSound(sound, effectsVolume(), step);
 }

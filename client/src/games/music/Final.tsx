@@ -4,6 +4,7 @@ import type { Ack, RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
 import PlayerList from "../../components/PlayerList";
+import Podium, { Confetti, places } from "../../components/Podium";
 import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow } from "../../components/ui";
 import { useLanguage } from "../../lib/i18n";
@@ -15,12 +16,14 @@ function Final({ state }: { state: RoomState }) {
   const ranking = [...state.players].sort((a, b) => b.score - a.score);
   const top = ranking[0]?.score ?? 0;
   const winners = ranking.filter((p) => p.score === top);
+  const place = places(ranking);
   const isHost = state.hostId === state.you;
 
   return (
     <RoomLayout state={state} players={<PlayerList state={state} title={t.points} showScore />}>
       <div className="space-y-6">
-        <section className={`${card} animate-in p-7`}>
+        <section className={`${card} animate-in relative overflow-hidden p-7`}>
+          <Confetti />
           <p className={eyebrow}>{t.final.eyebrow}</p>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight">
             {winners.length > 1 ? t.final.tie : ""}
@@ -28,29 +31,32 @@ function Final({ state }: { state: RoomState }) {
             {t.final.wins(winners.length)}
           </h1>
 
-          <ol className="mt-7 space-y-2">
-            {ranking.map((p, i) => (
-              <li
-                key={p.id}
-                className={`flex items-center gap-4 rounded-xl border px-4 py-3 ${
-                  p.score === top
-                    ? "border-(--accent) bg-(--accent-soft)"
-                    : "border-slate-200 dark:border-slate-800"
-                }`}
-              >
-                <span className="w-6 font-mono text-sm text-(--text-secondary)">{i + 1}.</span>
-                <span className="min-w-0 flex-1 truncate font-semibold">
-                  {p.name}
-                  {p.id === state.you && (
-                    <span className="ml-2 text-xs font-normal text-(--text-secondary)">
-                      {t.you}
-                    </span>
-                  )}
-                </span>
-                <span className="font-mono text-lg font-semibold tabular-nums">{p.score}</span>
-              </li>
-            ))}
-          </ol>
+          <Podium ranking={ranking} you={state.you} />
+
+          {/* Ab Platz 4 als schlichte Liste unter dem Treppchen. */}
+          {ranking.length > 3 && (
+            <ol className="mt-6 space-y-2">
+              {ranking.slice(3).map((p, i) => (
+                <li
+                  key={p.id}
+                  className="flex items-center gap-4 rounded-xl border border-slate-200 px-4 py-2.5 dark:border-slate-800"
+                >
+                  <span className="w-6 font-mono text-sm text-(--text-secondary)">
+                    {place[i + 3]}.
+                  </span>
+                  <span className="min-w-0 flex-1 truncate font-semibold">
+                    {p.name}
+                    {p.id === state.you && (
+                      <span className="ml-2 text-xs font-normal text-(--text-secondary)">
+                        {t.you}
+                      </span>
+                    )}
+                  </span>
+                  <span className="font-mono font-semibold tabular-nums">{p.score}</span>
+                </li>
+              ))}
+            </ol>
+          )}
 
           <div className="mt-7 flex flex-wrap gap-3">
             {isHost ? (

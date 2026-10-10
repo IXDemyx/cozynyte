@@ -3,9 +3,9 @@
 export const de = {
   you: "(du)",
   games: {
-    song: "Guess the Song",
-    year: "Guess the Year",
-    timeline: "Song Timeline",
+    song: "Song erraten",
+    year: "Jahr schätzen",
+    timeline: "Zeitleiste",
     kniffel: "Kniffel",
     slf: "Stadt Land Fluss",
   },
@@ -29,6 +29,7 @@ export const de = {
       "Der Kniffel-Block fürs Handy: Würfe eintragen, alles wird automatisch zusammengerechnet.",
     slfText: "Ein Buchstabe, viele Kategorien. Wer zuerst alles hat, ruft Stopp!",
     joinTitle: "Raum beitreten",
+    drawName: "Montagsmaler",
     drawText: "Einer zeichnet, alle anderen raten.",
     name: "Dein Name",
     namePlaceholder: "z. B. Daniel",
@@ -37,6 +38,10 @@ export const de = {
     code: "Raumcode",
     join: "Beitreten",
     soon: "bald",
+    music: "Musik",
+    musicText: "Jeder wählt Songs aus, alle raten mit.",
+    classics: "Klassiker",
+    classicsText: "Spiele vom Küchentisch – ganz ohne Stift und Zettel.",
   },
   room: {
     room: "Raum",

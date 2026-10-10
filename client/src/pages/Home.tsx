@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import type { Ack, Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
-import { card, chip, input } from "../components/ui";
+import { card, chip, eyebrow, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { getName, playerId, saveName, socket } from "../lib/socket";
 
@@ -18,12 +18,26 @@ function Home() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const games: { id: Game; icon: IconType; meta: string; text: string }[] = [
-    { id: "song", icon: FiMusic, meta: t.home.meta, text: t.home.songText },
-    { id: "year", icon: FiCalendar, meta: t.home.meta, text: t.home.yearText },
-    { id: "timeline", icon: FiClock, meta: t.home.meta, text: t.home.timelineText },
-    { id: "slf", icon: FiEdit3, meta: t.home.meta, text: t.home.slfText },
-    { id: "kniffel", icon: FaDiceFive, meta: t.home.kniffelMeta, text: t.home.kniffelText },
+  type Entry = { id: Game; icon: IconType; meta: string; text: string };
+  const sections: { title: string; text: string; games: Entry[]; soon?: boolean }[] = [
+    {
+      title: t.home.music,
+      text: t.home.musicText,
+      games: [
+        { id: "song", icon: FiMusic, meta: t.home.meta, text: t.home.songText },
+        { id: "year", icon: FiCalendar, meta: t.home.meta, text: t.home.yearText },
+        { id: "timeline", icon: FiClock, meta: t.home.meta, text: t.home.timelineText },
+      ],
+    },
+    {
+      title: t.home.classics,
+      text: t.home.classicsText,
+      games: [
+        { id: "slf", icon: FiEdit3, meta: t.home.meta, text: t.home.slfText },
+        { id: "kniffel", icon: FaDiceFive, meta: t.home.kniffelMeta, text: t.home.kniffelText },
+      ],
+      soon: true,
+    },
   ];
   const validName = name.trim().length > 0;
 
@@ -94,36 +108,46 @@ function Home() {
         <ErrorText code={error} />
       </section>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {games.map(({ id, icon: Icon, meta, text }) => (
-          <article key={id} className={`${card} flex flex-col p-6`}>
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-slate-950">
-                <Icon aria-hidden="true" />
-              </span>
-              <div>
-                <h2 className="text-lg font-bold tracking-tight">{t.games[id]}</h2>
-                <p className="text-xs text-(--text-secondary)">{meta}</p>
-              </div>
-            </div>
-            <p className="mt-4 flex-1 text-sm text-(--text-secondary)">{text}</p>
-            <Button className="mt-5 w-full" onClick={() => create(id)} disabled={busy}>
-              {t.home.create}
-            </Button>
-          </article>
-        ))}
-
-        <article className={`${card} flex flex-col p-6 opacity-70`}>
-          <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-xl text-(--text-secondary) dark:border-(--accent-border)">
-              <FiPenTool aria-hidden="true" />
-            </span>
-            <h2 className="flex-1 text-lg font-bold tracking-tight">Draw & Guess</h2>
-            <span className={chip}>{t.home.soon}</span>
+      {sections.map((section) => (
+        <section key={section.title} className="pt-4">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h2 className={eyebrow}>{section.title}</h2>
+            <p className="text-sm text-(--text-secondary)">{section.text}</p>
           </div>
-          <p className="mt-4 text-sm text-(--text-secondary)">{t.home.drawText}</p>
-        </article>
-      </div>
+          <div className="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {section.games.map(({ id, icon: Icon, meta, text }) => (
+              <article key={id} className={`${card} flex flex-col p-6`}>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-slate-950">
+                    <Icon aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-bold tracking-tight">{t.games[id]}</h3>
+                    <p className="text-xs text-(--text-secondary)">{meta}</p>
+                  </div>
+                </div>
+                <p className="mt-4 flex-1 text-sm text-(--text-secondary)">{text}</p>
+                <Button className="mt-5 w-full" onClick={() => create(id)} disabled={busy}>
+                  {t.home.create}
+                </Button>
+              </article>
+            ))}
+
+            {section.soon && (
+              <article className={`${card} flex flex-col p-6 opacity-70`}>
+                <div className="flex items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-xl text-(--text-secondary) dark:border-(--accent-border)">
+                    <FiPenTool aria-hidden="true" />
+                  </span>
+                  <h3 className="flex-1 text-lg font-bold tracking-tight">{t.home.drawName}</h3>
+                  <span className={chip}>{t.home.soon}</span>
+                </div>
+                <p className="mt-4 text-sm text-(--text-secondary)">{t.home.drawText}</p>
+              </article>
+            )}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

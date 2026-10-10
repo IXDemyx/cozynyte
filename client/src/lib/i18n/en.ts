@@ -31,6 +31,7 @@ export const en: Dictionary = {
       "A Yahtzee score sheet for your phone: enter your rolls, everything is added up for you.",
     slfText: "One letter, lots of categories. First to fill them all shouts stop!",
     joinTitle: "Join a room",
+    drawName: "Draw & Guess",
     drawText: "One player draws, everyone else guesses.",
     name: "Your name",
     namePlaceholder: "e.g. Daniel",
@@ -39,6 +40,10 @@ export const en: Dictionary = {
     code: "Room code",
     join: "Join",
     soon: "soon",
+    music: "Music",
+    musicText: "Everyone picks songs, everyone guesses.",
+    classics: "Classics",
+    classicsText: "Kitchen-table games – no pen and paper needed.",
   },
   room: {
     room: "Room",

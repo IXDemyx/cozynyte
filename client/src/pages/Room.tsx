@@ -16,6 +16,7 @@ import SlfLobby from "../games/slf/SlfLobby";
 import SlfReview from "../games/slf/SlfReview";
 import SlfRound from "../games/slf/SlfRound";
 import { useRoom } from "../hooks/useRoom";
+import { useMusicSounds } from "../games/music/useMusicSounds";
 import { useLanguage } from "../lib/i18n";
 import { getName, saveName } from "../lib/socket";
 
@@ -25,6 +26,7 @@ function Room() {
   const [name, setName] = useState(getName);
   const [draft, setDraft] = useState("");
   const { state, error, offset } = useRoom(code, name);
+  useMusicSounds(state);
 
   const submitName = (event: FormEvent) => {
     event.preventDefault();

@@ -209,7 +209,65 @@ button:not(:disabled) {
   animation: shake 0.4s ease-in-out;
 }
 
+/* Endstand: Stufen des Treppchens fahren von unten hoch, danach erscheinen die Namen. */
+@keyframes podium {
+  0% {
+    transform: scaleY(0);
+  }
+  70% {
+    transform: scaleY(1.06);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.animate-podium {
+  transform-origin: bottom;
+  animation: podium 0.55s cubic-bezier(0.2, 1.2, 0.4, 1) both;
+}
+
+@keyframes podium-name {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-podium-name {
+  animation: podium-name 0.4s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+/* Konfetti: fällt einmal durch, dreht sich und driftet zur Seite. */
+@keyframes confetti {
+  0% {
+    opacity: 1;
+    transform: translate(0, -20px) rotate(0);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift), 640px) rotate(var(--spin));
+  }
+}
+
+.confetti {
+  opacity: 0;
+  animation: confetti 2.5s linear both;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .confetti {
+    display: none;
+  }
+  .animate-podium,
+  .animate-podium-name,
   .animate-in,
   .animate-roll,
   .animate-pop,
