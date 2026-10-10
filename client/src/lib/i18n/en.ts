@@ -188,6 +188,13 @@ export const en: Dictionary = {
     holdHint: "Tap dice to hold them.",
     hold: (n) => `Hold or release die showing ${n}`,
     held: "held",
+    combos: {
+      kniffel: "Yahtzee!",
+      bigStraight: "Large straight!",
+      smallStraight: "Small straight!",
+      fullHouse: "Full house!",
+      fourKind: "Four of a kind!",
+    },
     digital: "Roll digitally",
     notYourTurn: (name) => `${name} is rolling …`,
     turn: "Turn",

@@ -13,6 +13,8 @@ export type Sound =
   | "turn"
   | "undo"
   | "win"
+  | "land"
+  | "combo"
   // Musikspiele
   | "correct"
   | "blip"
@@ -153,6 +155,15 @@ export function playSound(sound: Sound, volume = 1, step = 0) {
         tone(a, f, at, len, { volume: 0.4 });
         tone(a, f / 2, at, len, { type: "square", volume: 0.06 });
       });
+      break;
+    case "land":
+      // Ein Würfel bleibt liegen: kurzes Klacken mit etwas Körper.
+      click(a, 0, 1.1);
+      tone(a, 180, 0, 0.06, { type: "sine", volume: 0.25, slideTo: 110 });
+      break;
+    case "combo":
+      // Guter Wurf: kleines Glitzern nach oben.
+      [659, 880, 1175].forEach((f, i) => tone(a, f, i * 0.07, 0.2, { type: "sine", volume: 0.3 }));
       break;
     case "correct":
       // Selbst erraten bzw. richtig gelegen: zwei helle Töne nach oben.

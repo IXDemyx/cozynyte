@@ -183,6 +183,7 @@ function Kniffel({ state }: { state: RoomState }) {
           setDice={setDice}
           canRoll={canRoll}
           setTurn={setTurn}
+          sounds={sounds}
         />
 
         <ScoreSheet

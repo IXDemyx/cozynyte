@@ -189,6 +189,13 @@ export const de = {
     holdHint: "Tippe Würfel an, um sie festzuhalten.",
     hold: (n: number) => `Würfel mit ${n} festhalten oder loslassen`,
     held: "gehalten",
+    combos: {
+      kniffel: "Kniffel!",
+      bigStraight: "Große Straße!",
+      smallStraight: "Kleine Straße!",
+      fullHouse: "Full House!",
+      fourKind: "Viererpasch!",
+    },
     digital: "Digital würfeln",
     notYourTurn: (name: string) => `${name} würfelt …`,
     turn: "Dran",

@@ -91,21 +91,95 @@ button:not(:disabled) {
   animation: slideIn 0.35s ease both;
 }
 
-@keyframes dice-roll {
+/* Kniffel: Würfel rollen noch – wackeln und hüpfen leicht. */
+@keyframes tumble {
   0% {
-    transform: rotate(-25deg) scale(0.7);
-    opacity: 0.4;
+    transform: rotate(-14deg) translateY(-3px) scale(0.94);
   }
-  60% {
-    transform: rotate(12deg) scale(1.08);
+  100% {
+    transform: rotate(14deg) translateY(2px) scale(1.02);
+  }
+}
+
+.animate-tumble {
+  animation: tumble 0.11s ease-in-out infinite alternate;
+}
+
+/* Würfel bleibt liegen: kurz gestaucht, dann federt er zurück. */
+@keyframes land {
+  0% {
+    transform: translateY(-8px) rotate(8deg);
+  }
+  45% {
+    transform: translateY(0) scale(1.12, 0.86);
+  }
+  75% {
+    transform: scale(0.96, 1.06);
   }
   100% {
     transform: none;
   }
 }
 
-.animate-roll {
-  animation: dice-roll 0.45s ease both;
+.animate-land {
+  animation: land 0.32s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+
+/* Kniffel! Alle Würfel springen nacheinander zweimal hoch. */
+@keyframes jump {
+  0%,
+  50%,
+  100% {
+    transform: none;
+  }
+  25%,
+  75% {
+    transform: translateY(-14px) rotate(-8deg) scale(1.08);
+  }
+}
+
+.animate-jump {
+  animation: jump 0.9s ease-in-out both;
+}
+
+/* Würfel eines besonderen Wurfs leuchten zweimal auf. */
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  30%,
+  70% {
+    box-shadow:
+      0 0 0 3px var(--accent),
+      0 0 18px 2px var(--accent);
+  }
+  50% {
+    box-shadow: 0 0 0 2px var(--accent-border);
+  }
+}
+
+.animate-glow {
+  animation: glow 1.2s ease-in-out both;
+}
+
+/* Schild für den besonderen Wurf: ploppt schräg herein. */
+@keyframes badge {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-12deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15) rotate(3deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+.animate-badge {
+  animation: badge 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 
 @keyframes bar {
@@ -266,10 +340,14 @@ button:not(:disabled) {
   .confetti {
     display: none;
   }
+  .animate-tumble,
+  .animate-land,
+  .animate-jump,
+  .animate-glow,
+  .animate-badge,
   .animate-podium,
   .animate-podium-name,
   .animate-in,
-  .animate-roll,
   .animate-pop,
   .animate-letter,
   .animate-reveal,

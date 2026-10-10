@@ -67,19 +67,19 @@ const COLORS = ["var(--accent)", "#fbbf24", "#f8fafc", "#fb7185", "#38bdf8"];
  * Einmaliger Konfettiregen über die ganze Karte (bei reduzierter Bewegung aus). Die Karte braucht
  * `relative overflow-hidden`.
  */
-export function Confetti() {
+export function Confetti({ delay = 0.9 }: { delay?: number }) {
   const pieces = useMemo(
     () =>
       Array.from({ length: 36 }, (_, i) => ({
         left: Math.random() * 100,
-        delay: 0.9 + Math.random() * 1.2,
+        delay: delay + Math.random() * 1.2,
         duration: 1.8 + Math.random() * 1.4,
         drift: (Math.random() - 0.5) * 80,
         spin: (Math.random() > 0.5 ? 1 : -1) * (360 + Math.random() * 540),
         color: COLORS[i % COLORS.length],
         wide: Math.random() > 0.5,
       })),
-    [],
+    [delay],
   );
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">

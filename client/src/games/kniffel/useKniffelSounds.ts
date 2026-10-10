@@ -52,8 +52,8 @@ export function useKniffelSounds(sheet: KniffelState, you: string, enabled: bool
     const roll = sheet.roll;
     const oldRoll = before.roll;
     if (roll && roll.count > (oldRoll?.count ?? 0)) {
+      // Das Landen der Würfel und besondere Würfe vertont die Würfelanimation.
       queue.push("roll");
-      if (roll.dice.every((d) => d === roll.dice[0])) queue.push("kniffel");
     } else if (roll && oldRoll && roll.count === oldRoll.count) {
       const changed = roll.held.findIndex((held, i) => held !== oldRoll.held[i]);
       if (changed >= 0) queue.push(roll.held[changed] ? "hold" : "release");
