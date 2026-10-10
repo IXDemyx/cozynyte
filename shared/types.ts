@@ -1,7 +1,8 @@
+import type { DrawStage } from "./draw";
 import type { KniffelState } from "./kniffel";
 import type { SlfVerdict } from "./slf";
 
-export type Game = "song" | "year" | "timeline" | "kniffel" | "slf";
+export type Game = "song" | "year" | "timeline" | "kniffel" | "slf" | "draw";
 
 /** Die Musikspiele teilen sich Lobby, Songauswahl und Runden – und lassen sich im Raum umschalten. */
 export const MUSIC_GAMES: Game[] = ["song", "year", "timeline"];
@@ -9,6 +10,8 @@ export const MUSIC_GAMES: Game[] = ["song", "year", "timeline"];
 export type TimelineMode = "together" | "turns";
 
 export type SlfLetterMode = "random" | "recite";
+
+export type DrawLanguage = "de" | "en";
 
 export interface Track {
   id: number;
@@ -43,6 +46,13 @@ export interface Settings {
   slfHardLetters: boolean;
   /** Buchstabe zufällig oder wie am Tisch: einer sagt das Alphabet auf, ein anderer sagt Stopp. */
   slfLetterMode: SlfLetterMode;
+  /** Montagsmaler: Runden (jeder zeichnet einmal pro Runde) und Zeit pro Zeichnung. */
+  drawRounds: number;
+  drawSeconds: number;
+  /** Sprache der Begriffsliste. */
+  drawLanguage: DrawLanguage;
+  /** Eigene Begriffe des Hosts – kommen zusätzlich in die Auswahl. */
+  drawCustom: string[];
 }
 
 /** Eine Karte in der Song-Timeline – das Jahr ist sichtbar. */
@@ -74,7 +84,7 @@ export interface PlayerView {
   bot: boolean;
 }
 
-export type FeedKind = "wrong" | "close" | "title" | "artist" | "locked" | "placed";
+export type FeedKind = "wrong" | "close" | "title" | "artist" | "locked" | "placed" | "guessed";
 
 export interface FeedItem {
   id: number;
@@ -170,6 +180,31 @@ export interface SlfView {
   gains?: Record<string, number>;
 }
 
+/** Montagsmaler: Stand des laufenden Zugs. Die Zeichnung selbst kommt über eigene Events. */
+export interface DrawView {
+  round: number;
+  rounds: number;
+  /** Fortlaufende Nummer des Zugs – Zeichenbefehle gehören immer zu einem Zug. */
+  turn: number;
+  stage: DrawStage;
+  drawerId: string;
+  /** Ende der Wahl, der Zeichenzeit bzw. der Auflösung. */
+  endsAt: number;
+  durationMs: number;
+  /** Nur für den Zeichner während der Wahl. */
+  choices?: string[];
+  /** Klartext für Zeichner, wer es erraten hat, und für alle in der Auflösung. */
+  word?: string;
+  /** Lücken mit aufgedeckten Hinweis-Buchstaben, z. B. „K_tz_“. */
+  mask: string;
+  /** Wer in diesem Zug schon richtig geraten hat (in der Reihenfolge). */
+  guessed: string[];
+  /** Punkte dieses Zugs je Spieler (in der Auflösung). */
+  gains?: Record<string, number>;
+  /** Ereignisse im Chat: erraten, knapp daneben. */
+  feed: FeedItem[];
+}
+
 export interface RoomState {
   code: string;
   game: Game;
@@ -185,6 +220,8 @@ export interface RoomState {
   kniffel?: KniffelState;
   /** Nur bei Stadt Land Fluss während Runde und Auswertung. */
   slf?: SlfView;
+  /** Nur bei Montagsmaler während der Partie. */
+  draw?: DrawView;
   round?: RoundView;
   reveal?: RevealView;
   /** Raum-Chat, die letzten Nachrichten. */

@@ -7,7 +7,7 @@ import { broadcast } from "../view";
 import type { Handlers } from "./context";
 
 /** Zählt eine Nachricht mit; false = zu viele in kurzer Zeit. */
-function allowChat(player: Player): boolean {
+export function allowChat(player: Player): boolean {
   const now = Date.now();
   player.chats = player.chats.filter((at) => now - at < CHAT_WINDOW_MS);
   if (player.chats.length >= CHAT_LIMIT) return false;

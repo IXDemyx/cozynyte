@@ -106,3 +106,11 @@ export function maskText(text: string, revealed: ReadonlySet<number> = new Set()
 export function maskTitle(title: string, revealed?: ReadonlySet<number>): string {
   return maskText(cleanTitle(title), revealed);
 }
+
+/** Montagsmaler: Tipp mit einem Begriff vergleichen (gleiche Toleranz wie bei Songtiteln). */
+export function matchWord(guess: string, word: string): MatchResult {
+  const g = normalize(guess);
+  const w = normalize(word);
+  if (!g || !w) return "none";
+  return compare(g, [w]);
+}

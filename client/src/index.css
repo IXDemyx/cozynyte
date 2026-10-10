@@ -199,6 +199,21 @@ button:not(:disabled) {
   animation: badge 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 
+/* Montagsmaler: der Pinsel des Zeichners wackelt, als würde er malen. */
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-10deg);
+  }
+  50% {
+    transform: rotate(14deg) translateY(-1px);
+  }
+}
+
+.animate-wiggle {
+  animation: wiggle 0.9s ease-in-out infinite;
+}
+
 @keyframes bar {
   0%,
   100% {
@@ -357,6 +372,7 @@ button:not(:disabled) {
   .confetti {
     display: none;
   }
+  .animate-wiggle,
   .animate-tumble,
   .animate-land,
   .animate-jump,

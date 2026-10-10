@@ -1,6 +1,6 @@
 /** Was jeder Spieler vom Raum sehen darf – und das Verschicken an alle. */
 
-import type { RoomState, SlfView, TimelineCard, Track } from "../../shared/types";
+import type { DrawView, RoomState, SlfView, TimelineCard, Track } from "../../shared/types";
 import { DEV_TOOLS } from "./config";
 import { canPlace, hasAnswered, opened } from "./games/music";
 import { judgeRound } from "./games/slf";
@@ -70,6 +70,28 @@ function slfView(room: Room, playerId: string): SlfView {
   };
 }
 
+/** Montagsmaler: den Begriff kennen nur der Zeichner und wer ihn erraten hat – bis zur Auflösung. */
+function drawView(room: Room, playerId: string): DrawView {
+  const game = room.draw!;
+  const knows =
+    game.stage === "reveal" || game.drawerId === playerId || game.guessed.includes(playerId);
+  return {
+    round: Math.min(game.round, room.settings.drawRounds),
+    rounds: room.settings.drawRounds,
+    turn: game.turn,
+    stage: game.stage,
+    drawerId: game.drawerId,
+    endsAt: game.endsAt,
+    durationMs: game.endsAt - game.startedAt,
+    ...(game.stage === "choosing" && game.drawerId === playerId ? { choices: game.choices } : {}),
+    ...(knows && game.word ? { word: game.word } : {}),
+    mask: game.word ? maskText(game.word, opened(game.hint)) : "",
+    guessed: game.guessed,
+    ...(game.stage === "reveal" ? { gains: Object.fromEntries(game.gains) } : {}),
+    feed: game.feed.slice(-40),
+  };
+}
+
 /** Sicht eines Spielers auf den Raum. Lösungen verlassen den Server nur, wenn er sie kennen darf. */
 export function view(room: Room, playerId: string): RoomState {
   const { round } = room;
@@ -112,6 +134,8 @@ export function view(room: Room, playerId: string): RoomState {
   if (room.slf && (room.phase === "round" || room.phase === "reveal")) {
     state.slf = slfView(room, playerId);
   }
+
+  if (room.draw && room.phase === "round") state.draw = drawView(room, playerId);
 
   if (room.phase === "round" && round) {
     const isPicker = round.pickerId === playerId;

@@ -5,11 +5,14 @@
  */
 
 import { randomInt } from "node:crypto";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, DRAW_COLORS } from "../../../shared/draw";
 import { CATEGORIES, scoreDice, type Category } from "../../../shared/kniffel";
 import { presetId, startsWithLetter } from "../../../shared/slf";
 import { addChatMessage, chatListeners } from "../chat";
 import { MAX_PLAYERS } from "../config";
 import { removePlayer } from "../connection";
+import { WORDS } from "../draw/words";
+import { addOps, chooseWord, handleDrawGuess } from "../games/draw";
 import { ensureColumn, rollDice, writeCell } from "../games/kniffel";
 import { canPlace, drawStartCard, handleGuess, placeCard, submitYear } from "../games/music";
 import { callStop, finishDrawing, reciteNext, saveAnswers } from "../games/slf";
@@ -101,6 +104,7 @@ function act(room: Room) {
       progress.delete(bot);
     }
     if (room.game === "slf") playSlf(room, bot);
+    else if (room.game === "draw") playDraw(room, bot);
     else if (room.phase === "picking") pickSongs(room, bot);
     else if (room.phase === "round") playRound(room, bot);
     if (room.kniffel) playKniffel(room, bot);
@@ -262,4 +266,83 @@ function replyToChat(room: Room, author: Player) {
 export function enableBots() {
   broadcastListeners.push(act);
   chatListeners.push(replyToChat);
+}
+
+/* ---------- Montagsmaler ---------- */
+
+/**
+ * Als Zeichner: nach kurzem Überlegen einen Begriff nehmen und ein paar einfache Formen malen.
+ * Als Rater: erst daneben tippen, dann meistens den Begriff (manchmal knapp daneben).
+ */
+function playDraw(room: Room, bot: Player) {
+  const game = room.draw;
+  if (!game || room.phase !== "round") return;
+  const stage = `draw:${game.turn}`;
+
+  if (game.drawerId === bot.id) {
+    if (game.stage === "choosing" && claim(bot, stage, "choose")) {
+      later(room, bot, between(1500, 3500), () => {
+        if (chooseWord(room, bot, randomInt(game.choices.length))) broadcast(room);
+      });
+    }
+    if (game.stage === "drawing" && claim(bot, stage, "draw")) {
+      const turn = game.turn;
+      shapes().forEach((op, i) =>
+        later(room, bot, 800 + i * between(500, 1100), () => {
+          if (room.draw === game && game.turn === turn) addOps(room, bot, turn, [op]);
+        }),
+      );
+    }
+    return;
+  }
+
+  if (game.stage !== "drawing" || !claim(bot, stage, "guess")) return;
+  const turn = game.turn;
+  const total = game.endsAt - game.startedAt;
+  const words = WORDS[room.settings.drawLanguage];
+  const guess = (text: string) => {
+    if (room.draw === game && game.turn === turn && game.stage === "drawing") {
+      handleDrawGuess(room, bot, text);
+    }
+  };
+  later(room, bot, between(2000, 6000), () => guess(pick(words)));
+  if (randomInt(3)) later(room, bot, between(6000, 12000), () => guess(pick(words)));
+  if (randomInt(10) < 7) {
+    later(room, bot, Math.round(total * (0.25 + Math.random() * 0.5)), () => {
+      const word = game.word;
+      // Ab und zu ein Tippfehler – dann gibt es „knapp daneben“.
+      guess(randomInt(4) === 0 && word.length > 4 ? word.slice(0, -1) + "x" : word);
+    });
+  }
+}
+
+let botOpId = 1_000_000;
+
+/** Ein paar zufällige Formen: Kreis, Zickzack, Linien – reicht zum Testen. */
+function shapes() {
+  const color = () => randomInt(DRAW_COLORS.length);
+  const x = () => between(80, CANVAS_WIDTH - 80);
+  const y = () => between(80, CANVAS_HEIGHT - 80);
+  const ops = [];
+  const cx = x();
+  const cy = y();
+  const r = between(40, 120);
+  const circle: number[] = [];
+  for (let a = 0; a <= 360; a += 15) {
+    circle.push(Math.round(cx + r * Math.cos((a * Math.PI) / 180)));
+    circle.push(Math.round(cy + r * Math.sin((a * Math.PI) / 180)));
+  }
+  ops.push({ id: ++botOpId, t: "line" as const, c: 0, s: 1, p: circle });
+  for (let i = 0; i < between(2, 4); i++) {
+    const zigzag: number[] = [];
+    let px = x();
+    let py = y();
+    for (let k = 0; k < 6; k++) {
+      zigzag.push(px, py);
+      px = Math.max(0, Math.min(CANVAS_WIDTH, px + between(-90, 90)));
+      py = Math.max(0, Math.min(CANVAS_HEIGHT, py + between(-90, 90)));
+    }
+    ops.push({ id: ++botOpId, t: "line" as const, c: color(), s: randomInt(3), p: zigzag });
+  }
+  return ops;
 }

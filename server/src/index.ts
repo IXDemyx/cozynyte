@@ -5,6 +5,7 @@ import { enableBots } from "./dev/bots";
 import { registerChatHandlers } from "./handlers/chat";
 import { createHandlers } from "./handlers/context";
 import { registerDevHandlers } from "./handlers/dev";
+import { registerDrawHandlers } from "./handlers/draw";
 import { registerKniffelHandlers } from "./handlers/kniffel";
 import { registerMusicHandlers } from "./handlers/music";
 import { registerRoomHandlers } from "./handlers/room";
@@ -20,6 +21,7 @@ io.on("connection", (socket) => {
   registerMusicHandlers(handlers);
   registerKniffelHandlers(handlers);
   registerSlfHandlers(handlers);
+  registerDrawHandlers(handlers);
   registerChatHandlers(handlers);
   if (DEV_TOOLS) registerDevHandlers(handlers);
 });
@@ -33,6 +35,8 @@ setInterval(() => {
       room.round?.hintTimers.forEach(clearTimeout);
       clearTimeout(room.revealTimer);
       clearTimeout(room.slf?.timer);
+      clearTimeout(room.draw?.timer);
+      room.draw?.hintTimers.forEach(clearTimeout);
       rooms.delete(room.code);
     }
   }

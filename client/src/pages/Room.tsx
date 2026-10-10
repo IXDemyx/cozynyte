@@ -4,6 +4,8 @@ import { MUSIC_GAMES } from "../../../shared/types";
 import AudioPlayer from "../components/AudioPlayer";
 import Button from "../components/Button";
 import { card, eyebrow, input } from "../components/ui";
+import DrawLobby from "../games/draw/DrawLobby";
+import DrawRound from "../games/draw/DrawRound";
 import Kniffel from "../games/kniffel/Kniffel";
 import Final from "../games/music/Final";
 import Lobby from "../games/music/Lobby";
@@ -102,6 +104,11 @@ function Room() {
       )}
       {state.game === "slf" && state.phase === "reveal" && state.slf && (
         <SlfReview state={state} slf={state.slf} />
+      )}
+
+      {state.game === "draw" && state.phase === "lobby" && <DrawLobby state={state} />}
+      {state.game === "draw" && state.phase === "round" && state.draw && (
+        <DrawRound state={state} draw={state.draw} offset={offset} />
       )}
 
       {isMusic && state.phase === "lobby" && <Lobby state={state} />}

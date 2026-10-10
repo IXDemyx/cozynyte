@@ -22,7 +22,7 @@ function RoomChat({ state }: { state: RoomState }) {
   // Freie Texte aus der Runde stehen schon im Chat, deshalb nur die Ereignisse.
   const entries: Entry[] = [
     ...state.chat.map((message) => ({ id: message.id, message })),
-    ...(round?.feed ?? [])
+    ...(round?.feed ?? (state.phase === "round" ? state.draw?.feed : undefined) ?? [])
       .filter((e) => e.kind !== "wrong")
       .map((event) => ({ id: event.id, event })),
   ].sort((a, b) => a.id - b.id);
@@ -76,17 +76,28 @@ function ChatForm({ state }: { state: RoomState }) {
 
   // Guess the Song: solange noch etwas zu erraten ist, ist das Feld zum Raten da.
   const me = state.players.find((p) => p.id === state.you);
+  // Montagsmaler: während gezeichnet wird, rät hier jeder außer dem Zeichner.
+  const draw = state.phase === "round" ? state.draw : undefined;
+  const drawGuessing =
+    draw?.stage === "drawing" && draw.drawerId !== state.you && !draw.guessed.includes(state.you);
   const guessing =
-    state.game === "song" && round && !round.youArePicker && !(me?.gotTitle && me?.gotArtist);
-  const placeholder = !round
-    ? t.chat.placeholder
-    : state.game !== "song"
+    drawGuessing ||
+    (state.game === "song" && round && !round.youArePicker && !(me?.gotTitle && me?.gotArtist));
+  const placeholder = draw
+    ? drawGuessing
+      ? t.draw.placeholderGuess
+      : draw.drawerId === state.you && draw.stage === "drawing"
+        ? t.draw.placeholderDrawer
+        : t.chat.placeholder
+    : !round
       ? t.chat.placeholder
-      : round.youArePicker
-        ? t.round.placeholderPicker
-        : guessing
-          ? t.round.placeholderGuess
-          : t.round.placeholderChat;
+      : state.game !== "song"
+        ? t.chat.placeholder
+        : round.youArePicker
+          ? t.round.placeholderPicker
+          : guessing
+            ? t.round.placeholderGuess
+            : t.round.placeholderChat;
 
   // Neue Runde: am großen Bildschirm direkt ins Ratefeld. Am Handy nicht – das Feld steht dort
   // unter dem Spiel, die Seite würde springen und die Tastatur alles verdecken.
@@ -94,13 +105,15 @@ function ChatForm({ state }: { state: RoomState }) {
     if (guessing && window.matchMedia("(min-width: 1024px)").matches) {
       field.current?.focus({ preventScroll: true });
     }
-  }, [guessing, round?.index]);
+  }, [guessing, round?.index, draw?.turn]);
 
   const send = (event: FormEvent) => {
     event.preventDefault();
     if (!message.trim()) return;
     // In Runden filtert der Server Lösungen heraus; außerhalb gilt das Chat-Limit.
     if (round) socket.emit("round:guess", { text: message });
+    else if (draw)
+      socket.emit("draw:guess", { text: message }, (res: Ack) => setError(res.ok ? "" : res.error));
     else
       socket.emit("chat:send", { text: message }, (res: Ack) => setError(res.ok ? "" : res.error));
     setMessage("");
@@ -115,7 +128,7 @@ function ChatForm({ state }: { state: RoomState }) {
           aria-label={guessing ? t.round.input : t.chat.placeholder}
           className={`${input} py-2.5 ${guessing ? "border-(--accent)" : ""}`}
           value={message}
-          maxLength={round ? 80 : 200}
+          maxLength={round || draw ? 80 : 200}
           autoComplete="off"
           enterKeyHint="send"
           placeholder={placeholder}

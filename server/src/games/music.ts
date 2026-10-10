@@ -206,7 +206,7 @@ function say(room: Room, round: Round, player: Player, text: string) {
 
 /* ---------- Guess the Song ---------- */
 
-function newHint(text: string): Hint {
+export function newHint(text: string): Hint {
   const letters = countLetters(text);
   return {
     order: shuffle(Array.from({ length: letters }, (_, i) => i)),
@@ -216,7 +216,7 @@ function newHint(text: string): Hint {
   };
 }
 
-function openMore(hint: Hint): boolean {
+export function openMore(hint: Hint): boolean {
   const next = Math.min(hint.max, hint.revealed + hint.perStep);
   const changed = next !== hint.revealed;
   hint.revealed = next;

@@ -14,6 +14,10 @@ function FeedLine({ item, you }: { item: FeedItem; you: string }) {
       return (
         <span className="font-semibold text-(--success)">{t.round.gotArtist(item.name, me)}</span>
       );
+    case "guessed":
+      return (
+        <span className="font-semibold text-(--success)">{t.draw.guessed(item.name, me)}</span>
+      );
     case "close":
       return <span className="text-(--accent)">{t.round.close(item.name, me)}</span>;
     case "placed":

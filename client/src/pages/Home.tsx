@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import type { Ack, Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
-import { card, chip, eyebrow, input } from "../components/ui";
+import { card, eyebrow, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { getName, playerId, saveName, socket } from "../lib/socket";
 
@@ -19,7 +19,7 @@ function Home() {
   const [busy, setBusy] = useState(false);
 
   type Entry = { id: Game; icon: IconType; meta: string; text: string };
-  const sections: { title: string; text: string; games: Entry[]; soon?: boolean }[] = [
+  const sections: { title: string; text: string; games: Entry[] }[] = [
     {
       title: t.home.music,
       text: t.home.musicText,
@@ -35,8 +35,8 @@ function Home() {
       games: [
         { id: "slf", icon: FiEdit3, meta: t.home.meta, text: t.home.slfText },
         { id: "kniffel", icon: FaDiceFive, meta: t.home.kniffelMeta, text: t.home.kniffelText },
+        { id: "draw", icon: FiPenTool, meta: t.home.meta, text: t.home.drawText },
       ],
-      soon: true,
     },
   ];
   const validName = name.trim().length > 0;
@@ -132,19 +132,6 @@ function Home() {
                 </Button>
               </article>
             ))}
-
-            {section.soon && (
-              <article className={`${card} flex flex-col p-6 opacity-70`}>
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-xl text-(--text-secondary) dark:border-(--accent-border)">
-                    <FiPenTool aria-hidden="true" />
-                  </span>
-                  <h3 className="flex-1 text-lg font-bold tracking-tight">{t.home.drawName}</h3>
-                  <span className={chip}>{t.home.soon}</span>
-                </div>
-                <p className="mt-4 text-sm text-(--text-secondary)">{t.home.drawText}</p>
-              </article>
-            )}
           </div>
         </section>
       ))}

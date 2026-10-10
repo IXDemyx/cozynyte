@@ -7,9 +7,11 @@ import {
   SLF_ROUNDS,
   SLF_SECONDS,
 } from "../../../shared/slf";
+import { DRAW_ROUNDS, DRAW_SECONDS, MAX_CUSTOM_WORDS, MAX_WORD_LENGTH } from "../../../shared/draw";
 import { MUSIC_GAMES } from "../../../shared/types";
 import { MAX_PLAYERS, MAX_SONGS_PER_PLAYER, ROUND_SECONDS, TIMELINE_GOALS } from "../config";
 import { attach, detach, removePlayer } from "../connection";
+import { addSeat, startDraw } from "../games/draw";
 import { ensureColumn } from "../games/kniffel";
 import { drawStartCard, endRound, nextRound, startPicking } from "../games/music";
 import { startSlf } from "../games/slf";
@@ -25,7 +27,9 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!name || playerId.length < 8) return reply(cb, { ok: false, error: "name_required" });
     detach(socket, true);
 
-    const game = ["year", "timeline", "kniffel", "slf"].includes(data?.game) ? data.game : "song";
+    const game = ["year", "timeline", "kniffel", "slf", "draw"].includes(data?.game)
+      ? data.game
+      : "song";
     const room = createRoom(newCode(), game, playerId);
     const player = createPlayer(playerId, name);
     room.players.set(playerId, player);
@@ -55,6 +59,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
         drawStartCard(room, player);
         room.turnOrder.push(player.id);
       }
+      if (room.game === "draw" && room.phase === "round") addSeat(room, player);
     } else {
       player.name = name;
     }
@@ -111,6 +116,31 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (data?.slfLetterMode === "random" || data?.slfLetterMode === "recite") {
       settings.slfLetterMode = data.slfLetterMode;
     }
+    // Montagsmaler
+    const drawRounds = Number(data?.drawRounds);
+    if (DRAW_ROUNDS.includes(drawRounds)) settings.drawRounds = drawRounds;
+    const drawSeconds = Number(data?.drawSeconds);
+    if (DRAW_SECONDS.includes(drawSeconds)) settings.drawSeconds = drawSeconds;
+    if (data?.drawLanguage === "de" || data?.drawLanguage === "en") {
+      settings.drawLanguage = data.drawLanguage;
+    }
+    if (Array.isArray(data?.drawCustom)) {
+      const seen = new Set<string>();
+      settings.drawCustom = data.drawCustom
+        .map((w: unknown) =>
+          String(w ?? "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, MAX_WORD_LENGTH),
+        )
+        .filter((w: string) => {
+          const key = w.toLowerCase();
+          if (!w || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        })
+        .slice(0, MAX_CUSTOM_WORDS);
+    }
     if (typeof data?.theme === "string") {
       settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
     }
@@ -129,6 +159,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     // Wer nicht mehr verbunden ist, spielt die neue Partie nicht mit.
     for (const p of [...c.room.players.values()]) if (!p.socketId) c.room.players.delete(p.id);
     if (c.room.game === "slf") startSlf(c.room);
+    else if (c.room.game === "draw") startDraw(c.room);
     else startPicking(c.room);
     reply(cb, { ok: true });
     broadcast(c.room);
@@ -139,6 +170,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!c || !c.isHost || c.room.phase !== "finished") return;
     c.room.phase = "lobby";
     c.room.slf = undefined;
+    c.room.draw = undefined;
     for (const p of [...c.room.players.values()]) {
       p.score = 0;
       p.picks = [];

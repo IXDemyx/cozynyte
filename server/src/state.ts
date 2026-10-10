@@ -1,5 +1,6 @@
 /** Datenmodell des Servers: Räume, Spieler, Runden – und die Liste aller Räume. */
 
+import type { DrawOp, DrawStage } from "../../shared/draw";
 import type { ChatMessage, FeedItem, Game, Phase, Settings, Track } from "../../shared/types";
 import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
 import { DEFAULT_CATEGORIES } from "../../shared/slf";
@@ -95,6 +96,34 @@ export interface SlfGame {
   timer?: NodeJS.Timeout;
 }
 
+/** Montagsmaler: Zustand der Partie und des laufenden Zugs. */
+export interface DrawGame {
+  /** Laufende Runde (1-basiert) – in jeder Runde zeichnet jeder einmal. */
+  round: number;
+  /** Reihenfolge der Zeichner; wer später dazukommt, wird hinten angehängt. */
+  seats: string[];
+  seatPos: number;
+  /** Fortlaufende Nummer des Zugs (über alle Räume eindeutig). */
+  turn: number;
+  stage: DrawStage;
+  drawerId: string;
+  /** Drei Begriffe zur Wahl. */
+  choices: string[];
+  word: string;
+  hint: Hint;
+  startedAt: number;
+  endsAt: number;
+  /** Wer richtig geraten hat – in der Reihenfolge. */
+  guessed: string[];
+  gains: Map<string, number>;
+  feed: FeedItem[];
+  ops: DrawOp[];
+  /** Schon gezeichnete Begriffe – kommen in dieser Partie nicht noch einmal. */
+  used: Set<string>;
+  timer?: NodeJS.Timeout;
+  hintTimers: NodeJS.Timeout[];
+}
+
 export interface Room {
   code: string;
   game: Game;
@@ -127,6 +156,9 @@ export interface Room {
 
   // Stadt Land Fluss
   slf?: SlfGame;
+
+  // Montagsmaler
+  draw?: DrawGame;
 }
 
 export const rooms = new Map<string, Room>();
@@ -156,6 +188,10 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
       slfSeconds: 120,
       slfHardLetters: false,
       slfLetterMode: "random",
+      drawRounds: 3,
+      drawSeconds: 80,
+      drawLanguage: "de",
+      drawCustom: [],
     },
     players: new Map(),
     banned: new Set(),
