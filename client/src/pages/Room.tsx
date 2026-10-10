@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MUSIC_GAMES } from "../../../shared/types";
 import AudioPlayer from "../components/AudioPlayer";
@@ -27,6 +27,15 @@ function Room() {
   const [draft, setDraft] = useState("");
   const { state, error, offset } = useRoom(code, name);
   useMusicSounds(state);
+
+  // Musikspiele: Jede neue Runde beginnt oben – nicht dort, wo man in der Auflösung hingescrollt hat.
+  const musicRound =
+    state && MUSIC_GAMES.includes(state.game) && state.phase === "round"
+      ? state.round?.index
+      : undefined;
+  useEffect(() => {
+    if (musicRound !== undefined) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [musicRound]);
 
   const submitName = (event: FormEvent) => {
     event.preventDefault();

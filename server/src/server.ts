@@ -19,6 +19,11 @@ app.get("/health", (_req, res) => {
 
 const dist = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../client/dist");
 if (existsSync(dist)) {
+  // Räume sind kurzlebig und gehören nicht in Suchmaschinen (die Startseite schon).
+  app.use("/r", (_req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex");
+    next();
+  });
   app.use(express.static(dist));
   app.get(/^(?!\/socket\.io).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")));
 }
