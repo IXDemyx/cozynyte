@@ -72,6 +72,8 @@ function useRoundStart(slf: SlfView, offset: number) {
       setShown("?");
     }
     const timers: ReturnType<typeof setTimeout>[] = [];
+    // Steht der Buchstabe fest, darf kein verspäteter Rattern-Schritt ihn mehr überschreiben.
+    let settled = false;
     const at = (time: number, action: () => void) =>
       timers.push(setTimeout(action, Math.max(0, time - now)));
 
@@ -93,6 +95,7 @@ function useRoundStart(slf: SlfView, offset: number) {
         if (calm) return setShown("?");
         let elapsed = 0;
         const spin = () => {
+          if (settled) return;
           setShown(ALPHABET[Math.floor(Math.random() * 26)]);
           slfSound("rollTick");
           const delay = 55 + 230 * Math.min(1, elapsed / total) ** 2;
@@ -104,6 +107,7 @@ function useRoundStart(slf: SlfView, offset: number) {
     }
 
     at(startsAt, () => {
+      settled = true;
       setShown(slf.letter);
       setStage(calm ? "static" : "reveal");
       slfSound("reveal");
@@ -112,7 +116,9 @@ function useRoundStart(slf: SlfView, offset: number) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slf.round, slf.letter]);
 
-  return { stage, count, shown, ready: stage === "reveal" || stage === "static" };
+  const ready = stage === "reveal" || stage === "static";
+  // Sobald geschrieben wird, zählt immer der Buchstabe vom Server.
+  return { stage, count, shown: ready ? slf.letter : shown, ready };
 }
 
 /** Stadt Land Fluss: Buchstabe, ein Feld pro Kategorie und „Stopp!". */
