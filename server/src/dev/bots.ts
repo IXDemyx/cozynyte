@@ -12,7 +12,7 @@ import { addChatMessage, chatListeners } from "../chat";
 import { MAX_PLAYERS } from "../config";
 import { removePlayer } from "../connection";
 import { WORDS } from "../draw/words";
-import { addOps, chooseWord, handleDrawGuess } from "../games/draw";
+import { addOps, chooseWord, handleDrawGuess, setWords } from "../games/draw";
 import { ensureColumn, rollDice, writeCell } from "../games/kniffel";
 import { canPlace, drawStartCard, handleGuess, placeCard, submitYear } from "../games/music";
 import { callStop, finishDrawing, reciteNext, saveAnswers } from "../games/slf";
@@ -275,6 +275,16 @@ export function enableBots() {
  * Als Rater: erst daneben tippen, dann meistens den Begriff (manchmal knapp daneben).
  */
 function playDraw(room: Room, bot: Player) {
+  // „Eigene Runde“: ein paar Begriffe aus der Liste einreichen.
+  if (room.phase === "picking" && claim(bot, "draw:words", "words")) {
+    later(room, bot, between(1500, 4000), () => {
+      const words = Array.from({ length: room.settings.drawWordsPerPlayer }, () =>
+        pick(WORDS[room.settings.drawLanguage]),
+      );
+      if (setWords(room, bot, words)) broadcast(room);
+    });
+    return;
+  }
   const game = room.draw;
   if (!game || room.phase !== "round") return;
   const stage = `draw:${game.turn}`;

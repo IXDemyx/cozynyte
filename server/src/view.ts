@@ -74,7 +74,10 @@ function slfView(room: Room, playerId: string): SlfView {
 function drawView(room: Room, playerId: string): DrawView {
   const game = room.draw!;
   const knows =
-    game.stage === "reveal" || game.drawerId === playerId || game.guessed.includes(playerId);
+    game.stage === "reveal" ||
+    game.drawerId === playerId ||
+    game.authorId === playerId ||
+    game.guessed.includes(playerId);
   return {
     round: Math.min(game.round, room.settings.drawRounds),
     rounds: room.settings.drawRounds,
@@ -83,7 +86,10 @@ function drawView(room: Room, playerId: string): DrawView {
     drawerId: game.drawerId,
     endsAt: game.endsAt,
     durationMs: game.endsAt - game.startedAt,
-    ...(game.stage === "choosing" && game.drawerId === playerId ? { choices: game.choices } : {}),
+    ...(game.stage === "choosing" && game.drawerId === playerId
+      ? { choices: game.choices.map((c) => c.word) }
+      : {}),
+    ...(game.authorId ? { authorId: game.authorId } : {}),
     ...(knows && game.word ? { word: game.word } : {}),
     mask: game.word ? maskText(game.word, opened(game.hint)) : "",
     guessed: game.guessed,
@@ -108,7 +114,7 @@ export function view(room: Room, playerId: string): RoomState {
       name: p.name,
       score: p.score,
       connected: Boolean(p.socketId),
-      picked: p.picks.length,
+      picked: room.game === "draw" ? p.words.length : p.picks.length,
       gotTitle: round?.got.get(p.id)?.title ?? false,
       gotArtist: round?.got.get(p.id)?.artist ?? false,
       answered: round ? hasAnswered(room, round, p.id) : false,
@@ -116,6 +122,7 @@ export function view(room: Room, playerId: string): RoomState {
       bot: Boolean(p.bot),
     })),
     myPicks: room.phase === "picking" ? (me?.picks ?? []) : [],
+    ...(room.game === "draw" && room.phase === "picking" ? { myWords: me?.words ?? [] } : {}),
     kniffel: room.kniffel,
     chat: room.chat,
     devTools: DEV_TOOLS,

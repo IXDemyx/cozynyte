@@ -25,6 +25,14 @@ export interface Player {
   misses: { track: Track; beforeId: number | null }[];
   /** Testbot (nur im Testmodus): gilt als verbunden, wird aber nie Host. */
   bot?: boolean;
+  /** Montagsmaler „Eigene Runde“: eingereichte Begriffe. */
+  words: string[];
+}
+
+/** Ein Begriff zum Zeichnen; bei „Eigene Runde“ mit dem Spieler, der ihn eingereicht hat. */
+export interface DrawWord {
+  word: string;
+  authorId?: string;
 }
 
 /** Buchstaben-Hinweise: zufällige Reihenfolge der Positionen und wie viele schon offen sind. */
@@ -108,8 +116,12 @@ export interface DrawGame {
   stage: DrawStage;
   drawerId: string;
   /** Drei Begriffe zur Wahl. */
-  choices: string[];
+  choices: DrawWord[];
   word: string;
+  /** „Eigene Runde“: wer den aktuellen Begriff eingereicht hat. */
+  authorId?: string;
+  /** „Eigene Runde“: die noch nicht gezeichneten Begriffe der Spieler (sonst null = Standardliste). */
+  pool: DrawWord[] | null;
   hint: Hint;
   startedAt: number;
   endsAt: number;
@@ -191,7 +203,8 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
       drawRounds: 3,
       drawSeconds: 80,
       drawLanguage: "de",
-      drawCustom: [],
+      drawWordMode: "standard",
+      drawWordsPerPlayer: 5,
     },
     players: new Map(),
     banned: new Set(),
@@ -212,7 +225,17 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
 }
 
 export function createPlayer(id: string, name: string): Player {
-  return { id, name, score: 0, picks: [], searches: [], chats: [], timeline: [], misses: [] };
+  return {
+    id,
+    name,
+    score: 0,
+    picks: [],
+    searches: [],
+    chats: [],
+    timeline: [],
+    misses: [],
+    words: [],
+  };
 }
 
 /* ---------- Hilfsfunktionen ---------- */

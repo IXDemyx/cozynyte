@@ -4,6 +4,7 @@ import { MUSIC_GAMES } from "../../../shared/types";
 import AudioPlayer from "../components/AudioPlayer";
 import Button from "../components/Button";
 import { card, eyebrow, input } from "../components/ui";
+import DrawCollect from "../games/draw/DrawCollect";
 import DrawLobby from "../games/draw/DrawLobby";
 import DrawRound from "../games/draw/DrawRound";
 import Kniffel from "../games/kniffel/Kniffel";
@@ -112,7 +113,8 @@ function Room() {
       )}
 
       {isMusic && state.phase === "lobby" && <Lobby state={state} />}
-      {state.phase === "picking" && <Picking state={state} />}
+      {state.game === "draw" && state.phase === "picking" && <DrawCollect state={state} />}
+      {isMusic && state.phase === "picking" && <Picking state={state} />}
       {state.phase === "round" &&
         state.round &&
         (state.game === "year" ? (

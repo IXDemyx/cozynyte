@@ -13,6 +13,9 @@ export type SlfLetterMode = "random" | "recite";
 
 export type DrawLanguage = "de" | "en";
 
+/** Montagsmaler: Begriffe aus der Liste oder nur die, die die Spieler vorher eingereicht haben. */
+export type DrawWordMode = "standard" | "players";
+
 export interface Track {
   id: number;
   title: string;
@@ -51,8 +54,10 @@ export interface Settings {
   drawSeconds: number;
   /** Sprache der Begriffsliste. */
   drawLanguage: DrawLanguage;
-  /** Eigene Begriffe des Hosts – kommen zusätzlich in die Auswahl. */
-  drawCustom: string[];
+  /** Woher die Begriffe kommen; bei „players“ ist `theme` das Motto. */
+  drawWordMode: DrawWordMode;
+  /** „Eigene Runde“: so viele Begriffe reicht jeder ein. */
+  drawWordsPerPlayer: number;
 }
 
 /** Eine Karte in der Song-Timeline – das Jahr ist sichtbar. */
@@ -197,6 +202,8 @@ export interface DrawView {
   word?: string;
   /** Lücken mit aufgedeckten Hinweis-Buchstaben, z. B. „K_tz_“. */
   mask: string;
+  /** „Eigene Runde“: wer den Begriff eingereicht hat (rät nicht mit, bekommt Punkte für Treffer). */
+  authorId?: string;
   /** Wer in diesem Zug schon richtig geraten hat (in der Reihenfolge). */
   guessed: string[];
   /** Punkte dieses Zugs je Spieler (in der Auflösung). */
@@ -214,6 +221,8 @@ export interface RoomState {
   settings: Settings;
   players: PlayerView[];
   myPicks: Track[];
+  /** Montagsmaler „Eigene Runde“: die eigenen eingereichten Begriffe (nur beim Sammeln). */
+  myWords?: string[];
   /** Song-Timeline: Zeitleisten aller Spieler, nach Jahr sortiert. */
   timelines?: Record<string, TimelineCard[]>;
   /** Nur in Kniffel-Räumen: der gemeinsame Block. */

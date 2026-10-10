@@ -79,7 +79,10 @@ function ChatForm({ state }: { state: RoomState }) {
   // Montagsmaler: während gezeichnet wird, rät hier jeder außer dem Zeichner.
   const draw = state.phase === "round" ? state.draw : undefined;
   const drawGuessing =
-    draw?.stage === "drawing" && draw.drawerId !== state.you && !draw.guessed.includes(state.you);
+    draw?.stage === "drawing" &&
+    draw.drawerId !== state.you &&
+    draw.authorId !== state.you &&
+    !draw.guessed.includes(state.you);
   const guessing =
     drawGuessing ||
     (state.game === "song" && round && !round.youArePicker && !(me?.gotTitle && me?.gotArtist));

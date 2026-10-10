@@ -46,7 +46,8 @@ export const CHOOSE_MS = 15_000;
 /** So lange steht die Auflösung eines Zugs, bevor der Nächste dran ist. */
 export const TURN_REVEAL_MS = 5_000;
 
-export const MAX_CUSTOM_WORDS = 200;
+/** „Eigene Runde“: so viele Begriffe steuert jeder bei. */
+export const DRAW_WORDS_PER_PLAYER = [3, 5, 8];
 export const MAX_WORD_LENGTH = 30;
 /** Höchstens so viele Befehle pro Zug – schützt Server und Clients vor Endlos-Strichen. */
 export const MAX_OPS = 4000;

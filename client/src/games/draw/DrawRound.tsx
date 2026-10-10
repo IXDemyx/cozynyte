@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import { FaPaintBrush } from "react-icons/fa";
+import { FaLightbulb, FaPaintBrush } from "react-icons/fa";
 import { FiCheck } from "react-icons/fi";
 import { DRAW_SIZES } from "../../../../shared/draw";
 import type { DrawView, RoomState } from "../../../../shared/types";
@@ -32,6 +32,8 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
   const isDrawer = draw.drawerId === state.you;
   const drawer = state.players.find((p) => p.id === draw.drawerId);
   const guessedMe = draw.guessed.includes(state.you);
+  const isAuthor = draw.authorId === state.you && !isDrawer;
+  const author = state.players.find((p) => p.id === draw.authorId);
   const canDraw = isDrawer && draw.stage === "drawing";
   const { canvasRef, handlers, undo, clear } = useDrawing({
     turn: draw.turn,
@@ -81,6 +83,11 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
               <span className="flex items-center gap-1 text-(--accent)">
                 <FaPaintBrush aria-hidden="true" className="animate-wiggle" />
                 <span className="sr-only">{t.draw.drawer}</span>
+              </span>
+            ) : p.id === draw.authorId && draw.stage === "drawing" ? (
+              <span className="text-amber-400" title={t.draw.author}>
+                <FaLightbulb aria-hidden="true" />
+                <span className="sr-only">{t.draw.author}</span>
               </span>
             ) : draw.gains?.[p.id] ? (
               <span className="font-mono font-semibold text-(--success)">+{draw.gains[p.id]}</span>
@@ -176,6 +183,12 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
                 <p className="animate-badge mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                   {draw.word}
                 </p>
+                {author && (
+                  <p className="mt-1 flex items-center justify-center gap-1.5 text-sm font-semibold text-amber-300">
+                    <FaLightbulb aria-hidden="true" />
+                    {t.draw.by(author.name)}
+                  </p>
+                )}
                 <p className="mt-2 text-sm text-slate-300">
                   {draw.guessed.length
                     ? draw.guessed
@@ -204,10 +217,14 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
             !isDrawer && (
               <p
                 className={`mt-4 text-center text-sm ${
-                  guessedMe ? "font-semibold text-(--success)" : "text-(--text-secondary)"
+                  guessedMe
+                    ? "font-semibold text-(--success)"
+                    : isAuthor
+                      ? "font-semibold text-amber-400"
+                      : "text-(--text-secondary)"
                 }`}
               >
-                {guessedMe ? t.draw.youGuessed : t.draw.guessHint}
+                {isAuthor ? t.draw.yourWord : guessedMe ? t.draw.youGuessed : t.draw.guessHint}
               </p>
             )
           )}

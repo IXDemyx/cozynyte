@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  DRAW_ROUNDS,
-  DRAW_SECONDS,
-  MAX_CUSTOM_WORDS,
-  MAX_WORD_LENGTH,
-} from "../../../../shared/draw";
+import { DRAW_ROUNDS, DRAW_SECONDS, DRAW_WORDS_PER_PLAYER } from "../../../../shared/draw";
 import type { Ack, RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
@@ -16,38 +11,28 @@ import { card, eyebrow, input } from "../../components/ui";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
 
-/** Kommagetrennte Eingabe → Liste eigener Begriffe. */
-const parseWords = (text: string) =>
-  text
-    .split(/[,;\n]/)
-    .map((w) => w.replace(/\s+/g, " ").trim().slice(0, MAX_WORD_LENGTH))
-    .filter(Boolean)
-    .slice(0, MAX_CUSTOM_WORDS);
-
-/** Lobby von Montagsmaler: Runden, Zeit, Sprache und eigene Begriffe; der Host startet. */
+/**
+ * Lobby von Montagsmaler: Runden, Zeit und woher die Begriffe kommen – Standardliste oder
+ * „Eigene Runde“ (Motto, jeder reicht Begriffe ein). Der Host startet.
+ */
 function DrawLobby({ state }: { state: RoomState }) {
   const { t } = useLanguage();
   const [error, setError] = useState("");
   const isHost = state.hostId === state.you;
   const ready = state.players.filter((p) => p.connected).length >= 2;
   const { settings } = state;
-  const [custom, setCustom] = useState(settings.drawCustom.join(", "));
+  const [theme, setTheme] = useState(settings.theme);
+  const own = settings.drawWordMode === "players";
 
-  // Ändert der Host die Begriffe, sehen die anderen den neuen Stand.
+  // Das Motto tippt nur der Host; alle anderen sehen den aktuellen Stand.
   useEffect(() => {
-    if (!isHost) setCustom(settings.drawCustom.join(", "));
-  }, [isHost, settings.drawCustom]);
+    if (!isHost) setTheme(settings.theme);
+  }, [isHost, settings.theme]);
 
   const update = (patch: Partial<RoomState["settings"]>) =>
     socket.emit("settings:update", { ...settings, ...patch });
 
-  const saveCustom = () => {
-    const words = parseWords(custom);
-    if (words.join("|") !== settings.drawCustom.join("|")) update({ drawCustom: words });
-  };
-
   const start = () => {
-    saveCustom();
     socket.emit("game:start", (res: Ack) => setError(res.ok ? "" : res.error));
   };
 
@@ -83,38 +68,61 @@ function DrawLobby({ state }: { state: RoomState }) {
             disabled={!isHost}
           />
           <OptionGroup
-            label={t.draw.language}
-            value={settings.drawLanguage}
+            label={t.draw.mode}
+            value={settings.drawWordMode}
             options={[
-              { value: "de" as const, label: t.draw.langDe },
-              { value: "en" as const, label: t.draw.langEn },
+              { value: "standard" as const, label: t.draw.modeStandard },
+              { value: "players" as const, label: t.draw.modePlayers },
             ]}
-            onChange={(drawLanguage) => update({ drawLanguage })}
+            onChange={(drawWordMode) => update({ drawWordMode })}
             disabled={!isHost}
           />
-
-          <div className="sm:col-span-2">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <label htmlFor="draw-custom" className="text-sm font-semibold">
-                {t.draw.custom}
-              </label>
-              <p className="text-xs text-(--text-secondary)">
-                {t.draw.customCount(
-                  isHost ? parseWords(custom).length : settings.drawCustom.length,
-                )}
-              </p>
-            </div>
-            <textarea
-              id="draw-custom"
-              className={`${input} mt-3 min-h-24 resize-y py-2.5`}
-              value={custom}
+          {own ? (
+            <OptionGroup
+              label={t.draw.wordsPerPlayer}
+              value={settings.drawWordsPerPlayer}
+              options={DRAW_WORDS_PER_PLAYER.map((n) => ({ value: n, label: String(n) }))}
+              onChange={(drawWordsPerPlayer) => update({ drawWordsPerPlayer })}
               disabled={!isHost}
-              placeholder={t.draw.customPlaceholder}
-              onChange={(e) => setCustom(e.target.value)}
-              onBlur={saveCustom}
             />
-            <p className="mt-2 text-xs text-(--text-secondary)">{t.draw.customHint}</p>
-          </div>
+          ) : (
+            <OptionGroup
+              label={t.draw.language}
+              value={settings.drawLanguage}
+              options={[
+                { value: "de" as const, label: t.draw.langDe },
+                { value: "en" as const, label: t.draw.langEn },
+              ]}
+              onChange={(drawLanguage) => update({ drawLanguage })}
+              disabled={!isHost}
+            />
+          )}
+
+          {own && (
+            <div className="sm:col-span-2">
+              <label htmlFor="draw-theme" className="text-sm font-semibold">
+                {t.draw.theme}
+              </label>
+              {isHost ? (
+                <input
+                  id="draw-theme"
+                  className={`${input} mt-3`}
+                  value={theme}
+                  maxLength={40}
+                  placeholder={t.draw.themePlaceholder}
+                  onChange={(e) => {
+                    setTheme(e.target.value);
+                    update({ theme: e.target.value });
+                  }}
+                />
+              ) : (
+                <p className="mt-3 text-lg font-bold text-(--accent)">
+                  {settings.theme || t.draw.noTheme}
+                </p>
+              )}
+              <p className="mt-2 text-xs text-(--text-secondary)">{t.draw.modePlayersHint}</p>
+            </div>
+          )}
         </div>
 
         <div className="mt-8">
