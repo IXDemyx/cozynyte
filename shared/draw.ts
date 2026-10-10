@@ -43,6 +43,8 @@ export const DRAW_SECONDS = [60, 80, 120];
 
 /** So lange hat der Zeichner, um einen der drei Begriffe zu wählen. */
 export const CHOOSE_MS = 15_000;
+/** Hat jemand den Begriff erraten, bleibt den anderen höchstens noch so viel Zeit. */
+export const AFTER_FIRST_GUESS_MS = 20_000;
 /** So lange steht die Auflösung eines Zugs, bevor der Nächste dran ist. */
 export const TURN_REVEAL_MS = 5_000;
 

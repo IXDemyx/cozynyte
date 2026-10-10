@@ -144,6 +144,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!c || !c.isHost || (c.room.phase !== "lobby" && c.room.phase !== "finished")) return;
     if (c.room.game === "kniffel") return;
     if (connected(c.room).length < 2) return reply(cb, { ok: false, error: "need_two_players" });
+    c.room.notice = undefined;
     // Wer nicht mehr verbunden ist, spielt die neue Partie nicht mit.
     for (const p of [...c.room.players.values()]) if (!p.socketId) c.room.players.delete(p.id);
     if (c.room.game === "slf") startSlf(c.room);
@@ -155,12 +156,31 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     broadcast(c.room);
   });
 
+  // Zurück zur Lobby: nach dem Endstand – oder mitten im Spiel, z. B. bei falschen Einstellungen.
+  // Laufende Timer werden gestoppt, die Partie verworfen. Kniffel hat keine Lobby.
   socket.on("game:lobby", () => {
     const c = ctx();
-    if (!c || !c.isHost || c.room.phase !== "finished") return;
-    c.room.phase = "lobby";
-    c.room.slf = undefined;
-    c.room.draw = undefined;
+    if (!c || !c.isHost || c.room.phase === "lobby" || c.room.game === "kniffel") return;
+    const { room } = c;
+    // Mittendrin abgebrochen: Die anderen bekommen in der Lobby einen Hinweis, was passiert ist.
+    room.notice =
+      room.phase === "finished"
+        ? undefined
+        : { id: Date.now(), kind: "aborted", name: c.player.name };
+    clearTimeout(room.round?.timer);
+    room.round?.hintTimers.forEach(clearTimeout);
+    clearTimeout(room.revealTimer);
+    clearTimeout(room.slf?.timer);
+    clearTimeout(room.draw?.timer);
+    room.draw?.hintTimers.forEach(clearTimeout);
+    room.round = undefined;
+    room.queue = [];
+    room.roundIndex = 0;
+    room.timelineOver = false;
+    room.activeId = undefined;
+    room.phase = "lobby";
+    room.slf = undefined;
+    room.draw = undefined;
     for (const p of [...c.room.players.values()]) {
       p.score = 0;
       p.picks = [];

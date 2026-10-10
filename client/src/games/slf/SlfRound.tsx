@@ -158,6 +158,23 @@ function SlfRound({ state, slf, offset }: SlfRoundProps) {
     }
   }, [ready, slf.round]);
 
+  // Schutz gegen Tasten-Gehämmer (z. B. vom Buchstaben-Aufsagen): Die Leertaste scrollt hier nie die
+  // Seite und löst keine Knöpfe aus, ein Leerzeichen am Feldanfang wird verschluckt. Enter außerhalb
+  // der Felder zählt erst eine Sekunde nach Schreibbeginn wieder.
+  useEffect(() => {
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== " " && event.key !== "Enter") return;
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+        if (event.key === " " && !target.value.trim()) event.preventDefault();
+        return;
+      }
+      if (event.key === " " || Date.now() + offset < slf.startsAt + 1000) event.preventDefault();
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [slf.startsAt, offset]);
+
   // Jemand hat Stopp gerufen: den letzten Stand sofort schicken, nicht erst nach der Pause.
   useEffect(() => {
     if (slf.stopAt) flush();

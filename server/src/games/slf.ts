@@ -31,6 +31,7 @@ export function startSlf(room: Room) {
     categories: [...room.settings.slfCategories],
     answers: new Map(),
     votes: new Map(),
+    marked: new Set(),
     countdownEndsAt: 0,
     startsAt: 0,
     endsAt: 0,
@@ -61,6 +62,7 @@ function startSlfRound(room: Room) {
   game.letter = "";
   game.answers = new Map();
   game.votes = new Map();
+  game.marked = new Set();
   game.stopAt = undefined;
   game.stoppedBy = undefined;
   game.drawing = undefined;
@@ -199,6 +201,20 @@ export function toggleVote(room: Room, voter: Player, targetId: string, category
   return true;
 }
 
+/** Antwort als doppelt markieren bzw. die Markierung lösen – darf jeder, alle sehen es. */
+export function toggleMarked(room: Room, targetId: string, category: number): boolean {
+  const game = room.slf;
+  if (!game || room.phase !== "reveal" || !room.players.has(targetId)) return false;
+  if (!Number.isInteger(category) || category < 0 || category >= game.categories.length) {
+    return false;
+  }
+  if (!(game.answers.get(targetId)?.[category] ?? "").trim()) return false;
+  const key = `${targetId}:${category}`;
+  if (game.marked.has(key)) game.marked.delete(key);
+  else game.marked.add(key);
+  return true;
+}
+
 /* ---------- Auswertung ---------- */
 
 /** Bewertet alle Antworten der Runde mit den aktuellen Gegenstimmen. */
@@ -219,7 +235,8 @@ export function judgeRound(room: Room): {
       text: (game.answers.get(p.id)?.[i] ?? "").trim(),
       votes: game.votes.get(`${p.id}:${i}`)?.size ?? 0,
     }));
-    const verdicts = judgeCategory(entries, game.letter, voters);
+    const marked = new Set(players.filter((p) => game.marked.has(`${p.id}:${i}`)).map((p) => p.id));
+    const verdicts = judgeCategory(entries, game.letter, voters, marked);
     for (const entry of entries) {
       const verdict = verdicts.get(entry.playerId) ?? "empty";
       cells[entry.playerId].push({
@@ -227,6 +244,7 @@ export function judgeRound(room: Room): {
         verdict,
         points: POINTS[verdict],
         votes: [...(game.votes.get(`${entry.playerId}:${i}`) ?? [])],
+        ...(marked.has(entry.playerId) ? { marked: true } : {}),
       });
       gains[entry.playerId] += POINTS[verdict];
     }

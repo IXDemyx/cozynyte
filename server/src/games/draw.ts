@@ -6,6 +6,7 @@
 
 import { randomInt } from "node:crypto";
 import {
+  AFTER_FIRST_GUESS_MS,
   CHOOSE_MS,
   MAX_OPS,
   MAX_WORD_LENGTH,
@@ -225,6 +226,15 @@ export function chooseWord(room: Room, player: Player, index: number): boolean {
   return true;
 }
 
+/** Restzeit auf AFTER_FIRST_GUESS_MS kürzen. */
+function shortenTurn(room: Room, game: DrawGame) {
+  const left = game.endsAt - Date.now();
+  if (left <= AFTER_FIRST_GUESS_MS) return;
+  game.endsAt = Date.now() + AFTER_FIRST_GUESS_MS;
+  clearTimeout(game.timer);
+  game.timer = setTimeout(() => endTurn(room), AFTER_FIRST_GUESS_MS);
+}
+
 /** Zug beenden: Auflösung zeigen, danach ist der Nächste dran. */
 export function endTurn(room: Room) {
   const game = room.draw;
@@ -331,6 +341,8 @@ export function handleDrawGuess(room: Room, player: Player, raw: unknown) {
     const author = game.authorId ? room.players.get(game.authorId) : undefined;
     if (author && author !== drawer) addPoints(game, author, 15);
     pushFeed(game, player, "guessed");
+    // Der Erste hat's: Für die anderen wird die Zeit knapp (falls noch mehr übrig ist).
+    if (game.guessed.length === 1) shortenTurn(room, game);
     checkTurnDone(room);
     if (room.draw?.stage === "drawing") broadcast(room);
     return;

@@ -152,6 +152,8 @@ export interface SlfCell {
   points: number;
   /** Wer die Antwort abgelehnt hat. */
   votes: string[];
+  /** Von Hand als doppelt markiert. */
+  marked?: boolean;
 }
 
 /** Stadt Land Fluss: Stand der laufenden Runde (Schreiben bzw. Auswertung). */
@@ -235,9 +237,19 @@ export interface RoomState {
   reveal?: RevealView;
   /** Raum-Chat, die letzten Nachrichten. */
   chat: ChatMessage[];
+  /** Lobby: Der Host hat die letzte Partie mittendrin abgebrochen (Hinweis für die anderen). */
+  notice?: LobbyNotice;
   /** Testmodus des Servers: Testbots können hinzugefügt werden. */
   devTools: boolean;
   serverNow: number;
+}
+
+export interface LobbyNotice {
+  /** Eindeutig je Abbruch – damit der Hinweis nach dem Wegklicken nicht wiederkommt. */
+  id: number;
+  kind: "aborted";
+  /** Wer abgebrochen hat. */
+  name: string;
 }
 
 export type Ack<T = object> = ({ ok: true } & T) | { ok: false; error: string };

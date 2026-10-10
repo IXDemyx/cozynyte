@@ -9,6 +9,7 @@ import VolumeControl from "../../components/VolumeControl";
 import { card, eyebrow } from "../../components/ui";
 import { useNow } from "../../hooks/useNow";
 import { useLanguage } from "../../lib/i18n";
+import { useExtraWide } from "../../lib/pageWidth";
 import { socket } from "../../lib/socket";
 import { colorOf, PIXEL_HEIGHT, PIXEL_WIDTH } from "./renderer";
 import Toolbar from "./Toolbar";
@@ -21,7 +22,7 @@ interface DrawRoundProps {
   offset: number;
 }
 
-/** Montagsmaler: Leinwand in der Mitte, Begriff oben, Werkzeuge für den Zeichner. */
+/** Montagsmaler: Leinwand in der Mitte, Begriff groß darunter, Werkzeuge für den Zeichner. */
 function DrawRound({ state, draw, offset }: DrawRoundProps) {
   const { t } = useLanguage();
   const now = useNow(offset);
@@ -43,6 +44,7 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
     size,
   });
   useDrawSounds(state, draw, offset);
+  useExtraWide(true);
 
   // Neuer Zug: wieder mit Stift und Schwarz anfangen.
   useEffect(() => {
@@ -68,7 +70,6 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
   const remaining = Math.max(0, draw.endsAt - now);
   const fraction = draw.durationMs > 0 ? Math.min(1, remaining / draw.durationMs) : 0;
   const urgent = draw.stage === "drawing" && remaining < 10_000;
-  const word = draw.word ?? (draw.stage === "drawing" ? undefined : "");
 
   return (
     <RoomLayout
@@ -109,13 +110,10 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
         </div>
 
         <div className="flex flex-1 flex-col p-4 sm:p-6">
-          {/* Kopf: Runde, Begriff (bzw. Lücken), Lautstärke und Sekunden. */}
-          <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-3 sm:grid-cols-[1fr_auto_1fr]">
+          {/* Kopf: Runde, Lautstärke und Sekunden. Der Begriff steht groß unter dem Bild. */}
+          <div className="flex items-center justify-between gap-4">
             <p className={eyebrow}>{t.draw.round(draw.round, draw.rounds)}</p>
-            <div className="col-span-2 row-start-2 flex justify-center sm:col-span-1 sm:col-start-2 sm:row-start-1">
-              <WordDisplay draw={draw} word={word} isDrawer={isDrawer} />
-            </div>
-            <div className="flex items-center justify-end gap-4">
+            <div className="flex items-center gap-4">
               <VolumeControl />
               <p
                 className={`font-mono text-2xl font-semibold tabular-nums ${urgent ? "text-red-500" : ""}`}
@@ -127,7 +125,14 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
             </div>
           </div>
 
-          <div className="relative mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-inner dark:border-slate-700">
+          {/* Am Desktop so groß, wie es die Fensterhöhe zulässt (4:3). */}
+          <div
+            className={`relative mx-auto mt-4 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-inner dark:border-slate-700 ${
+              isDrawer
+                ? "xl:max-w-[calc((100dvh-26rem)*4/3)]"
+                : "xl:max-w-[calc((100dvh-24rem)*4/3)]"
+            }`}
+          >
             <canvas
               ref={canvasRef}
               width={PIXEL_WIDTH}
@@ -176,22 +181,17 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
             )}
 
             {draw.stage === "reveal" && (
-              <div className="animate-in absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 via-slate-950/75 to-transparent px-4 pb-5 pt-16 text-center">
-                <p className="text-xs font-semibold uppercase tracking-widest text-orange-300">
-                  {t.draw.wordWas}
-                </p>
-                <p className="animate-badge mt-1 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                  {draw.word}
-                </p>
+              <div className="animate-in absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 via-slate-950/60 to-transparent px-4 pb-4 pt-12 text-center">
                 {author && (
                   <p className="mt-1 flex items-center justify-center gap-1.5 text-sm font-semibold text-amber-300">
                     <FaLightbulb aria-hidden="true" />
                     {t.draw.by(author.name)}
                   </p>
                 )}
-                <p className="mt-2 text-sm text-slate-300">
+                <p className="mt-1 text-sm font-medium text-slate-200">
                   {draw.guessed.length
-                    ? draw.guessed
+                    ? `✓ ${t.draw.guessedLabel}: ` +
+                      draw.guessed
                         .map((id) => state.players.find((p) => p.id === id)?.name)
                         .filter(Boolean)
                         .join(" · ")
@@ -201,7 +201,8 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
             )}
           </div>
 
-          {canDraw ? (
+          {/* Wer zeichnet, braucht die Werkzeuge direkt am Bild – der Begriff kommt darunter. */}
+          {canDraw && (
             <Toolbar
               tool={tool}
               color={color}
@@ -212,78 +213,160 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
               onUndo={undo}
               onClear={clear}
             />
-          ) : (
-            draw.stage === "drawing" &&
-            !isDrawer && (
-              <p
-                className={`mt-4 text-center text-sm ${
-                  guessedMe
-                    ? "font-semibold text-(--success)"
-                    : isAuthor
-                      ? "font-semibold text-amber-400"
-                      : "text-(--text-secondary)"
-                }`}
-              >
-                {isAuthor ? t.draw.yourWord : guessedMe ? t.draw.youGuessed : t.draw.guessHint}
-              </p>
-            )
           )}
+          <WordBar draw={draw} isDrawer={isDrawer} guessedMe={guessedMe} isAuthor={isAuthor} />
         </div>
       </section>
     </RoomLayout>
   );
 }
 
-/** Begriff für den Zeichner (und wer ihn erraten hat), sonst Lücken mit Hinweis-Buchstaben. */
-function WordDisplay({
+/**
+ * Der Begriff groß unter dem Bild: Lücken mit Hinweis-Buchstaben zum Raten – oder das Wort selbst
+ * für alle, die es kennen (Zeichner, Erraten, eigener Begriff, Auflösung).
+ */
+function WordBar({
   draw,
-  word,
   isDrawer,
+  guessedMe,
+  isAuthor,
 }: {
   draw: DrawView;
-  word: string | undefined;
   isDrawer: boolean;
+  guessedMe: boolean;
+  isAuthor: boolean;
 }) {
   const { t } = useLanguage();
-  if (draw.stage === "choosing") return null;
-  if (word) {
-    return (
-      <p key={word} className="animate-badge text-center">
-        {isDrawer && draw.stage === "drawing" && (
-          <span className="block font-mono text-[10px] uppercase tracking-widest text-(--text-secondary)">
-            {t.draw.youDraw}
-          </span>
-        )}
-        <span className="text-2xl font-extrabold tracking-tight text-(--accent)">{word}</span>
-      </p>
-    );
+  const reveal = draw.stage === "reveal";
+  const known = draw.word && (reveal || isDrawer || guessedMe || isAuthor) ? draw.word : "";
+  const success = guessedMe && !isDrawer && !reveal;
+
+  // Hinweis-Buchstaben, die schon zu Beginn des Zugs (bzw. beim Laden) da waren, leuchten nicht auf.
+  const shown = useRef<{ turn: number; indices: Set<number> } | null>(null);
+  if (!shown.current || shown.current.turn !== draw.turn) {
+    shown.current = { turn: draw.turn, indices: letterIndices(draw.mask) };
   }
+  const seen = shown.current.indices;
+
+  const label = reveal
+    ? t.draw.wordWas
+    : isDrawer
+      ? t.draw.youDraw
+      : isAuthor
+        ? t.draw.yourWordLabel
+        : guessedMe
+          ? `✓ ${t.draw.guessedLabel}`
+          : null;
+  const hint =
+    reveal || isDrawer || draw.stage !== "drawing"
+      ? null
+      : isAuthor
+        ? t.draw.yourWord
+        : guessedMe
+          ? t.draw.waitOthers
+          : t.draw.guessHint;
   const letters = draw.mask.replace(/[^_\p{L}\p{N}]/gu, "").length;
+
   return (
-    <div className="flex flex-col items-center" aria-label={t.draw.letters(letters)}>
-      <div className="flex flex-wrap items-end justify-center gap-1">
-        {[...draw.mask].map((char, i) =>
-          char === " " ? (
-            <span key={i} className="w-3" />
-          ) : char === "_" ? (
-            <span key={i} className="h-7 w-4 border-b-[3px] border-(--text-primary) sm:w-5" />
-          ) : /[\p{L}\p{N}]/u.test(char) ? (
-            <span
-              key={`${i}-${char}`}
-              className="animate-letter inline-block w-4 border-b-[3px] border-(--accent) text-center font-mono text-xl font-bold leading-7 text-(--accent) sm:w-5"
+    <div
+      className={`mt-4 rounded-xl border-2 px-4 text-center ${
+        isDrawer && !reveal ? "py-2.5" : "py-3 sm:py-4"
+      } ${
+        success
+          ? "border-(--success)/50 bg-(--success)/10"
+          : "border-(--accent-border) bg-(--accent-soft)"
+      }`}
+    >
+      {draw.stage === "choosing" ? (
+        <p className="py-2 text-sm font-semibold text-(--text-secondary)">{t.draw.wordSoon}</p>
+      ) : known && isDrawer && !reveal ? (
+        <p className="flex flex-col items-center">
+          <span className="font-mono text-xs font-semibold uppercase tracking-widest text-(--text-secondary)">
+            {label}
+          </span>
+          <span
+            key={known}
+            className="animate-badge mt-0.5 break-words text-2xl font-extrabold tracking-tight text-(--accent) sm:text-3xl"
+          >
+            {known}
+          </span>
+        </p>
+      ) : known ? (
+        <>
+          {label && (
+            <p
+              className={`font-mono text-xs font-semibold uppercase tracking-widest ${
+                success ? "text-(--success)" : "text-(--text-secondary)"
+              }`}
             >
-              {char}
-            </span>
-          ) : (
-            <span key={i} className="font-mono text-xl font-bold leading-7">
-              {char}
-            </span>
-          ),
-        )}
-      </div>
-      <span className="mt-1 font-mono text-[10px] text-(--text-secondary)">{letters}</span>
+              {label}
+            </p>
+          )}
+          <p
+            key={known}
+            className="animate-badge mt-1 break-words text-3xl font-extrabold tracking-tight text-(--accent) sm:text-4xl"
+          >
+            {known}
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="font-mono text-xs font-semibold uppercase tracking-widest text-(--text-secondary)">
+            {t.draw.letters(letters)}
+          </p>
+          <div
+            className="mt-2 flex flex-wrap items-end justify-center gap-x-1.5 gap-y-2 sm:gap-x-2"
+            aria-label={t.draw.letters(letters)}
+          >
+            {[...draw.mask].map((char, i) =>
+              char === " " ? (
+                <span key={i} className="w-4 sm:w-6" />
+              ) : char === "_" ? (
+                <span
+                  key={i}
+                  className="h-9 w-6 border-b-4 border-(--text-primary) sm:h-11 sm:w-8"
+                />
+              ) : /[\p{L}\p{N}]/u.test(char) ? (
+                <span
+                  key={`${i}-${char}`}
+                  className={`inline-block h-9 w-6 rounded-t-md border-b-4 border-(--accent) text-center font-mono text-2xl font-bold leading-9 text-(--accent) sm:h-11 sm:w-8 sm:text-3xl sm:leading-[2.75rem] ${
+                    seen.has(i) ? "" : "animate-hint"
+                  }`}
+                >
+                  {char}
+                </span>
+              ) : (
+                <span
+                  key={i}
+                  className="font-mono text-2xl font-bold leading-9 sm:text-3xl sm:leading-[2.75rem]"
+                >
+                  {char}
+                </span>
+              ),
+            )}
+          </div>
+        </>
+      )}
+      {hint && (
+        <p
+          className={`mt-2 text-sm ${
+            success
+              ? "font-semibold text-(--success)"
+              : isAuthor
+                ? "font-semibold text-amber-500"
+                : "text-(--text-secondary)"
+          }`}
+        >
+          {hint}
+        </p>
+      )}
     </div>
   );
+}
+
+/** Positionen der schon sichtbaren Buchstaben in der Maske. */
+function letterIndices(mask: string): Set<number> {
+  return new Set([...mask].flatMap((char, i) => (/[\p{L}\p{N}]/u.test(char) ? [i] : [])));
 }
 
 function Overlay({ children }: { children: ReactNode }) {

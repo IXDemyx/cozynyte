@@ -95,12 +95,14 @@ export interface SlfEntry {
 
 /**
  * Bewertet alle Antworten einer Kategorie. `voters` = wie viele andere mitstimmen können;
- * eine Antwort fällt bei mehr als der Hälfte Gegenstimmen durch.
+ * eine Antwort fällt bei mehr als der Hälfte Gegenstimmen durch. `marked` = Spieler, deren
+ * Antwort von Hand als doppelt markiert wurde (z. B. „Muenchen“ neben „München“).
  */
 export function judgeCategory(
   entries: SlfEntry[],
   letter: string,
   voters: number,
+  marked?: ReadonlySet<string>,
 ): Map<string, SlfVerdict> {
   const verdicts = new Map<string, SlfVerdict>();
   const valid: SlfEntry[] = [];
@@ -116,8 +118,9 @@ export function judgeCategory(
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   for (const entry of valid) {
-    const verdict =
-      valid.length === 1
+    const verdict = marked?.has(entry.playerId)
+      ? "duplicate"
+      : valid.length === 1
         ? "solo"
         : (counts.get(normalizeAnswer(entry.text)) ?? 0) > 1
           ? "duplicate"

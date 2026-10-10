@@ -1,7 +1,15 @@
 /** Datenmodell des Servers: Räume, Spieler, Runden – und die Liste aller Räume. */
 
 import type { DrawOp, DrawStage } from "../../shared/draw";
-import type { ChatMessage, FeedItem, Game, Phase, Settings, Track } from "../../shared/types";
+import type {
+  ChatMessage,
+  FeedItem,
+  Game,
+  LobbyNotice,
+  Phase,
+  Settings,
+  Track,
+} from "../../shared/types";
 import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
 import { DEFAULT_CATEGORIES } from "../../shared/slf";
 
@@ -94,6 +102,8 @@ export interface SlfGame {
   answers: Map<string, string[]>;
   /** Gegenstimmen: Schlüssel „spielerId:kategorieIndex" → wer abgelehnt hat. */
   votes: Map<string, Set<string>>;
+  /** Von Hand als doppelt markiert: „spielerId:kategorieIndex“. */
+  marked: Set<string>;
   /** Ende des Countdowns vor dem Schreiben (beim Aufsagen: Beginn des Aufsagens). */
   countdownEndsAt: number;
   /** Ab hier darf geschrieben werden (nach Countdown und ggf. Buchstaben-Rattern). */
@@ -171,6 +181,9 @@ export interface Room {
 
   // Montagsmaler
   draw?: DrawGame;
+
+  /** Hinweis in der Lobby, z. B. nach einem Abbruch durch den Host. */
+  notice?: LobbyNotice;
 }
 
 export const rooms = new Map<string, Room>();

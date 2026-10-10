@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { FiThumbsDown } from "react-icons/fi";
+import { FiCopy, FiThumbsDown } from "react-icons/fi";
 import type { RoomState, SlfCell, SlfView } from "../../../../shared/types";
 import Button from "../../components/Button";
 import PlayerList from "../../components/PlayerList";
@@ -31,6 +31,11 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
   const vote = (playerId: string, category: number) => {
     slfSound("vote");
     socket.emit("slf:vote", { playerId, category });
+  };
+
+  const mark = (playerId: string, category: number) => {
+    slfSound("vote");
+    socket.emit("slf:mark", { playerId, category });
   };
 
   return (
@@ -75,6 +80,11 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
                   // Abstimmen nur über echte Antworten anderer.
                   const canVote = !mine && cell.text !== "" && cell.verdict !== "letter";
                   const label = t.slf.verdicts[cell.verdict];
+                  // Als doppelt markieren: jede echte Antwort, außer das Spiel hat sie schon
+                  // selbst als doppelt erkannt (dann gibt es nichts zu markieren).
+                  const canMark =
+                    cell.marked ||
+                    (cell.text !== "" && cell.verdict !== "letter" && cell.verdict !== "duplicate");
                   return (
                     <li
                       key={p.id}
@@ -103,6 +113,24 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
                           {label}
                         </span>
                       )}
+                      {canMark ? (
+                        <button
+                          type="button"
+                          aria-label={t.slf.mark(p.name)}
+                          title={t.slf.mark(p.name)}
+                          aria-pressed={Boolean(cell.marked)}
+                          onClick={() => mark(p.id, i)}
+                          className={`flex h-6 w-7 shrink-0 items-center justify-center rounded-md text-xs transition ${
+                            cell.marked
+                              ? "bg-(--accent) text-slate-950"
+                              : "text-(--text-secondary) hover:text-(--accent)"
+                          }`}
+                        >
+                          <FiCopy aria-hidden="true" />
+                        </button>
+                      ) : (
+                        <span className="w-7 shrink-0" />
+                      )}
                       {canVote ? (
                         <button
                           type="button"
@@ -110,7 +138,7 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
                           title={t.slf.vote(p.name)}
                           aria-pressed={voted}
                           onClick={() => vote(p.id, i)}
-                          className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs transition ${
+                          className={`flex min-w-7 shrink-0 items-center justify-center gap-1 rounded-md px-1.5 py-1 text-xs transition ${
                             voted
                               ? "bg-red-500 text-white"
                               : "text-(--text-secondary) hover:text-red-500"

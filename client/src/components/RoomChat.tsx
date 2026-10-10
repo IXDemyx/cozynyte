@@ -27,10 +27,37 @@ function RoomChat({ state }: { state: RoomState }) {
       .map((event) => ({ id: event.id, event })),
   ].sort((a, b) => a.id - b.id);
 
+  // Automatisch nach unten – außer man hat selbst hochgescrollt, um etwas nachzulesen.
+  // Auslöser ist die letzte ID, nicht die Anzahl: Der Server kürzt den Verlauf, die Anzahl
+  // bleibt dann gleich, obwohl Neues dazukommt.
+  const stick = useRef(true);
+  const last = entries[entries.length - 1];
+  const lastId = last?.id;
+  const mine = last && "message" in last && last.message.playerId === state.you;
+
   useEffect(() => {
     const el = list.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [entries.length]);
+    if (el && (stick.current || mine)) {
+      el.scrollTop = el.scrollHeight;
+      stick.current = true;
+    }
+  }, [lastId, mine]);
+
+  // Ändert sich die Höhe (Layoutwechsel, Handy-Tastatur), unten bleiben.
+  useEffect(() => {
+    const el = list.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (stick.current) el.scrollTop = el.scrollHeight;
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const onScroll = () => {
+    const el = list.current;
+    if (el) stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+  };
 
   return (
     <section
@@ -40,6 +67,7 @@ function RoomChat({ state }: { state: RoomState }) {
       <h2 className={eyebrow}>{t.chat.title}</h2>
       <ul
         ref={list}
+        onScroll={onScroll}
         aria-live="polite"
         className="mt-3 h-64 space-y-1.5 overflow-y-auto rounded-xl bg-slate-50 p-3 text-sm xl:h-auto xl:min-h-0 xl:flex-1 dark:bg-black/30"
       >

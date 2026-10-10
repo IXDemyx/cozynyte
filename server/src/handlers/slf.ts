@@ -6,6 +6,7 @@ import {
   nextSlfRound,
   reciteNext,
   saveAnswers,
+  toggleMarked,
   toggleVote,
 } from "../games/slf";
 import { broadcast, sendTo } from "../view";
@@ -42,6 +43,14 @@ export function registerSlfHandlers({ socket, ctx, reply }: Handlers) {
     const c = ctx();
     if (!c || c.room.game !== "slf") return;
     if (toggleVote(c.room, c.player, String(data?.playerId ?? ""), Number(data?.category))) {
+      broadcast(c.room);
+    }
+  });
+
+  socket.on("slf:mark", (data) => {
+    const c = ctx();
+    if (!c || c.room.game !== "slf") return;
+    if (toggleMarked(c.room, String(data?.playerId ?? ""), Number(data?.category))) {
       broadcast(c.room);
     }
   });

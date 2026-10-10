@@ -125,6 +125,10 @@ export function view(room: Room, playerId: string): RoomState {
     ...(room.game === "draw" && room.phase === "picking" ? { myWords: me?.words ?? [] } : {}),
     kniffel: room.kniffel,
     chat: room.chat,
+    // Wer später dazukommt, braucht den Hinweis auf den Abbruch nicht mehr.
+    ...(room.phase === "lobby" && room.notice && Date.now() - room.notice.id < 20_000
+      ? { notice: room.notice }
+      : {}),
     devTools: DEV_TOOLS,
     timelines:
       room.game === "timeline" && room.phase !== "lobby" && room.phase !== "picking"

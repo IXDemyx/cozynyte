@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import type { RoomState } from "../../../shared/types";
+import BackToLobby from "./BackToLobby";
 import DevTools from "./DevTools";
+import LobbyNotice from "./LobbyNotice";
 import RoomChat from "./RoomChat";
 import RoomInfo from "./RoomInfo";
 
@@ -28,6 +30,7 @@ function RoomLayout({ state, players, children }: RoomLayoutProps) {
     return (
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0 space-y-6">
+          <LobbyNotice state={state} />
           {children}
           {devTools(state)}
         </div>
@@ -41,6 +44,7 @@ function RoomLayout({ state, players, children }: RoomLayoutProps) {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[15rem_minmax(0,1fr)_20rem]">
       <div className="order-1 flex min-w-0 flex-col lg:order-none lg:col-start-1 lg:row-span-2 lg:row-start-1 xl:col-start-2 xl:row-span-1 xl:self-stretch">
+        <LobbyNotice state={state} className="mb-6" />
         {children}
       </div>
       {/* Breit: ganzhohe Leiste mit Raumcode oben und Spielern darunter (Liste füllt den Rest). */}
@@ -49,6 +53,7 @@ function RoomLayout({ state, players, children }: RoomLayoutProps) {
           <RoomInfo state={state} />
         </div>
         {players}
+        <BackToLobby state={state} />
         {devTools(state)}
       </div>
       <div className="order-2 lg:order-none lg:col-start-2 lg:row-start-2 xl:col-start-3 xl:row-start-1 xl:self-stretch">
