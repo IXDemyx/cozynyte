@@ -13,6 +13,12 @@ export const de = {
   points: "Punkte",
   kick: (name: string) => `${name} entfernen`,
   kickConfirm: "Entfernen?",
+  footer: {
+    by: "Ein Projekt von",
+    legal: "Rechtliches",
+    imprint: "Impressum",
+    privacy: "Datenschutz",
+  },
   nav: {
     light: "Helles Design",
     dark: "Dunkles Design",

@@ -1,7 +1,9 @@
 import { Route, Routes, useLocation } from "react-router-dom";
+import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { useTheme } from "./hooks/useTheme";
 import Home from "./pages/Home";
+import Privacy from "./pages/Privacy";
 import Room from "./pages/Room";
 
 function App() {
@@ -13,13 +15,15 @@ function App() {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar theme={theme} onToggleTheme={toggleTheme} width={width} />
-      <main className={`mx-auto w-full ${width} flex-1 px-4 pb-28 pt-8 sm:px-6`}>
+      <main className={`mx-auto w-full ${width} flex-1 px-4 pb-16 pt-8 sm:px-6`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/r/:code" element={<Room />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="*" element={<Home />} />
         </Routes>
       </main>
+      <Footer width={width} />
     </div>
   );
 }

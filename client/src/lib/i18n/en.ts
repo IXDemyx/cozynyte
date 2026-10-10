@@ -15,6 +15,12 @@ export const en: Dictionary = {
   points: "Points",
   kick: (name) => `Remove ${name}`,
   kickConfirm: "Remove?",
+  footer: {
+    by: "A project by",
+    legal: "Legal",
+    imprint: "Legal notice",
+    privacy: "Privacy",
+  },
   nav: {
     light: "Light theme",
     dark: "Dark theme",
