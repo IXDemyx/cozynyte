@@ -12,7 +12,17 @@ export type Sound =
   | "kniffel"
   | "turn"
   | "undo"
-  | "win";
+  | "win"
+  // Stadt Land Fluss
+  | "count"
+  | "tick"
+  | "rollTick"
+  | "reveal"
+  | "fill"
+  | "alarm"
+  | "beep"
+  | "gong"
+  | "vote";
 
 let context: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -77,9 +87,17 @@ function click({ ctx, out }: { ctx: AudioContext; out: GainNode }, start: number
   source.start(ctx.currentTime + start);
 }
 
-export function playSound(sound: Sound) {
-  const a = audio();
-  if (!a || a.ctx.state !== "running") return;
+/**
+ * Sound abspielen. `volume` skaliert nur diesen einen Sound (z. B. nach dem Lautstärkeregler),
+ * `step` verschiebt die Tonhöhe bei „tick" – pro Buchstabe einen Halbton höher.
+ */
+export function playSound(sound: Sound, volume = 1, step = 0) {
+  const base = audio();
+  if (!base || base.ctx.state !== "running" || volume <= 0) return;
+  const out = base.ctx.createGain();
+  out.gain.value = volume;
+  out.connect(base.out);
+  const a = { ctx: base.ctx, out };
 
   switch (sound) {
     case "roll":
@@ -129,6 +147,47 @@ export function playSound(sound: Sound) {
         tone(a, f, at, len, { volume: 0.4 });
         tone(a, f / 2, at, len, { type: "square", volume: 0.06 });
       });
+      break;
+    case "count":
+      // Countdown: kurzer, runder Ton pro Zahl.
+      tone(a, 587, 0, 0.18, { type: "sine", volume: 0.45 });
+      tone(a, 1174, 0, 0.08, { type: "sine", volume: 0.1 });
+      break;
+    case "tick":
+      // Kurzes Klicken, das mit jedem Buchstaben einen Halbton höher wird (nach Z wieder von vorn).
+      tone(a, 440 * 2 ** ((step % 26) / 12), 0, 0.07, { type: "square", volume: 0.12 });
+      click(a, 0, 0.5);
+      break;
+    case "rollTick":
+      click(a, 0, 0.6);
+      tone(a, 1200 + Math.random() * 600, 0, 0.03, { type: "sine", volume: 0.08 });
+      break;
+    case "reveal":
+      // „Ding": heller Akkord mit Glanz obendrauf.
+      [784, 988, 1175].forEach((f) => tone(a, f, 0, 0.6, { volume: 0.3 }));
+      tone(a, 2349, 0.05, 0.5, { type: "sine", volume: 0.12 });
+      break;
+    case "fill":
+      // Weiches „Plopp".
+      tone(a, 520, 0, 0.12, { type: "sine", volume: 0.35, slideTo: 880 });
+      break;
+    case "alarm":
+      // Zweiton-Alarm: Stopp!
+      [0, 0.18, 0.36].forEach((at, i) =>
+        tone(a, i % 2 ? 660 : 880, at, 0.16, { type: "square", volume: 0.12 }),
+      );
+      break;
+    case "beep":
+      tone(a, 1000, 0, 0.09, { type: "sine", volume: 0.3 });
+      break;
+    case "gong":
+      // Zeit um: tiefer Gong mit langem Nachklang.
+      tone(a, 196, 0, 1.6, { type: "sine", volume: 0.5 });
+      tone(a, 294, 0, 1.2, { type: "sine", volume: 0.2 });
+      tone(a, 523, 0, 0.8, { type: "triangle", volume: 0.1 });
+      break;
+    case "vote":
+      tone(a, 330, 0, 0.12, { type: "triangle", volume: 0.35, slideTo: 220 });
       break;
   }
 }

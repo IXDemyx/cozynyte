@@ -1,14 +1,18 @@
 /**
- * Stadt Land Fluss: Buchstabe auslosen → alle schreiben → „Stopp!" (mit kurzer Nachfrist) oder
+ * Stadt Land Fluss: Buchstabe auslosen (oder aufsagen lassen) → alle schreiben → „Stopp!" (mit kurzer Nachfrist) oder
  * Zeit um → Auswertung mit Abstimmung → nächste Runde bzw. Endstand.
  */
 
 import type { SlfCell } from "../../../shared/types";
+import { randomInt } from "node:crypto";
 import {
   ALPHABET,
   HARD_LETTERS,
   MAX_ANSWER_LENGTH,
+  COUNTDOWN_MS,
   POINTS,
+  RECITE_TIMEOUT_MS,
+  ROLL_MS,
   STOP_GRACE_MS,
   judgeCategory,
 } from "../../../shared/slf";
@@ -27,42 +31,100 @@ export function startSlf(room: Room) {
     categories: [...room.settings.slfCategories],
     answers: new Map(),
     votes: new Map(),
-    startedAt: 0,
+    countdownEndsAt: 0,
+    startsAt: 0,
     endsAt: 0,
   };
   startSlfRound(room);
 }
 
-/** Nächster Buchstabe, der in dieser Partie noch nicht dran war. */
-function drawLetter(room: Room, game: SlfGame): string | undefined {
-  const pool = ALPHABET.filter(
+/** Buchstaben, die noch in Frage kommen – in alphabetischer Reihenfolge (fürs Aufsagen). */
+function letterPool(room: Room, game: SlfGame): string[] {
+  return ALPHABET.filter(
     (l) => !game.used.includes(l) && (room.settings.slfHardLetters || !HARD_LETTERS.includes(l)),
   );
-  return shuffle(pool)[0];
 }
 
+/**
+ * Neue Runde. Beim Aufsagen ist reihum einer dran, der das Alphabet durchgeht; ein zufällig
+ * bestimmter anderer Spieler sagt Stopp. Sonst wird der Buchstabe einfach ausgelost.
+ */
 function startSlfRound(room: Room) {
   const game = room.slf;
   if (!game) return;
-  const letter = drawLetter(room, game);
-  if (!letter || game.round >= room.settings.slfRounds) {
+  const pool = letterPool(room, game);
+  if (!pool.length || game.round >= room.settings.slfRounds) {
     room.phase = "finished";
     return;
   }
-  const now = Date.now();
-  const duration = room.settings.slfSeconds * 1000;
   game.round++;
-  game.letter = letter;
-  game.used.push(letter);
+  game.letter = "";
   game.answers = new Map();
   game.votes = new Map();
-  game.startedAt = now;
-  game.endsAt = now + duration;
   game.stopAt = undefined;
   game.stoppedBy = undefined;
+  game.drawing = undefined;
   clearTimeout(game.timer);
-  game.timer = setTimeout(() => endWriting(room), duration);
   room.phase = "round";
+
+  const players = connected(room);
+  if (room.settings.slfLetterMode !== "recite" || players.length < 2) {
+    beginWriting(room, shuffle(pool)[0], true);
+    return;
+  }
+  const reciter = players[(game.round - 1) % players.length];
+  const others = players.filter((p) => p !== reciter);
+  const stopper = others[randomInt(others.length)];
+  const now = Date.now();
+  game.drawing = { reciterId: reciter.id, stopperId: stopper.id, pool, position: -1 };
+  game.countdownEndsAt = now;
+  game.startsAt = now;
+  game.endsAt = now + RECITE_TIMEOUT_MS;
+  // Sagt niemand Stopp (oder ist jemand weg), geht es trotzdem weiter.
+  game.timer = setTimeout(() => {
+    finishDrawing(room);
+    broadcast(room);
+  }, RECITE_TIMEOUT_MS);
+}
+
+/**
+ * Buchstabe steht fest. Erst läuft ein kurzer Countdown, bei `roll` rattert danach der Buchstabe
+ * durchs Alphabet – die Schreibzeit beginnt erst, wenn er für alle zu sehen ist.
+ */
+function beginWriting(room: Room, letter: string, roll: boolean) {
+  const game = room.slf!;
+  const now = Date.now();
+  const duration = room.settings.slfSeconds * 1000;
+  game.drawing = undefined;
+  game.letter = letter;
+  game.used.push(letter);
+  game.countdownEndsAt = now + COUNTDOWN_MS;
+  game.startsAt = game.countdownEndsAt + (roll ? ROLL_MS : 0);
+  game.endsAt = game.startsAt + duration;
+  clearTimeout(game.timer);
+  game.timer = setTimeout(() => endWriting(room), game.endsAt - now);
+}
+
+/** Aufsagen: einen Buchstaben weiter (nach Z wieder von vorn). Nur wer dran ist. */
+export function reciteNext(room: Room, player: Player): boolean {
+  const drawing = room.slf?.drawing;
+  if (room.phase !== "round" || !drawing || drawing.reciterId !== player.id) return false;
+  drawing.position = (drawing.position + 1) % drawing.pool.length;
+  return true;
+}
+
+/**
+ * Aufsagen beenden: durch den Stopp-Sager (`player`) oder ohne ihn nach Ablauf der Zeit.
+ * Wurde noch gar nicht gezählt, gilt beim Stopp der erste Buchstabe, beim Zeitablauf ein zufälliger.
+ */
+export function finishDrawing(room: Room, player?: Player): boolean {
+  const drawing = room.slf?.drawing;
+  if (room.phase !== "round" || !drawing) return false;
+  if (player && player.id !== drawing.stopperId) return false;
+  const { pool, position } = drawing;
+  const letter = position >= 0 ? pool[position] : player ? pool[0] : shuffle([...pool])[0];
+  beginWriting(room, letter, false);
+  return true;
 }
 
 /** Schreibzeit vorbei – ab in die Auswertung. */
@@ -103,7 +165,7 @@ function clean(room: Room, raw: unknown): string[] {
 /** Zwischenstand speichern – der Client schickt beim Tippen laufend mit. false = zu spät. */
 export function saveAnswers(room: Room, player: Player, raw: unknown): boolean {
   const game = room.slf;
-  if (!game || room.phase !== "round") return false;
+  if (!game || room.phase !== "round" || game.drawing || Date.now() < game.startsAt) return false;
   game.answers.set(player.id, clean(room, raw));
   return true;
 }
@@ -111,7 +173,8 @@ export function saveAnswers(room: Room, player: Player, raw: unknown): boolean {
 /** „Stopp!" – nur mit vollständig ausgefüllten Antworten. Die anderen haben noch STOP_GRACE_MS. */
 export function callStop(room: Room, player: Player, raw: unknown): boolean {
   const game = room.slf;
-  if (!game || room.phase !== "round" || game.stopAt) return false;
+  if (!game || room.phase !== "round" || game.drawing || game.stopAt) return false;
+  if (Date.now() < game.startsAt) return false;
   const answers = clean(room, raw);
   if (answers.some((a) => !a.trim())) return false;
   game.answers.set(player.id, answers);

@@ -28,7 +28,8 @@ function RoundFrame({
   children,
 }: RoundFrameProps) {
   const now = useNow(offset);
-  const remaining = Math.max(0, endsAt - now);
+  // Vor dem Start (z. B. Countdown bei Stadt Land Fluss) steht die Anzeige auf voller Zeit.
+  const remaining = Math.min(durationMs, Math.max(0, endsAt - now));
   const fraction = Math.min(1, remaining / durationMs);
 
   return (

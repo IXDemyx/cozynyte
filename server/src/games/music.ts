@@ -5,7 +5,7 @@
 
 import type { FeedItem } from "../../../shared/types";
 import { addChatMessage } from "../chat";
-import { HINT_AT, REVEAL_MS } from "../config";
+import { HINT_AT, revealMs } from "../config";
 import { cleanTitle, countLetters, matchGuess } from "../music/match";
 import {
   connected,
@@ -140,8 +140,9 @@ export function endRound(room: Room) {
   if (room.game === "timeline") scoreTimeline(room, round);
 
   room.phase = "reveal";
-  room.revealNextAt = Date.now() + REVEAL_MS;
-  room.revealTimer = setTimeout(() => nextRound(room), REVEAL_MS);
+  const wait = revealMs(room.game);
+  room.revealNextAt = Date.now() + wait;
+  room.revealTimer = setTimeout(() => nextRound(room), wait);
   broadcast(room);
 }
 

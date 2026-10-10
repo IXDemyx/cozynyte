@@ -29,6 +29,15 @@ export const MAX_ANSWER_LENGTH = 40;
 export const SLF_ROUNDS = [3, 5, 8, 10];
 export const SLF_SECONDS = [60, 90, 120, 180];
 
+/** Aufsagen: Sagt niemand Stopp, wird nach dieser Zeit automatisch gestoppt. */
+export const RECITE_TIMEOUT_MS = 20_000;
+
+/** Countdown „3, 2, 1" vor jeder Schreibrunde – damit alle bereit sind. */
+export const COUNTDOWN_MS = 3000;
+
+/** So lange rattert der Buchstabe im Zufallsmodus, bevor er einrastet (nach dem Countdown). */
+export const ROLL_MS = 2200;
+
 /** Nach „Stopp!" haben die anderen noch so lange, um ihr Wort zu Ende zu tippen. */
 export const STOP_GRACE_MS = 5000;
 

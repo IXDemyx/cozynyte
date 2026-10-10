@@ -108,6 +108,9 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     const slfSeconds = Number(data?.slfSeconds);
     if (SLF_SECONDS.includes(slfSeconds)) settings.slfSeconds = slfSeconds;
     if (typeof data?.slfHardLetters === "boolean") settings.slfHardLetters = data.slfHardLetters;
+    if (data?.slfLetterMode === "random" || data?.slfLetterMode === "recite") {
+      settings.slfLetterMode = data.slfLetterMode;
+    }
     if (typeof data?.theme === "string") {
       settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
     }

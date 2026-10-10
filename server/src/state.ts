@@ -72,12 +72,23 @@ export interface SlfGame {
   letter: string;
   /** Schon gespielte Buchstaben – jeder kommt pro Partie nur einmal. */
   used: string[];
+  /** Aufsagen: wer zählt, wer Stopp sagt, welche Buchstaben in Frage kommen und wo man steht. */
+  drawing?: {
+    reciterId: string;
+    stopperId: string;
+    pool: string[];
+    /** -1 = noch nicht angefangen. */
+    position: number;
+  };
   /** Kategorien dieser Partie (beim Start festgehalten). */
   categories: string[];
   answers: Map<string, string[]>;
   /** Gegenstimmen: Schlüssel „spielerId:kategorieIndex" → wer abgelehnt hat. */
   votes: Map<string, Set<string>>;
-  startedAt: number;
+  /** Ende des Countdowns vor dem Schreiben (beim Aufsagen: Beginn des Aufsagens). */
+  countdownEndsAt: number;
+  /** Ab hier darf geschrieben werden (nach Countdown und ggf. Buchstaben-Rattern). */
+  startsAt: number;
   endsAt: number;
   stopAt?: number;
   stoppedBy?: string;
@@ -144,6 +155,7 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
       slfRounds: 5,
       slfSeconds: 120,
       slfHardLetters: false,
+      slfLetterMode: "random",
     },
     players: new Map(),
     banned: new Set(),

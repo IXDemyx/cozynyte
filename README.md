@@ -18,8 +18,8 @@ final scores. The host can switch between the games in the lobby, so a room can 
 for a different game without anyone leaving.
 
 Stadt Land Fluss ("Name, Place, Animal, Thing" in the English UI) has its own lobby: the host picks the
-categories (presets plus custom ones), the number of rounds, the time limit and whether Q, X and Y
-are played.
+categories (presets plus custom ones), the number of rounds, the time limit, how the letter is
+chosen and whether Q, X and Y are played.
 
 Yahtzee rooms (called Kniffel in the German UI) work differently: there are no rounds, just one shared sheet. Everyone who joins
 gets their own column, players without a phone can be added by name, and every change shows
@@ -127,12 +127,12 @@ still have to guess them.
 
 Environment variables for the server, all optional:
 
-| Variable         | Default | Meaning                                           |
-| ---------------- | ------- | ------------------------------------------------- |
-| `PORT`           | `3001`  | Port the server listens on                        |
-| `ITUNES_COUNTRY` | `DE`    | iTunes store used for search results              |
-| `REVEAL_MS`      | `9000`  | How long the reveal is shown before the next song |
-| `DEV_TOOLS`      | –       | `1`/`0` turns test mode with test bots on/off     |
+| Variable         | Default | Meaning                                                                                          |
+| ---------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `PORT`           | `3001`  | Port the server listens on                                                                       |
+| `ITUNES_COUNTRY` | `DE`    | iTunes store used for search results                                                             |
+| `REVEAL_MS`      | –       | How long the reveal is shown before the next song (default 9 s for Song Timeline, 5 s otherwise) |
+| `DEV_TOOLS`      | –       | `1`/`0` turns test mode with test bots on/off                                                    |
 
 The suggestion categories and their artists live in `server/src/music/suggestions.ts`.
 
@@ -174,7 +174,11 @@ under a sub-path.
 
 **Stadt Land Fluss**
 
-- Each round draws a letter that has not been played yet in this game.
+- Each round draws a letter that has not been played yet in this game – either at random, or
+  like at the table ("Recite"): in turn, one player runs through the alphabet in their head by
+  tapping once per letter (only they see where they are – the others don't even see the pace),
+  and a randomly chosen other player says stop. Used letters (and Q, X, Y if left out) are
+  skipped; if nobody stops within 20 seconds, the current letter is taken.
 - Everyone fills in one answer per category. Whoever has filled in every field can call
   **Stop!** – the others then get 5 more seconds; otherwise the round ends with the time limit.
 - In the review, all answers are shown per category. Empty answers and answers with the wrong

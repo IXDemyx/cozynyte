@@ -94,3 +94,12 @@ export function useVolume() {
   const { volume, muted } = usePlayback();
   return [muted ? 0 : gain(volume), setVolume] as const;
 }
+
+/**
+ * Lautstärke für die Soundeffekte (außerhalb von React abrufbar). Bei der Standardstellung (0.7)
+ * klingen sie so laut wie bisher, ganz rechts etwas lauter, ganz links fast unhörbar.
+ */
+export function effectsVolume(): number {
+  if (playback.muted) return 0;
+  return Math.min(1.5, (playback.volume / 0.7) ** 3);
+}

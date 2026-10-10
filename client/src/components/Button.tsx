@@ -15,7 +15,7 @@ function Button({
   ...rest
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-lg font-semibold shadow-sm transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-primary) disabled:cursor-not-allowed disabled:opacity-40";
+    "inline-flex items-center justify-center gap-2 rounded-lg font-semibold shadow-sm transition duration-200 enabled:active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--accent) focus-visible:ring-offset-2 focus-visible:ring-offset-(--bg-primary) disabled:cursor-not-allowed disabled:opacity-40";
   const variants = {
     // Deaktiviert wie ein dezenter Rahmen-Knopf – ausgegrautes Orange wirkt sonst wie kaputt.
     primary:

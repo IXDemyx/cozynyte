@@ -47,11 +47,25 @@ function slfView(room: Room, playerId: string): SlfView {
     letter: game.letter,
     categories: game.categories,
     endsAt: game.endsAt,
-    durationMs: game.endsAt - game.startedAt,
+    durationMs: game.endsAt - game.startsAt,
+    countdownEndsAt: game.countdownEndsAt,
+    startsAt: game.startsAt,
     stopAt: game.stopAt,
     stoppedBy: game.stoppedBy,
     filled,
     mine: game.answers.get(playerId) ?? [],
+    ...(game.drawing
+      ? {
+          drawing: {
+            reciterId: game.drawing.reciterId,
+            stopperId: game.drawing.stopperId,
+            // Den Buchstaben kennt nur, wer gerade im Kopf das Alphabet durchgeht.
+            ...(game.drawing.reciterId === playerId && game.drawing.position >= 0
+              ? { current: game.drawing.pool[game.drawing.position] }
+              : {}),
+          },
+        }
+      : {}),
     ...(writing ? {} : judgeRound(room)),
   };
 }
@@ -155,6 +169,13 @@ export function view(room: Room, playerId: string): RoomState {
   }
 
   return state;
+}
+
+/** Nur einem Spieler seinen neuen Stand schicken – z. B. beim Aufsagen, damit die anderen nichts merken. */
+export function sendTo(room: Room, playerId: string) {
+  const player = room.players.get(playerId);
+  if (player?.socketId && !player.bot)
+    io.to(player.socketId).emit("room:state", view(room, playerId));
 }
 
 /** Wird nach jedem Verschicken aufgerufen (z. B. damit Testbots reagieren). */

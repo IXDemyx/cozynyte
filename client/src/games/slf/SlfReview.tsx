@@ -1,12 +1,15 @@
+import { useEffect } from "react";
 import { FiThumbsDown } from "react-icons/fi";
 import type { RoomState, SlfCell, SlfView } from "../../../../shared/types";
 import Button from "../../components/Button";
 import PlayerList from "../../components/PlayerList";
 import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow } from "../../components/ui";
+import VolumeControl from "../../components/VolumeControl";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
 import { categoryLabel } from "./categories";
+import { gongOnce, slfSound } from "./sounds";
 
 /** Ungültige Antworten (leer, falscher Buchstabe, abgelehnt) – zählen 0 Punkte. */
 const invalid = (cell: SlfCell) =>
@@ -21,6 +24,14 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
   const isHost = state.hostId === state.you;
   const isLast = slf.round >= slf.rounds;
   const players = state.players.filter((p) => slf.cells?.[p.id]);
+
+  // Zeit um bzw. Nachfrist vorbei: ein Gong zur Auswertung (einmal pro Runde).
+  useEffect(() => gongOnce(`${state.code}:${slf.round}`), [state.code, slf.round]);
+
+  const vote = (playerId: string, category: number) => {
+    slfSound("vote");
+    socket.emit("slf:vote", { playerId, category });
+  };
 
   return (
     <RoomLayout
@@ -43,9 +54,12 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
           <p className={eyebrow}>
             {t.slf.review} · {t.slf.round(slf.round, slf.rounds)}
           </p>
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--accent) font-mono text-xl font-bold text-slate-950">
-            {slf.letter}
-          </span>
+          <div className="flex items-center gap-4">
+            <VolumeControl />
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--accent) font-mono text-xl font-bold text-slate-950">
+              {slf.letter}
+            </span>
+          </div>
         </div>
         <p className="mt-3 text-sm text-(--text-secondary)">{t.slf.voteHint}</p>
 
@@ -95,7 +109,7 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
                           aria-label={t.slf.vote(p.name)}
                           title={t.slf.vote(p.name)}
                           aria-pressed={voted}
-                          onClick={() => socket.emit("slf:vote", { playerId: p.id, category: i })}
+                          onClick={() => vote(p.id, i)}
                           className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-xs transition ${
                             voted
                               ? "bg-red-500 text-white"

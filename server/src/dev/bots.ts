@@ -12,7 +12,7 @@ import { MAX_PLAYERS } from "../config";
 import { removePlayer } from "../connection";
 import { ensureColumn, rollDice, writeCell } from "../games/kniffel";
 import { canPlace, drawStartCard, handleGuess, placeCard, submitYear } from "../games/music";
-import { callStop, saveAnswers } from "../games/slf";
+import { callStop, finishDrawing, reciteNext, saveAnswers } from "../games/slf";
 import { getCachedTrack } from "../music/itunes";
 import { SUGGESTION_CATEGORIES, suggestTracks } from "../music/suggestions";
 import { createPlayer, rooms, type Player, type Room } from "../state";
@@ -171,9 +171,32 @@ function playRound(room: Room, bot: Player) {
 function playSlf(room: Room, bot: Player) {
   const game = room.slf;
   if (!game || room.phase !== "round") return;
-  if (!claim(bot, `slf:${game.round}`, "write")) return;
   const round = game.round;
-  later(room, bot, between(6000, 16000), () => {
+
+  // Aufsagen: als Zählender in wechselndem Tempo tippen, als Stopp-Sager irgendwann stoppen.
+  const drawing = game.drawing;
+  if (drawing) {
+    if (drawing.reciterId === bot.id && claim(bot, `slf:${round}`, "recite")) {
+      const tick = () =>
+        later(room, bot, between(120, 450), () => {
+          if (room.slf?.drawing !== drawing) return;
+          reciteNext(room, bot);
+          tick();
+        });
+      tick();
+    }
+    if (drawing.stopperId === bot.id && claim(bot, `slf:${round}`, "drawStop")) {
+      later(room, bot, between(2500, 9000), () => {
+        if (finishDrawing(room, bot)) broadcast(room);
+      });
+    }
+    return;
+  }
+
+  if (!claim(bot, `slf:${round}`, "write")) return;
+  // Gezählt ab dem Moment, ab dem geschrieben werden darf (nach Countdown und Rattern).
+  const ready = Math.max(0, game.startsAt - Date.now());
+  later(room, bot, ready + between(6000, 16000), () => {
     if (room.phase !== "round" || room.slf?.round !== round) return;
     const answers = game.categories.map((category) => {
       const id = presetId(category);

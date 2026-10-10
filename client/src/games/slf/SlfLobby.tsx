@@ -160,8 +160,22 @@ function SlfLobby({ state }: { state: RoomState }) {
             onChange={(slfSeconds) => update({ slfSeconds })}
             disabled={!isHost}
           />
+          <div>
+            <OptionGroup
+              label={t.slf.letterMode}
+              value={settings.slfLetterMode}
+              options={[
+                { value: "random" as const, label: t.slf.modeRandom },
+                { value: "recite" as const, label: t.slf.modeRecite },
+              ]}
+              onChange={(slfLetterMode) => update({ slfLetterMode })}
+              disabled={!isHost}
+            />
+            {settings.slfLetterMode === "recite" && (
+              <p className="mt-2 text-xs text-(--text-secondary)">{t.slf.modeReciteHint}</p>
+            )}
+          </div>
           <OptionGroup
-            wide
             label={t.slf.hardLetters}
             value={settings.slfHardLetters}
             options={[

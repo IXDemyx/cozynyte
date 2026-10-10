@@ -8,6 +8,8 @@ export const MUSIC_GAMES: Game[] = ["song", "year", "timeline"];
 
 export type TimelineMode = "together" | "turns";
 
+export type SlfLetterMode = "random" | "recite";
+
 export interface Track {
   id: number;
   title: string;
@@ -39,6 +41,8 @@ export interface Settings {
   slfSeconds: number;
   /** Q, X und Y mitspielen? */
   slfHardLetters: boolean;
+  /** Buchstabe zufällig oder wie am Tisch: einer sagt das Alphabet auf, ein anderer sagt Stopp. */
+  slfLetterMode: SlfLetterMode;
 }
 
 /** Eine Karte in der Song-Timeline – das Jahr ist sichtbar. */
@@ -142,10 +146,20 @@ export interface SlfView {
   letter: string;
   categories: string[];
   endsAt: number;
+  /** Schreibzeit (von startsAt bis endsAt). */
   durationMs: number;
+  /** Bis hier läuft der Countdown, danach rattert (Zufallsmodus) der Buchstabe … */
+  countdownEndsAt: number;
+  /** … und ab hier wird geschrieben. Beim Aufsagen gleich countdownEndsAt. */
+  startsAt: number;
   /** Jemand hat „Stopp!" gerufen: Schluss um stopAt. */
   stopAt?: number;
   stoppedBy?: string;
+  /**
+   * Buchstabe wird gerade aufgesagt (Modus „recite"): wer zählt, wer Stopp sagt. Den aktuellen
+   * Buchstaben sieht nur, wer zählt – solange ist `letter` leer.
+   */
+  drawing?: { reciterId: string; stopperId: string; current?: string };
   /** Beim Schreiben: wie viele Felder jeder schon ausgefüllt hat (nicht was). */
   filled: Record<string, number>;
   /** Die eigenen Antworten (nach Neuladen wieder da). */

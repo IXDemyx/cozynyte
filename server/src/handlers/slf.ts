@@ -1,7 +1,14 @@
 /** Stadt Land Fluss: Antworten mitschicken, „Stopp!", Abstimmung und weiter zur nächsten Runde. */
 
-import { callStop, nextSlfRound, saveAnswers, toggleVote } from "../games/slf";
-import { broadcast } from "../view";
+import {
+  callStop,
+  finishDrawing,
+  nextSlfRound,
+  reciteNext,
+  saveAnswers,
+  toggleVote,
+} from "../games/slf";
+import { broadcast, sendTo } from "../view";
 import type { Handlers } from "./context";
 
 export function registerSlfHandlers({ socket, ctx, reply }: Handlers) {
@@ -9,6 +16,17 @@ export function registerSlfHandlers({ socket, ctx, reply }: Handlers) {
   socket.on("slf:answers", (data) => {
     const c = ctx();
     if (c?.room.game === "slf" && saveAnswers(c.room, c.player, data?.answers)) broadcast(c.room);
+  });
+
+  // Aufsagen: nur der Zählende bekommt seinen neuen Buchstaben – die anderen merken nichts.
+  socket.on("slf:tap", () => {
+    const c = ctx();
+    if (c?.room.game === "slf" && reciteNext(c.room, c.player)) sendTo(c.room, c.player.id);
+  });
+
+  socket.on("slf:drawStop", () => {
+    const c = ctx();
+    if (c?.room.game === "slf" && finishDrawing(c.room, c.player)) broadcast(c.room);
   });
 
   socket.on("slf:stop", (data, cb) => {

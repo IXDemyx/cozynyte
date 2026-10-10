@@ -1,5 +1,7 @@
 /** Alle Einstellungen des Servers an einem Ort. */
 
+import type { Game } from "../../shared/types";
+
 export const PORT = Number(process.env.PORT ?? 3001);
 
 /**
@@ -10,8 +12,16 @@ export const DEV_TOOLS = process.env.DEV_TOOLS
   ? process.env.DEV_TOOLS === "1"
   : process.env.NODE_ENV !== "production";
 
-/** Wie lange die Auflösung stehen bleibt, bevor der nächste Song startet. */
-export const REVEAL_MS = Number(process.env.REVEAL_MS ?? 9000);
+/**
+ * Wie lange die Auflösung stehen bleibt, bevor der nächste Song startet. Bei Song Timeline
+ * dauert es länger – da will man noch die Zeitleisten ansehen.
+ * REVEAL_MS setzt die Zeit für alle Spiele.
+ */
+export const REVEAL_MS = process.env.REVEAL_MS ? Number(process.env.REVEAL_MS) : undefined;
+
+export function revealMs(game: Game): number {
+  return REVEAL_MS ?? (game === "timeline" ? 9000 : 5000);
+}
 
 export const MAX_PLAYERS = 16;
 
