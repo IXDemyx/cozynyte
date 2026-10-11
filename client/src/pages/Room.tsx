@@ -24,7 +24,7 @@ import { useLanguage } from "../lib/i18n";
 import { getName, saveName } from "../lib/socket";
 
 function Room() {
-  const { t, err } = useLanguage();
+  const { t, err, home } = useLanguage();
   const code = (useParams().code ?? "").toUpperCase();
   const [name, setName] = useState(getName);
   const [draft, setDraft] = useState("");
@@ -79,7 +79,7 @@ function Room() {
         <h1 className="mt-3 text-2xl font-bold tracking-tight">{t.room.failed}</h1>
         <p className="mt-3 text-(--text-secondary)">{err(error)}</p>
         <Link
-          to="/"
+          to={home}
           className="mt-6 inline-block font-semibold text-(--accent) hover:text-(--accent-hover)"
         >
           {t.room.toHome}

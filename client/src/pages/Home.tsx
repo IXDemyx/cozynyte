@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import type { Ack, Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
+import LanguageHint from "../components/LanguageHint";
 import { card, eyebrow, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { SEO } from "../lib/seo";
@@ -80,6 +81,7 @@ function Home() {
 
   return (
     <div className="animate-in space-y-6">
+      <LanguageHint />
       <header>
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{seo.title}</h1>
         <p className="mt-2 max-w-2xl text-(--text-secondary)">{seo.intro}</p>

@@ -23,6 +23,7 @@ function App() {
         <main className={`mx-auto w-full ${width} flex-1 px-4 pb-16 pt-8 sm:px-6`}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/en" element={<Home />} />
             <Route path="/r/:code" element={<Room />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="*" element={<Home />} />

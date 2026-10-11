@@ -11,12 +11,12 @@ interface NavbarProps {
 }
 
 function Navbar({ theme, onToggleTheme, width }: NavbarProps) {
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage, t, home } = useLanguage();
 
   return (
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-(--accent-border) dark:bg-(--bg-primary)/90">
       <div className={`mx-auto flex h-16 ${width} items-center justify-between px-4 sm:px-6`}>
-        <Link to="/" className="font-mono text-lg font-semibold tracking-tight">
+        <Link to={home} className="font-mono text-lg font-semibold tracking-tight">
           <span className="text-(--accent)">&lt;/</span>
           games
           <span className="text-(--accent)">&gt;</span>

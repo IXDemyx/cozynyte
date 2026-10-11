@@ -24,6 +24,8 @@ if (existsSync(dist)) {
     res.setHeader("X-Robots-Tag", "noindex");
     next();
   });
+  // Englische Startseite: eigene Adresse mit eigenem Titel und Text (für Suchmaschinen).
+  app.get("/en", (_req, res) => res.sendFile(path.join(dist, "en", "index.html")));
   app.use(express.static(dist));
   app.get(/^(?!\/socket\.io).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")));
 }
