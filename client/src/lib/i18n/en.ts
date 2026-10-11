@@ -21,6 +21,8 @@ export const en: Dictionary = {
     legal: "Legal",
     imprint: "Legal notice",
     privacy: "Privacy",
+    donate: "Buy me a coffee",
+    donateFinal: "Had fun?",
   },
   nav: {
     light: "Light theme",

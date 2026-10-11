@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiX } from "react-icons/fi";
+import { FiCoffee, FiX } from "react-icons/fi";
 import type { Ack, RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
@@ -7,6 +7,7 @@ import PlayerList from "../../components/PlayerList";
 import Podium, { Confetti, places } from "../../components/Podium";
 import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow } from "../../components/ui";
+import { DONATE_URL } from "../../lib/donate";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
 
@@ -77,6 +78,22 @@ function Final({ state }: { state: RoomState }) {
             )}
           </div>
           <ErrorText code={error} className="mt-3" />
+
+          {/* Dezent am Ende: Wer Spaß hatte, kann einen Kaffee spendieren. */}
+          {DONATE_URL && (
+            <p className="mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-slate-200 pt-5 text-sm text-(--text-secondary) dark:border-(--accent-soft)">
+              {t.footer.donateFinal}
+              <a
+                href={DONATE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-semibold text-(--accent) transition hover:text-(--accent-hover)"
+              >
+                <FiCoffee aria-hidden="true" />
+                {t.footer.donate}
+              </a>
+            </p>
+          )}
         </section>
 
         {state.game === "timeline" && state.timelines && (

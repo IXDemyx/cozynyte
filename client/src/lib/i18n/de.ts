@@ -19,6 +19,8 @@ export const de = {
     legal: "Rechtliches",
     imprint: "Impressum",
     privacy: "Datenschutz",
+    donate: "Spendier mir einen Kaffee",
+    donateFinal: "Hat's Spaß gemacht?",
   },
   nav: {
     light: "Helles Design",
