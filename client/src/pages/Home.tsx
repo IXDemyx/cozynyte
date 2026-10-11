@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import type { IconType } from "react-icons";
+import { FiChevronDown } from "react-icons/fi";
 import {
   LuCalendarDays,
   LuDice5,
@@ -14,10 +15,11 @@ import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
 import { card, eyebrow, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
+import { SEO } from "../lib/seo";
 import { getName, playerId, saveName, socket } from "../lib/socket";
 
 function Home() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [name, setName] = useState(getName);
   const [code, setCode] = useState("");
@@ -74,8 +76,15 @@ function Home() {
     navigate(`/r/${code}`);
   };
 
+  const seo = SEO[language];
+
   return (
     <div className="animate-in space-y-6">
+      <header>
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{seo.title}</h1>
+        <p className="mt-2 max-w-2xl text-(--text-secondary)">{seo.intro}</p>
+      </header>
+
       <section className={`${card} p-6`}>
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
@@ -141,6 +150,40 @@ function Home() {
           </div>
         </section>
       ))}
+
+      {/* So funktioniert's und FAQ – vor allem für Neulinge (und Suchmaschinen). */}
+      <section className="grid gap-10 border-t border-slate-200 pt-10 md:grid-cols-2 dark:border-(--accent-soft)">
+        <div>
+          <h2 className={eyebrow}>{seo.howTitle}</h2>
+          <ol className="mt-4 space-y-4">
+            {seo.steps.map((step, i) => (
+              <li key={i} className="flex gap-3 text-sm">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-(--accent-soft) font-mono text-sm font-bold text-(--accent)">
+                  {i + 1}
+                </span>
+                <span className="pt-1 text-(--text-secondary)">{step}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div>
+          <h2 className={eyebrow}>{seo.faqTitle}</h2>
+          <div className="mt-4 divide-y divide-slate-200 dark:divide-(--accent-soft)">
+            {seo.faq.map((item) => (
+              <details key={item.q} className="group py-3">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold transition hover:text-(--accent) [&::-webkit-details-marker]:hidden">
+                  <h3>{item.q}</h3>
+                  <FiChevronDown
+                    aria-hidden="true"
+                    className="shrink-0 text-(--text-secondary) transition group-open:rotate-180"
+                  />
+                </summary>
+                <p className="mt-2 text-sm text-(--text-secondary)">{item.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
