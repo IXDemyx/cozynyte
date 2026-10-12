@@ -10,8 +10,9 @@ No sign-up: create a room, share the four-letter code or the invite link, and pl
 | **Guess the Song**   | A 30-second clip plays; everyone types the title and artist as fast as possible. |
 | **Guess the Year**   | A clip plays; everyone guesses the release year.                                 |
 | **Song Timeline**    | Place each song in your own timeline; the first with enough correct cards wins.  |
-| **Stadt Land Fluss** | A letter is drawn; fill in a word for every category before someone calls stop.  |
+| **Name, Place, Animal, Thing** | A letter is drawn; fill in a word for every category before someone calls stop.  |
 | **Yahtzee**          | A shared score sheet for playing Yahtzee with real dice at the table.            |
+| **Draw & Guess**          | Choose from 3 words and draw it! Everyone else guesses for points            |
 
 The three music games share the same flow: lobby → everyone picks their own songs → rounds → reveal →
 final scores. The host can switch between the games in the lobby, so a room can be reused
