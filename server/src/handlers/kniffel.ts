@@ -71,12 +71,12 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
     broadcast(c.room);
   });
 
-  // Manuell festlegen, wer dran ist – falls die automatische Reihenfolge nicht passt.
+  // Manuell festlegen, wer dran ist – falls die automatische Reihenfolge nicht passt. Nur der Host.
   socket.on("kniffel:turn", (data) => {
     const c = ctx();
     const sheet = c?.room.kniffel;
     const column = String(data?.column ?? "");
-    if (!c || !sheet || !sheet.columns.some((col) => col.id === column)) return;
+    if (!c || !c.isHost || !sheet || !sheet.columns.some((col) => col.id === column)) return;
     setTurn(sheet, column);
     broadcast(c.room);
   });

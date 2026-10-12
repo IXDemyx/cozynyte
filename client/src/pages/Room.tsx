@@ -21,13 +21,14 @@ import SlfRound from "../games/slf/SlfRound";
 import { useRoom } from "../hooks/useRoom";
 import { useMusicSounds } from "../games/music/useMusicSounds";
 import { useLanguage } from "../lib/i18n";
-import { getName, saveName } from "../lib/socket";
+import { confirmRoom, getName, isRoomConfirmed, saveName } from "../lib/socket";
 
 function Room() {
   const { t, err, home } = useLanguage();
   const code = (useParams().code ?? "").toUpperCase();
-  const [name, setName] = useState(getName);
-  const [draft, setDraft] = useState("");
+  // Direkt über einen Link: erst nach dem Namen fragen (vorausgefüllt), dann beitreten.
+  const [name, setName] = useState(() => (isRoomConfirmed(code) ? getName() : ""));
+  const [draft, setDraft] = useState(getName);
   const { state, error, offset } = useRoom(code, name);
   useMusicSounds(state);
 
@@ -44,6 +45,7 @@ function Room() {
     event.preventDefault();
     if (!draft.trim()) return;
     saveName(draft);
+    confirmRoom(code);
     setName(draft.trim());
   };
 
@@ -56,6 +58,7 @@ function Room() {
         <h1 className="mt-3 text-2xl font-bold tracking-tight">{t.room.askName}</h1>
         <input
           autoFocus
+          onFocus={(e) => e.target.select()}
           aria-label={t.home.name}
           className={`${input} mt-5`}
           value={draft}

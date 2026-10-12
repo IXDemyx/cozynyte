@@ -17,7 +17,7 @@ import LanguageHint from "../components/LanguageHint";
 import { card, eyebrow, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { SEO } from "../lib/seo";
-import { getName, playerId, saveName, socket } from "../lib/socket";
+import { confirmRoom, getName, playerId, rememberPlayerId, saveName, socket } from "../lib/socket";
 
 function Home() {
   const { t, language } = useLanguage();
@@ -64,6 +64,8 @@ function Home() {
           setBusy(false);
           if (failure) return setError("server_unreachable");
           if (!res.ok) return setError(res.error);
+          confirmRoom(res.code);
+          rememberPlayerId(res.code, playerId);
           navigate(`/r/${res.code}`);
         },
       );
@@ -74,6 +76,7 @@ function Home() {
     if (!validName) return setError("name_required");
     if (code.length !== 4) return setError("code_length");
     saveName(name);
+    confirmRoom(code);
     navigate(`/r/${code}`);
   };
 

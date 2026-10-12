@@ -25,6 +25,8 @@ export interface Track {
   previewUrl: string;
   /** Erscheinungsjahr laut iTunes (für Guess the Year). */
   year?: number;
+  /** Song-Timeline: Startkarte ohne Song – nur eine Jahreszahl als erster Anhaltspunkt. */
+  anchor?: boolean;
 }
 
 export type Phase = "lobby" | "picking" | "round" | "reveal" | "finished";
@@ -67,6 +69,8 @@ export interface TimelineCard {
   artist: string;
   artwork: string;
   year: number;
+  /** Startjahr ohne Song (Titel und Interpret leer). */
+  anchor?: boolean;
   /** Nur im Endstand: falsch gelegt – steht dort, wo der Spieler sie hingelegt hat. */
   wrong?: boolean;
 }

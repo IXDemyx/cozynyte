@@ -14,6 +14,8 @@ export const de = {
   points: "Punkte",
   kick: (name: string) => `${name} entfernen`,
   kickConfirm: "Entfernen?",
+  makeHost: (name: string) => `${name} zum Host machen`,
+  makeHostConfirm: "Host?",
   footer: {
     by: "Ein Projekt von",
     legal: "Rechtliches",
@@ -90,7 +92,7 @@ export const de = {
     title: (n: number) => (n === 1 ? "Wähle deinen Song" : `Wähle deine ${n} Songs`),
     hint: "Die anderen sehen deine Auswahl nicht. Du bekommst Punkte, wenn deine Songs erraten werden – zu schwer lohnt sich also nicht.",
     hintTimeline:
-      "Dein erster Song wird deine Startkarte – sein Jahr sehen alle. Die übrigen kommen in den gemeinsamen Stapel. Schau aufs angezeigte Jahr: Bei Neuauflagen nennt iTunes manchmal ein späteres.",
+      "Alle Songs kommen in den gemeinsamen Stapel – jeder startet mit einem zufälligen Startjahr. Schau aufs angezeigte Jahr: Bei Neuauflagen nennt iTunes manchmal ein späteres.",
     hintYear:
       "Die anderen sehen deine Auswahl nicht. Du bekommst Punkte, wenn sie höchstens 2 Jahre danebenliegen. Schau aufs angezeigte Jahr: Bei Neuauflagen nennt iTunes manchmal ein späteres.",
     done: "Fertig! Warte auf die anderen …",
@@ -289,6 +291,8 @@ export const de = {
   },
   timeline: {
     goal: (n: number) => `Ziel: ${n} Karten`,
+    startYear: "Startjahr",
+    startYearHint: "Deine erste Karte – alles Weitere ordnest du davor oder danach ein.",
     gap: "Hier einordnen",
     confirm: "Hier einsortieren",
     question: "Wo gehört der Song in deine Zeitleiste?",

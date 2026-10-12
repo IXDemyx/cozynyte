@@ -66,7 +66,7 @@ function Lobby({ state }: { state: RoomState }) {
           <OptionGroup
             label={t.lobby.timePerSong}
             value={settings.roundSeconds}
-            options={numbers(isTimeline ? [20, 30, 45] : [15, 20, 30], "s")}
+            options={numbers([15, 20, 30], "s")}
             onChange={(roundSeconds) => update({ roundSeconds })}
             disabled={!isHost}
           />

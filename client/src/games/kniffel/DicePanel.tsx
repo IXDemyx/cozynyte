@@ -19,12 +19,14 @@ interface DicePanelProps {
   /** Darf dieses Gerät für den Spieler am Zug würfeln? */
   canRoll: boolean;
   setTurn: (column: string | null) => void;
+  /** Nur der Host darf von Hand festlegen, wer dran ist. */
+  isHost: boolean;
   /** Soundeffekte an (Schalter im Kniffel-Raum). */
   sounds: boolean;
 }
 
 /** Wer ist dran, echte Würfel eintippen oder digital würfeln. */
-function DicePanel({ sheet, dice, setDice, canRoll, setTurn, sounds }: DicePanelProps) {
+function DicePanel({ sheet, dice, setDice, canRoll, setTurn, sounds, isHost }: DicePanelProps) {
   const { t } = useLanguage();
   const current = sheet.columns.find((c) => c.id === sheet.current);
   const { roll } = sheet;
@@ -57,7 +59,8 @@ function DicePanel({ sheet, dice, setDice, canRoll, setTurn, sounds }: DicePanel
             t.kniffel.dice
           )}
         </h2>
-        {sheet.columns.length > 1 && sheet.current && (
+        {/* Wer dran ist, legt nur der Host von Hand fest – sonst geht es automatisch weiter. */}
+        {isHost && sheet.columns.length > 1 && sheet.current && (
           <div className="flex items-center gap-2 text-sm text-(--text-secondary)">
             <label className="flex items-center gap-2">
               {t.kniffel.turn}

@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { FaCrown } from "react-icons/fa";
 import { FiTrash2 } from "react-icons/fi";
+import { LuCrown } from "react-icons/lu";
 import {
   BONUS_THRESHOLD,
   LOWER,
@@ -9,6 +11,7 @@ import {
   type KniffelState,
   type Totals,
 } from "../../../../shared/kniffel";
+import type { PlayerView } from "../../../../shared/types";
 import { card } from "../../components/ui";
 import { useConfirm } from "../../hooks/useConfirm";
 import { useLanguage } from "../../lib/i18n";
@@ -18,6 +21,9 @@ interface ScoreSheetProps {
   sheet: KniffelState;
   you: string;
   isHost: boolean;
+  hostId: string;
+  /** Spieler im Raum – wer verbunden ist, kann Host werden. */
+  players: PlayerView[];
   columnTotals: Record<string, Totals>;
   canEdit: (column: KniffelColumn) => boolean;
   /** Vorschlag aus den aktuellen Würfeln für ein leeres Feld. */
@@ -34,6 +40,8 @@ function ScoreSheet({
   sheet,
   you,
   isHost,
+  hostId,
+  players,
   columnTotals,
   canEdit,
   suggestion,
@@ -46,6 +54,11 @@ function ScoreSheet({
   const remove = (column: KniffelColumn) => {
     if (confirm(column.id)) socket.emit("kniffel:remove", { column: column.id });
   };
+  const makeHost = (playerId: string) => {
+    if (confirm(`host:${playerId}`)) socket.emit("host:transfer", { playerId });
+  };
+  const canBecomeHost = (playerId?: string) =>
+    Boolean(playerId && players.some((p) => p.id === playerId && p.connected && !p.bot));
 
   const categoryRow = (category: Category) => (
     <tr key={category} className="border-t border-slate-200 dark:border-slate-800">
@@ -109,41 +122,83 @@ function ScoreSheet({
 
   return (
     <section className={`${card} overflow-x-auto p-3 sm:p-5`}>
-      <table className="w-full border-collapse text-sm">
+      {/* Feste Spaltenbreiten: alle Spieler gleich breit, egal wie lang Namen oder Zahlen sind.
+          Bei vielen Spielern wird der Block breiter als der Bildschirm und scrollt seitlich. */}
+      <table
+        className="w-full table-fixed border-collapse text-sm"
+        style={{ minWidth: `calc(9rem + ${sheet.columns.length} * 5.5rem)` }}
+      >
+        <colgroup>
+          <col className="w-36 sm:w-48" />
+          {sheet.columns.map((column) => (
+            <col key={column.id} />
+          ))}
+        </colgroup>
         <thead>
           <tr>
             <th className="sticky left-0 z-10 bg-white dark:bg-(--bg-secondary)" />
             {sheet.columns.map((column) => (
               <th key={column.id} scope="col" className="px-1 pb-2 align-bottom">
+                {/* Antippen setzt den Zug – nur für den Host. */}
                 <button
                   type="button"
+                  disabled={!isHost}
                   onClick={() => setTurn(column.id)}
-                  className={`mx-auto block max-w-24 truncate rounded-md px-2 py-0.5 text-sm font-semibold ${
+                  className={`mx-auto block max-w-full truncate rounded-md px-2 py-0.5 text-sm font-semibold disabled:cursor-default ${
                     column.id === sheet.current
                       ? "bg-(--accent) text-slate-950"
-                      : "hover:text-(--accent)"
+                      : "enabled:hover:text-(--accent)"
                   }`}
                 >
                   {column.name}
                 </button>
                 {column.playerId === you ? (
-                  <span className="block text-xs font-normal text-(--text-secondary)">{t.you}</span>
+                  <span className="flex items-center justify-center gap-1 text-xs font-normal text-(--text-secondary)">
+                    {t.you}
+                    {column.playerId === hostId && (
+                      <FaCrown className="text-(--accent)" aria-label="Host" />
+                    )}
+                  </span>
                 ) : (
-                  isHost && (
-                    <button
-                      type="button"
-                      aria-label={t.kniffel.removeColumn(column.name)}
-                      title={t.kniffel.removeColumn(column.name)}
-                      onClick={() => remove(column)}
-                      className={`mx-auto mt-0.5 flex items-center rounded text-xs ${
-                        armed === column.id
-                          ? "bg-red-500 px-1.5 text-white"
-                          : "text-(--text-secondary) hover:text-red-500"
-                      }`}
-                    >
-                      {armed === column.id ? t.kickConfirm : <FiTrash2 aria-hidden="true" />}
-                    </button>
-                  )
+                  <span className="mt-0.5 flex items-center justify-center gap-1.5">
+                    {column.playerId === hostId && (
+                      <FaCrown className="text-xs text-(--accent)" aria-label="Host" />
+                    )}
+                    {isHost && canBecomeHost(column.playerId) && (
+                      <button
+                        type="button"
+                        aria-label={t.makeHost(column.name)}
+                        title={t.makeHost(column.name)}
+                        onClick={() => makeHost(column.playerId!)}
+                        className={`flex items-center rounded text-xs ${
+                          armed === `host:${column.playerId}`
+                            ? "bg-(--accent) px-1.5 text-slate-950"
+                            : "text-(--text-secondary) hover:text-(--accent)"
+                        }`}
+                      >
+                        {armed === `host:${column.playerId}` ? (
+                          t.makeHostConfirm
+                        ) : (
+                          <LuCrown aria-hidden="true" />
+                        )}
+                      </button>
+                    )}
+                    {isHost && (
+                      <button
+                        type="button"
+                        aria-label={t.kniffel.removeColumn(column.name)}
+                        title={t.kniffel.removeColumn(column.name)}
+                        onClick={() => remove(column)}
+                        className={`flex items-center rounded text-xs ${
+                          armed === column.id
+                            ? "bg-red-500 px-1.5 text-white"
+                            : "text-(--text-secondary) hover:text-red-500"
+                        }`}
+                      >
+                        {armed === column.id ? t.kickConfirm : <FiTrash2 aria-hidden="true" />}
+                      </button>
+                    )}
+                  </span>
                 )}
               </th>
             ))}

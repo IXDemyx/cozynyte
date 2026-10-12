@@ -3,6 +3,7 @@
  * Songauswahl → Runden → Auflösung → Endstand.
  */
 
+import { randomInt } from "node:crypto";
 import type { FeedItem } from "../../../shared/types";
 import { addChatMessage } from "../chat";
 import { HINT_AT, revealMs } from "../config";
@@ -37,16 +38,11 @@ export function startPicking(room: Room) {
 export function startRounds(room: Room) {
   const players = [...room.players.values()];
   if (room.game === "timeline") {
-    // Der erste gewählte Song wird die offene Startkarte, der Rest kommt in den Stapel.
-    for (const p of players) p.timeline = p.picks.slice(0, 1);
-    room.queue = shuffle(
-      players.flatMap((p) => p.picks.slice(1).map((track) => ({ track, pickerId: p.id }))),
-    );
-  } else {
-    room.queue = shuffle(
-      players.flatMap((p) => p.picks.map((track) => ({ track, pickerId: p.id }))),
-    );
+    // Alle starten mit demselben zufälligen Startjahr – so wird jeder gewählte Song auch gespielt.
+    for (const p of players) p.timeline = [];
+    room.startYear = undefined;
   }
+  room.queue = shuffle(players.flatMap((p) => p.picks.map((track) => ({ track, pickerId: p.id }))));
 
   // Möglichst nicht zweimal hintereinander ein Song desselben Spielers.
   for (let i = 1; i < room.queue.length; i++) {
@@ -318,9 +314,34 @@ export function placeCard(room: Room, round: Round, player: Player, position: nu
 }
 
 /** Spieler ohne Startkarte bekommen eine vom Ende des Stapels. */
+let anchorId = 0;
+
+/**
+ * Startkarte für die Zeitleiste: kein Song, nur ein Jahr – für alle dasselbe, damit jeder unter
+ * gleichen Bedingungen startet. Ausgelost einmal pro Partie aus dem Bereich der gewählten Songs
+ * (damit es ein echter Anhaltspunkt ist). Auch für Nachzügler – der Stapel bleibt unangetastet.
+ */
 export function drawStartCard(room: Room, player: Player) {
-  if (room.queue.length - 1 <= room.roundIndex) return;
-  player.timeline = [room.queue.pop()!.track];
+  if (room.startYear === undefined) {
+    const years = room.queue.map((q) => q.track.year).filter((y): y is number => Boolean(y));
+    const min = years.length ? Math.min(...years) : 1970;
+    const max = years.length ? Math.max(...years) : 2020;
+    room.startYear = min + randomInt(max - min + 1);
+  }
+  const year = room.startYear;
+  anchorId -= 1;
+  player.timeline = [
+    {
+      id: anchorId,
+      title: "",
+      artist: "",
+      album: "",
+      artwork: "",
+      previewUrl: "",
+      year,
+      anchor: true,
+    },
+  ];
   player.score = player.timeline.length;
 }
 

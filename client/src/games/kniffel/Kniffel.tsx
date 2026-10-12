@@ -184,12 +184,15 @@ function Kniffel({ state }: { state: RoomState }) {
           canRoll={canRoll}
           setTurn={setTurn}
           sounds={sounds}
+          isHost={isHost}
         />
 
         <ScoreSheet
           sheet={sheet}
           you={state.you}
           isHost={isHost}
+          hostId={state.hostId}
+          players={state.players}
           columnTotals={columnTotals}
           canEdit={canEdit}
           suggestion={suggestion}

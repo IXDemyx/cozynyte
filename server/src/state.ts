@@ -170,6 +170,8 @@ export interface Room {
   turnPos: number;
   activeId?: string;
   timelineOver: boolean;
+  /** Song-Timeline: gemeinsames Startjahr aller Spieler (pro Partie neu ausgelost). */
+  startYear?: number;
 
   // Kniffel: gemeinsamer Block, Zähler für Spalten-IDs und Verlauf zum Rückgängigmachen.
   kniffel?: KniffelState;

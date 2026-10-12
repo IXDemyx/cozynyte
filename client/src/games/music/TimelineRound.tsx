@@ -18,18 +18,32 @@ interface TimelineRoundProps {
 }
 
 function CardRow({ item }: { item: TimelineCard }) {
+  const { t } = useLanguage();
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-(--bg-primary) p-2 dark:border-slate-800">
+    <div
+      className={`flex items-center gap-3 rounded-xl border p-2 ${
+        item.anchor
+          ? "border-dashed border-(--accent-border) bg-(--accent-soft)"
+          : "border-slate-200 bg-(--bg-primary) dark:border-slate-800"
+      }`}
+    >
       <span className="w-14 shrink-0 text-center font-mono text-lg font-semibold text-(--accent)">
         {item.year}
       </span>
       {item.artwork && (
         <img src={item.artwork} alt="" className="h-9 w-9 shrink-0 rounded-md object-cover" />
       )}
-      <div className="min-w-0">
-        <p className="truncate text-sm font-semibold">{item.title}</p>
-        <p className="truncate text-xs text-(--text-secondary)">{item.artist}</p>
-      </div>
+      {item.anchor ? (
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{t.timeline.startYear}</p>
+          <p className="truncate text-xs text-(--text-secondary)">{t.timeline.startYearHint}</p>
+        </div>
+      ) : (
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold">{item.title}</p>
+          <p className="truncate text-xs text-(--text-secondary)">{item.artist}</p>
+        </div>
+      )}
     </div>
   );
 }

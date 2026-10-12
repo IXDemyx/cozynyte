@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Ack, RoomState } from "../../../shared/types";
-import { playerId, socket } from "../lib/socket";
+import { playerIdFor, rememberPlayerId, socket } from "../lib/socket";
 
 /** Tritt dem Raum bei (auch nach Verbindungsabbruch erneut) und liefert den aktuellen Stand. */
 export function useRoom(code: string, name: string) {
@@ -12,9 +12,15 @@ export function useRoom(code: string, name: string) {
     if (!name) return;
 
     const join = () => {
-      socket.emit("room:join", { code, name, playerId }, (res: Ack) => {
-        setError(res.ok ? "" : res.error);
-      });
+      socket.emit(
+        "room:join",
+        { code, name, playerId: playerIdFor(code) },
+        (res: Ack<{ playerId?: string }>) => {
+          setError(res.ok ? "" : res.error);
+          // Der Server hat uns wiedererkannt (z. B. am Namen) – diese ID ab jetzt verwenden.
+          if (res.ok && res.playerId) rememberPlayerId(code, res.playerId);
+        },
+      );
     };
     const onState = (next: RoomState) => {
       if (next.code !== code) return;

@@ -20,7 +20,7 @@ export const DEV_TOOLS = process.env.DEV_TOOLS
 export const REVEAL_MS = process.env.REVEAL_MS ? Number(process.env.REVEAL_MS) : undefined;
 
 export function revealMs(game: Game): number {
-  return REVEAL_MS ?? (game === "timeline" ? 9000 : 5000);
+  return REVEAL_MS ?? (game === "timeline" ? 6000 : 5000);
 }
 
 export const MAX_PLAYERS = 16;
@@ -50,7 +50,7 @@ export const MAX_COLUMNS = 16;
 export const MAX_UNDO = 100;
 
 /** Erlaubte Werte für die Lobby-Einstellungen. */
-export const ROUND_SECONDS = [15, 20, 30, 45];
+export const ROUND_SECONDS = [15, 20, 30];
 /** Karten zum Sieg; 0 = kein Limit, gespielt wird bis alle Songs durch sind. */
 export const TIMELINE_GOALS = [0, 4, 6, 8, 10];
 export const MAX_SONGS_PER_PLAYER = 10;

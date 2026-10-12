@@ -141,15 +141,23 @@ function Final({ state }: { state: RoomState }) {
                           >
                             {item.year}
                           </span>
-                          <span className="min-w-0 flex-1 truncate">
-                            {item.title}
-                            <span
-                              className={item.wrong ? "text-red-500/70" : "text-(--text-secondary)"}
-                            >
-                              {" "}
-                              · {item.artist}
+                          {item.anchor ? (
+                            <span className="min-w-0 flex-1 truncate text-(--text-secondary)">
+                              {t.timeline.startYear}
                             </span>
-                          </span>
+                          ) : (
+                            <span className="min-w-0 flex-1 truncate">
+                              {item.title}
+                              <span
+                                className={
+                                  item.wrong ? "text-red-500/70" : "text-(--text-secondary)"
+                                }
+                              >
+                                {" "}
+                                · {item.artist}
+                              </span>
+                            </span>
+                          )}
                           {item.wrong && (
                             <FiX className="shrink-0" aria-label={t.final.wrongCard} />
                           )}

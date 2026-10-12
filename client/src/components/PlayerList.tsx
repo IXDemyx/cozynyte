@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { FaCrown } from "react-icons/fa";
 import { FiUserX } from "react-icons/fi";
+import { LuCrown } from "react-icons/lu";
 import type { PlayerView, RoomState } from "../../../shared/types";
 import { useConfirm } from "../hooks/useConfirm";
 import { useLanguage } from "../lib/i18n";
@@ -24,6 +25,10 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
 
   const kick = (id: string) => {
     if (confirm(id)) socket.emit("player:kick", { playerId: id });
+  };
+  // Host-Rolle abgeben – ebenfalls mit zweitem Klick zur Bestätigung.
+  const makeHost = (id: string) => {
+    if (confirm(`host:${id}`)) socket.emit("host:transfer", { playerId: id });
   };
 
   return (
@@ -65,21 +70,44 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
                 {p.score}
               </span>
             )}
+            {/* Host-Werkzeuge: mit Maus erst beim Drüberfahren sichtbar, am Handy immer. */}
             {isHost && p.id !== state.you && (
-              <button
-                type="button"
-                aria-label={t.kick(p.name)}
-                title={t.kick(p.name)}
-                onClick={() => kick(p.id)}
-                className={`shrink-0 rounded-md text-xs font-semibold transition ${
-                  armed === p.id
-                    ? "bg-red-500 px-2 py-1 text-white"
-                    : // Mit Maus erst beim Drüberfahren sichtbar, am Handy immer.
-                      "reveal-on-hover p-1 text-(--text-secondary) hover:text-red-500"
+              <span
+                className={`flex shrink-0 items-center gap-0.5 rounded-md ${
+                  armed === p.id || armed === `host:${p.id}` ? "" : "reveal-on-hover"
                 }`}
               >
-                {armed === p.id ? t.kickConfirm : <FiUserX aria-hidden="true" />}
-              </button>
+                {p.connected && !p.bot && armed !== p.id && (
+                  <button
+                    type="button"
+                    aria-label={t.makeHost(p.name)}
+                    title={t.makeHost(p.name)}
+                    onClick={() => makeHost(p.id)}
+                    className={`rounded-md text-xs font-semibold transition ${
+                      armed === `host:${p.id}`
+                        ? "bg-(--accent) px-2 py-1 text-slate-950"
+                        : "p-1 text-(--text-secondary) hover:text-(--accent)"
+                    }`}
+                  >
+                    {armed === `host:${p.id}` ? t.makeHostConfirm : <LuCrown aria-hidden="true" />}
+                  </button>
+                )}
+                {armed !== `host:${p.id}` && (
+                  <button
+                    type="button"
+                    aria-label={t.kick(p.name)}
+                    title={t.kick(p.name)}
+                    onClick={() => kick(p.id)}
+                    className={`rounded-md text-xs font-semibold transition ${
+                      armed === p.id
+                        ? "bg-red-500 px-2 py-1 text-white"
+                        : "p-1 text-(--text-secondary) hover:text-red-500"
+                    }`}
+                  >
+                    {armed === p.id ? t.kickConfirm : <FiUserX aria-hidden="true" />}
+                  </button>
+                )}
+              </span>
             )}
           </li>
         ))}

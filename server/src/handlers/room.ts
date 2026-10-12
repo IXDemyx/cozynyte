@@ -20,6 +20,11 @@ import { cleanName, connected, createPlayer, createRoom, newCode, rooms } from "
 import { broadcast } from "../view";
 import type { Handlers } from "./context";
 
+/** Gleicher Name? (Groß-/Kleinschreibung und Leerzeichen egal) */
+function sameName(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
+
 export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
   socket.on("room:create", (data, cb) => {
     const name = cleanName(data?.name);
@@ -50,6 +55,14 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (room.banned.has(playerId)) return reply(cb, { ok: false, error: "kicked" });
 
     let player = room.players.get(playerId);
+    // Unbekannte ID, aber gleicher Name wie jemand, der gerade nicht verbunden ist: Das ist sehr
+    // wahrscheinlich dieselbe Person auf neuem Tab/Gerät (Handy hat den Tab verworfen, Link neu
+    // geöffnet …) – sie übernimmt ihren Platz samt Punkten, statt doppelt mitzuspielen.
+    if (!player) {
+      player = [...room.players.values()].find(
+        (p) => !p.socketId && !p.bot && sameName(p.name, name),
+      );
+    }
     if (!player) {
       if (room.players.size >= MAX_PLAYERS) return reply(cb, { ok: false, error: "room_full" });
       // Später beitreten ist erlaubt: mitten im Spiel rät man ab sofort mit, nur ohne eigene Songs.
@@ -60,13 +73,18 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
         room.turnOrder.push(player.id);
       }
       if (room.game === "draw" && room.phase === "round") addSeat(room, player);
+      // Kniffel: Wer länger weg war, ist aus der Spielerliste raus – seine Spalte aber noch da.
+      const orphan = room.kniffel?.columns.find(
+        (c) => c.playerId && !room.players.has(c.playerId) && sameName(c.name, name),
+      );
+      if (orphan) orphan.playerId = player.id;
     } else {
       player.name = name;
     }
     ensureColumn(room, player);
     if (socket.data.code && socket.data.code !== code) detach(socket, true);
     attach(socket, room, player);
-    reply(cb, { ok: true });
+    reply(cb, { ok: true, playerId: player.id });
     broadcast(room);
   });
 
@@ -201,6 +219,15 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
   socket.on("round:next", () => {
     const c = ctx();
     if (c?.isHost && MUSIC_GAMES.includes(c.room.game)) nextRound(c.room);
+  });
+
+  // Host-Werkzeug: die Host-Rolle an einen anderen (verbundenen) Spieler abgeben.
+  socket.on("host:transfer", (data) => {
+    const c = ctx();
+    const target = c?.room.players.get(String(data?.playerId ?? ""));
+    if (!c || !c.isHost || !target || target === c.player || !target.socketId || target.bot) return;
+    c.room.hostId = target.id;
+    broadcast(c.room);
   });
 
   // Host-Werkzeug: Spieler aus dem Raum entfernen.

@@ -15,6 +15,7 @@ function card(track: Track, wrong = false): TimelineCard {
     artist: track.artist,
     artwork: track.artwork,
     year: track.year ?? 0,
+    ...(track.anchor ? { anchor: true } : {}),
     ...(wrong ? { wrong } : {}),
   };
 }

@@ -16,6 +16,8 @@ export const en: Dictionary = {
   points: "Points",
   kick: (name) => `Remove ${name}`,
   kickConfirm: "Remove?",
+  makeHost: (name) => `Make ${name} host`,
+  makeHostConfirm: "Host?",
   footer: {
     by: "A project by",
     legal: "Legal",
@@ -92,7 +94,7 @@ export const en: Dictionary = {
     title: (n) => (n === 1 ? "Pick your song" : `Pick your ${n} songs`),
     hint: "The others can't see your picks. You earn points when your songs are guessed – so don't make them too hard.",
     hintTimeline:
-      "Your first song becomes your starting card – everyone sees its year. The rest go into the shared pile. Check the year shown: for re-releases iTunes sometimes gives a later one.",
+      "All songs go into the shared pile – everyone starts with a random start year. Check the year shown: for re-releases iTunes sometimes gives a later one.",
     hintYear:
       "The others can't see your picks. You earn points when they are at most 2 years off. Check the year shown: for re-releases iTunes sometimes gives a later one.",
     done: "Done! Waiting for the others …",
@@ -287,6 +289,8 @@ export const en: Dictionary = {
   },
   timeline: {
     goal: (n) => `Goal: ${n} cards`,
+    startYear: "Start year",
+    startYearHint: "Your first card – place everything else before or after it.",
     gap: "Place here",
     confirm: "Place it here",
     question: "Where does this song go in your timeline?",
