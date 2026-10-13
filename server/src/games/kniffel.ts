@@ -4,6 +4,7 @@ import { randomInt } from "node:crypto";
 import {
   CATEGORIES,
   MAX_ROLLS,
+  MAX_SHAKE_MS,
   allowedValues,
   nextTurn,
   type Category,
@@ -100,7 +101,7 @@ export function removeColumn(room: Room, column: string) {
 }
 
 /** Digital würfeln (gehaltene Würfel bleiben liegen). false = kein Wurf mehr übrig. */
-export function rollDice(sheet: KniffelState): boolean {
+export function rollDice(sheet: KniffelState, shake = 0): boolean {
   const roll = (sheet.roll ??= {
     dice: [1, 1, 1, 1, 1],
     held: [false, false, false, false, false],
@@ -109,5 +110,7 @@ export function rollDice(sheet: KniffelState): boolean {
   if (roll.count >= MAX_ROLLS || (roll.count > 0 && roll.held.every(Boolean))) return false;
   roll.dice = roll.dice.map((d, i) => (roll.count > 0 && roll.held[i] ? d : randomInt(1, 7)));
   roll.count++;
+  // Das Ergebnis würfelt der Server; wie lange geschüttelt wurde, bestimmt nur die Animation.
+  roll.shake = Math.round(Math.min(MAX_SHAKE_MS, Math.max(0, shake)));
   return true;
 }

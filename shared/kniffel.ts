@@ -62,7 +62,12 @@ export interface DigitalRoll {
   held: boolean[];
   /** Bereits gewürfelt in diesem Zug (0–3). */
   count: number;
+  /** So lange (ms) wurde der Becher vor diesem Wurf geschüttelt – nur für die Animation. */
+  shake?: number;
 }
+
+/** Länger geschüttelt als das zählt nicht mehr (die Animation wird nicht endlos). */
+export const MAX_SHAKE_MS = 2000;
 
 export const MAX_ROLLS = 3;
 

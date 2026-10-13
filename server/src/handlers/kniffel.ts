@@ -97,9 +97,9 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
     return { room: c.room, sheet };
   };
 
-  socket.on("kniffel:roll", () => {
+  socket.on("kniffel:roll", (data) => {
     const r = rollContext();
-    if (r && rollDice(r.sheet)) broadcast(r.room);
+    if (r && rollDice(r.sheet, Number(data?.shake) || 0)) broadcast(r.room);
   });
 
   socket.on("kniffel:hold", (data) => {

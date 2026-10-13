@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
-import { FiLock, FiRotateCcw, FiUnlock, FiUserPlus, FiVolume2, FiVolumeX } from "react-icons/fi";
+import { FiLock, FiRotateCcw, FiUnlock, FiUserPlus } from "react-icons/fi";
 import {
   CATEGORIES,
   canEditColumn,
@@ -15,13 +15,15 @@ import InviteButton from "../../components/InviteButton";
 import RoomLayout from "../../components/RoomLayout";
 import { card, eyebrow, input } from "../../components/ui";
 import { useConfirm } from "../../hooks/useConfirm";
-import { useSoundEffects } from "../../hooks/useSoundEffects";
+import VolumeControl from "../../components/VolumeControl";
+import { usePlayback } from "../../hooks/useVolume";
 import { useLanguage } from "../../lib/i18n";
 import { socket } from "../../lib/socket";
 import DicePanel from "./DicePanel";
 import EntryDialog from "./EntryDialog";
 import ScoreSheet from "./ScoreSheet";
 import { useKniffelSounds } from "./useKniffelSounds";
+import { useRollAnimation } from "./useRollAnimation";
 
 const EMPTY_SHEET: KniffelState = {
   columns: [],
@@ -47,7 +49,8 @@ function Kniffel({ state }: { state: RoomState }) {
   const [editing, setEditing] = useState<Editing | null>(null);
   const [newName, setNewName] = useState("");
   const { armed, confirm } = useConfirm();
-  const [sounds, setSounds] = useSoundEffects();
+  // Lautstärke wie in den anderen Spielen (gemeinsamer Regler); stumm = keine Soundeffekte.
+  const sounds = !usePlayback().muted;
   useKniffelSounds(sheet, state.you, sounds);
 
   const targetId = sheet.current ?? undefined;
@@ -60,13 +63,18 @@ function Kniffel({ state }: { state: RoomState }) {
 
   const { roll } = sheet;
   const rolling = Boolean(roll && roll.count > 0);
+  const animation = useRollAnimation(roll, sounds);
   // Digitaler Wurf hat Vorrang vor von Hand eingetippten Würfeln.
   const activeDice = rolling && roll ? roll.dice : dice;
   const diceReady = activeDice.length === 5;
   const canEdit = (column: KniffelColumn) => canEditColumn(sheet, column, state.you);
   const canRoll = Boolean(currentColumn && canEdit(currentColumn));
+  // Vorschläge im Block erst, wenn alle Würfel liegen – sonst verrät die Tabelle den Wurf.
   const suggestion = (columnId: string, category: Category) =>
-    diceReady && columnId === targetId && sheet.cells[columnId]?.[category] === undefined
+    diceReady &&
+    (!rolling || animation.settled) &&
+    columnId === targetId &&
+    sheet.cells[columnId]?.[category] === undefined
       ? scoreDice(category, activeDice)
       : undefined;
 
@@ -126,16 +134,9 @@ function Kniffel({ state }: { state: RoomState }) {
               <FiRotateCcw aria-hidden="true" /> {t.kniffel.undo}
             </Button>
             <InviteButton code={state.code} />
-            <Button
-              variant="secondary"
-              size="small"
-              title={sounds ? t.audio.effectsOn : t.audio.effectsOff}
-              aria-label={t.audio.effectsOn}
-              aria-pressed={sounds}
-              onClick={() => setSounds(!sounds)}
-            >
-              {sounds ? <FiVolume2 aria-hidden="true" /> : <FiVolumeX aria-hidden="true" />}
-            </Button>
+            <div className="flex h-9 items-center rounded-lg border border-slate-300 px-2 dark:border-slate-700">
+              <VolumeControl />
+            </div>
             {isHost ? (
               <Button
                 variant="secondary"
@@ -185,6 +186,7 @@ function Kniffel({ state }: { state: RoomState }) {
           setTurn={setTurn}
           sounds={sounds}
           isHost={isHost}
+          animation={animation}
         />
 
         <ScoreSheet

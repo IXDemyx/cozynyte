@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { CATEGORIES, totals, type KniffelState } from "../../../../shared/kniffel";
-import { playSound, type Sound } from "../../lib/sounds";
+import { playEffect, type Sound } from "../../lib/sounds";
 
 /** Abstand, damit zwei Effekte aus derselben Änderung nicht übereinander liegen. */
 const GAP_MS = 380;
@@ -66,7 +66,7 @@ export function useKniffelSounds(sheet: KniffelState, you: string, enabled: bool
     if (isFinished(sheet) && !isFinished(before)) queue.push("win");
 
     queue.forEach((sound, i) =>
-      timers.current.push(setTimeout(() => playSound(sound), i * GAP_MS)),
+      timers.current.push(setTimeout(() => playEffect(sound), i * GAP_MS)),
     );
   }, [sheet, you, enabled]);
 }

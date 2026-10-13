@@ -142,6 +142,111 @@ button:not(:disabled) {
   animation: land 0.32s cubic-bezier(0.3, 1.4, 0.5, 1) both;
 }
 
+/* Würfelbecher wird geschüttelt: Würfel bzw. Knopf rütteln kräftig hin und her. */
+@keyframes rattle {
+  0% {
+    transform: translate(-2px, 1px) rotate(-6deg);
+  }
+  25% {
+    transform: translate(2px, -2px) rotate(5deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-3deg);
+  }
+  75% {
+    transform: translate(2px, 0) rotate(7deg);
+  }
+  100% {
+    transform: translate(-2px, -1px) rotate(-5deg);
+  }
+}
+
+.animate-rattle {
+  animation: rattle 0.12s linear infinite;
+}
+
+/* Spannung: Der entscheidende Würfel dreht groß und leuchtend in Zeitlupe. */
+@keyframes suspense {
+  0%,
+  100% {
+    transform: scale(1.18) rotate(-4deg);
+    box-shadow:
+      0 0 0 3px var(--accent),
+      0 0 22px 4px var(--accent);
+  }
+  50% {
+    transform: scale(1.24) rotate(4deg);
+    box-shadow:
+      0 0 0 2px var(--accent-border),
+      0 0 10px 1px var(--accent);
+  }
+}
+
+.animate-suspense {
+  animation: suspense 0.5s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+/* Kurz vor dem Kniffel: der letzte Würfel noch größer, … */
+@keyframes suspense-big {
+  0%,
+  100% {
+    transform: scale(1.35) rotate(-6deg);
+    box-shadow:
+      0 0 0 3px var(--accent),
+      0 0 30px 8px var(--accent);
+  }
+  50% {
+    transform: scale(1.45) rotate(6deg);
+    box-shadow:
+      0 0 0 2px var(--accent-border),
+      0 0 14px 2px var(--accent);
+  }
+}
+
+.animate-suspense-big {
+  animation: suspense-big 0.6s ease-in-out infinite;
+  border-radius: 10px;
+}
+
+/* … die vier gleichen pochen wie ein Herzschlag … */
+@keyframes heartbeat {
+  0%,
+  40%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.1);
+  }
+  28% {
+    transform: scale(1.04);
+  }
+}
+
+.animate-heartbeat {
+  animation: heartbeat 0.9s ease-in-out infinite;
+}
+
+/* … und der ganze Würfelbereich glüht. */
+@keyframes tension {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--accent),
+      0 0 30px 0 rgba(249, 115, 22, 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--accent),
+      0 0 55px 6px rgba(249, 115, 22, 0.45);
+  }
+}
+
+.animate-tension {
+  animation: tension 0.9s ease-in-out infinite;
+}
+
 /* Kniffel! Alle Würfel springen nacheinander zweimal hoch. */
 @keyframes jump {
   0%,
@@ -400,6 +505,11 @@ button:not(:disabled) {
   .animate-wiggle,
   .animate-tumble,
   .animate-land,
+  .animate-rattle,
+  .animate-suspense,
+  .animate-suspense-big,
+  .animate-heartbeat,
+  .animate-tension,
   .animate-jump,
   .animate-glow,
   .animate-badge,

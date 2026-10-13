@@ -15,6 +15,13 @@ export type Sound =
   | "win"
   | "land"
   | "combo"
+  | "shake"
+  | "suspense"
+  | "suspenseLong"
+  | "heartbeat"
+  | "aww"
+  | "crowdAww"
+  | "applause"
   // Musikspiele
   | "correct"
   | "blip"
@@ -95,6 +102,90 @@ function click({ ctx, out }: { ctx: AudioContext; out: GainNode }, start: number
   source.start(ctx.currentTime + start);
 }
 
+type Out = { ctx: AudioContext; out: GainNode };
+
+/**
+ * Enttäuschtes „Awwww" vieler Leute: mehrere leicht verstimmte Stimmen (Sägezahn mit etwas
+ * Vibrato) durch Formantfilter für ein offenes „a/o", die Tonhöhe sackt dabei nach unten ab.
+ */
+function crowdAww({ ctx, out }: Out) {
+  const now = ctx.currentTime;
+  const length = 1.6;
+  // Formanten eines „ah", die zum „oh" hin wandern.
+  const formants = [
+    { from: 800, to: 550, q: 5, gain: 1 },
+    { from: 1200, to: 900, q: 7, gain: 0.6 },
+  ];
+  const mix = ctx.createGain();
+  mix.gain.value = 2.8;
+  mix.connect(out);
+  const bank = formants.map(({ from, to, q, gain }) => {
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.Q.value = q;
+    filter.frequency.setValueAtTime(from, now);
+    filter.frequency.linearRampToValueAtTime(to, now + length);
+    const level = ctx.createGain();
+    level.gain.value = gain;
+    filter.connect(level).connect(mix);
+    return filter;
+  });
+  [196, 220, 233, 185, 262, 208, 247, 175].forEach((pitch, k) => {
+    const start = now + k * 0.025 + Math.random() * 0.04;
+    const osc = ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(pitch * 1.06, start);
+    osc.frequency.exponentialRampToValueAtTime(pitch, start + 0.25);
+    osc.frequency.exponentialRampToValueAtTime(pitch * 0.72, start + length);
+    // Leichtes Vibrato, damit es nach Stimmen klingt und nicht nach Synthesizer.
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 5 + Math.random() * 1.5;
+    const depth = ctx.createGain();
+    depth.gain.value = pitch * 0.015;
+    lfo.connect(depth).connect(osc.frequency);
+    const env = ctx.createGain();
+    env.gain.setValueAtTime(0.0001, start);
+    env.gain.exponentialRampToValueAtTime(0.09, start + 0.18);
+    env.gain.setValueAtTime(0.09, start + length * 0.6);
+    env.gain.exponentialRampToValueAtTime(0.0001, start + length);
+    bank.forEach((filter) => osc.connect(env).connect(filter));
+    osc.start(start);
+    lfo.start(start);
+    osc.stop(start + length + 0.05);
+    lfo.stop(start + length + 0.05);
+  });
+}
+
+/**
+ * Applaus: viele kurze, gefilterte Rauschstöße (einzelne Klatscher) – erst schnell lauter,
+ * dann langsam abebbend.
+ */
+function applause({ ctx, out }: Out) {
+  const now = ctx.currentTime;
+  const length = 2.8;
+  for (let i = 0; i < 190; i++) {
+    // Mehr Klatscher am Anfang, nach hinten ausdünnend.
+    const t = length * Math.pow(Math.random(), 1.6);
+    const swell = t < 0.25 ? t / 0.25 : Math.max(0, 1 - (t - 0.25) / (length - 0.25));
+    const clap = 0.012 + Math.random() * 0.02;
+    const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * clap), ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let j = 0; j < data.length; j++) {
+      data[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / data.length, 2);
+    }
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 900 + Math.random() * 2400;
+    filter.Q.value = 1.2;
+    const gain = ctx.createGain();
+    gain.gain.value = (0.25 + Math.random() * 0.5) * swell;
+    source.connect(filter).connect(gain).connect(out);
+    source.start(now + t);
+  }
+}
+
 /**
  * Sound abspielen. `volume` skaliert nur diesen einen Sound (z. B. nach dem Lautstärkeregler),
  * `step` verschiebt die Tonhöhe bei „tick" – pro Buchstabe einen Halbton höher.
@@ -114,6 +205,40 @@ export function playSound(sound: Sound, volume = 1, step = 0) {
         click(a, at, 1.4 - i * 0.12);
         at += 0.025 + Math.random() * 0.045;
       }
+      break;
+    case "shake":
+      // Würfel klappern im Becher – wird beim Schütteln laufend wiederholt.
+      for (let i = 0, at = 0; i < 4; i++) {
+        click(a, at, 0.5 + Math.random() * 0.6);
+        at += 0.02 + Math.random() * 0.03;
+      }
+      break;
+    case "suspense":
+      // Spannung: langsam ansteigender Ton, während der letzte Würfel in Zeitlupe dreht.
+      tone(a, 220, 0, 1.7, { volume: 0.16, slideTo: 660 });
+      tone(a, 330, 0, 1.7, { type: "sine", volume: 0.08, slideTo: 990 });
+      break;
+    case "suspenseLong":
+      // Kurz vor dem Kniffel: tiefer, langer Anstieg mit leisem Zittern obendrauf.
+      tone(a, 110, 0, 3.4, { type: "sawtooth", volume: 0.05, slideTo: 440 });
+      tone(a, 220, 0, 3.4, { volume: 0.12, slideTo: 880 });
+      tone(a, 330, 0.4, 3.0, { type: "sine", volume: 0.06, slideTo: 1320 });
+      break;
+    case "heartbeat":
+      // Ba-bumm: zwei dumpfe Schläge.
+      tone(a, 70, 0, 0.14, { type: "sine", volume: 0.9, slideTo: 45 });
+      tone(a, 60, 0.16, 0.18, { type: "sine", volume: 0.7, slideTo: 40 });
+      break;
+    case "crowdAww":
+      crowdAww(a);
+      break;
+    case "applause":
+      applause(a);
+      break;
+    case "aww":
+      // Knapp daneben: zwei absteigende Töne.
+      tone(a, 440, 0, 0.25, { type: "sine", volume: 0.3, slideTo: 330 });
+      tone(a, 330, 0.22, 0.45, { type: "sine", volume: 0.3, slideTo: 220 });
       break;
     case "hold":
       tone(a, 660, 0, 0.08, { type: "sine", volume: 0.4 });

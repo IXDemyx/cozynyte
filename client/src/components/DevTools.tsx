@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiChevronDown, FiMessageSquare, FiTrash2, FiUserPlus } from "react-icons/fi";
+import { FiChevronDown, FiMessageSquare, FiTrash2, FiUserPlus, FiZap } from "react-icons/fi";
 import type { Ack, RoomState } from "../../../shared/types";
 import { useLanguage } from "../lib/i18n";
 import { socket } from "../lib/socket";
@@ -79,6 +79,25 @@ function DevTools({ state }: { state: RoomState }) {
               <FiTrash2 aria-hidden="true" /> {t.dev.removeBots}
             </button>
           </div>
+          {/* Kniffel: Zeitlupe, Herzschlag und Feier gezielt auslösen (für den, der dran ist). */}
+          {state.game === "kniffel" && (
+            <div className="mt-2 border-t border-dashed border-(--accent-border) pt-2">
+              <p className="text-xs font-semibold text-(--text-secondary)">{t.dev.kniffelTest}</p>
+              <div className="mt-1 space-y-0.5">
+                {(["kniffelMiss", "kniffelHit", "straight"] as const).map((scenario) => (
+                  <button
+                    key={scenario}
+                    type="button"
+                    className={item}
+                    disabled={!state.kniffel?.current}
+                    onClick={() => socket.emit("dev:kniffelRoll", { scenario })}
+                  >
+                    <FiZap aria-hidden="true" /> {t.dev[scenario]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <ErrorText code={error} className="mt-1" />
         </>
       )}
