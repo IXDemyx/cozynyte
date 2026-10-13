@@ -44,7 +44,6 @@ export const de = {
     name: "Dein Name",
     namePlaceholder: "z. B. Daniel",
     create: "Raum erstellen",
-    or: "oder",
     code: "Raumcode",
     join: "Beitreten",
     music: "Musik",
@@ -146,9 +145,7 @@ export const de = {
     chooseHint: "Ohne Wahl wird einer für dich ausgesucht.",
     choosing: (name: string) => `${name} wählt einen Begriff …`,
     youDraw: "Du zeichnest",
-    isDrawing: (name: string) => `${name} zeichnet`,
     guessHint: "Rate im Chat – richtige Tipps sieht niemand.",
-    youGuessed: "Erraten! Warte auf die anderen …",
     wordWas: "Das Wort war",
     waitOthers: "Warte auf die anderen …",
     guessedLabel: "Erraten",
@@ -345,8 +342,6 @@ export const de = {
     mute: "Stummschalten",
     unmute: "Ton an",
     pause: "Pause",
-    effectsOn: "Soundeffekte an",
-    effectsOff: "Soundeffekte aus",
   },
   slf: {
     presets: {

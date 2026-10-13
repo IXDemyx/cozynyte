@@ -1,12 +1,14 @@
-/* Gleiche Farbwelt wie das Portfolio (theme-orange). */
+/* Gleiche Farbwelt wie das Portfolio (theme-orange). Hell: leicht warmes Off-White statt grellem Weiß. */
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-card: #ffffff;
-  --border: #e2e8f0;
+  --bg-primary: #f6f5f3;
+  --bg-secondary: #efedea;
+  --bg-card: #fdfcfb;
+  /* Fläche der Karten (auch für Elemente, die exakt die Kartenfarbe brauchen). */
+  --surface: #fdfcfb;
+  --border: #e5e2dd;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
 
   --accent: #ea580c;
   --accent-hover: #f97316;
@@ -14,11 +16,20 @@
   --accent-border: #fdba74;
 
   --success: #16a34a;
+
+  /* Hintergrund: feines Punktraster. */
+  --dots: rgba(68, 64, 60, 0.09);
+  /* Harte, versetzte Schatten (Knöpfe: dunkleres Orange als Seitenkante, Spielkarten) und weiches
+     Leuchten unter Knöpfen. */
+  --press: #9a3412;
+  --button-glow: rgba(234, 88, 12, 0.25);
+  --card-pop: rgba(234, 88, 12, 0.3);
 }
 
 .dark {
-  --bg-primary: #0f0f0f;
+  --bg-primary: #0a0a0b;
   --bg-secondary: #121316;
+  --surface: #121316;
   --bg-card: rgba(249, 115, 22, 0.06);
   --border: rgba(249, 115, 22, 0.22);
 
@@ -31,4 +42,24 @@
   --accent-border: rgba(249, 115, 22, 0.35);
 
   --success: #22c55e;
+
+  --dots: rgba(255, 255, 255, 0.08);
+  --press: #7c2d12;
+  --button-glow: rgba(249, 115, 22, 0.22);
+  --card-pop: rgba(249, 115, 22, 0.28);
+}
+
+/* Heller Modus: Die kühlen Grautöne (Rahmen, Flächen, Nebentexte) werden zu warmen Tönen, damit
+   alles zum Papier-Hintergrund passt. Der dunkle Modus bleibt unverändert. */
+html:not(.dark) {
+  --color-slate-50: #f8f7f5;
+  --color-slate-100: #f1efec;
+  --color-slate-200: #e5e2dd;
+  --color-slate-300: #d4d0ca;
+  --color-slate-400: #a8a29e;
+  --color-slate-500: #78716c;
+  --color-slate-600: #57534e;
+  --color-slate-700: #44403c;
+  --color-slate-800: #292524;
+  --color-slate-900: #1c1917;
 }

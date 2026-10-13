@@ -46,7 +46,6 @@ export const en: Dictionary = {
     name: "Your name",
     namePlaceholder: "e.g. Daniel",
     create: "Create room",
-    or: "or",
     code: "Room code",
     join: "Join",
     music: "Music",
@@ -145,9 +144,7 @@ export const en: Dictionary = {
     chooseHint: "If you don't choose, one is picked for you.",
     choosing: (name: string) => `${name} is picking a word …`,
     youDraw: "You're drawing",
-    isDrawing: (name: string) => `${name} is drawing`,
     guessHint: "Guess in the chat – nobody sees correct guesses.",
-    youGuessed: "Got it! Waiting for the others …",
     wordWas: "The word was",
     waitOthers: "Waiting for the others …",
     guessedLabel: "Got it",
@@ -341,8 +338,6 @@ export const en: Dictionary = {
     mute: "Mute",
     unmute: "Unmute",
     pause: "Pause",
-    effectsOn: "Sound effects on",
-    effectsOff: "Sound effects off",
   },
   slf: {
     presets: {

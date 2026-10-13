@@ -14,7 +14,7 @@ function Navbar({ theme, onToggleTheme, width }: NavbarProps) {
   const { language, toggleLanguage, t, home } = useLanguage();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-(--accent-border) dark:bg-(--bg-primary)/90">
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-(--bg-primary)/75 backdrop-blur-md dark:border-(--accent)/15 dark:bg-(--bg-primary)/60">
       <div className={`mx-auto flex h-16 ${width} items-center justify-between px-4 sm:px-6`}>
         <Link to={home} className="font-mono text-lg font-semibold tracking-tight">
           <span className="text-(--accent)">&lt;/</span>
@@ -35,7 +35,7 @@ function Navbar({ theme, onToggleTheme, width }: NavbarProps) {
             type="button"
             onClick={onToggleTheme}
             aria-label={theme === "dark" ? t.nav.light : t.nav.dark}
-            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-(--accent) hover:text-(--accent) dark:border-(--accent-border) dark:bg-(--bg-secondary) dark:text-(--text-secondary) dark:hover:border-(--accent)"
+            className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-(--surface) text-slate-700 shadow-sm transition hover:border-(--accent) hover:text-(--accent) dark:border-(--accent-border) dark:bg-(--bg-secondary) dark:text-(--text-secondary) dark:hover:border-(--accent)"
           >
             {theme === "dark" ? <FaSun aria-hidden="true" /> : <FaMoon aria-hidden="true" />}
           </button>

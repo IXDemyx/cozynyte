@@ -28,7 +28,10 @@ body {
   min-width: 320px;
   min-height: 100vh;
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background:
+    radial-gradient(circle at 1px 1px, var(--dots) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--bg-primary);
+  background-attachment: fixed;
   transition:
     color 200ms ease,
     background-color 200ms ease;
@@ -66,7 +69,7 @@ body {
   .reveal-on-hover {
     position: absolute;
     right: 0.5rem;
-    background: var(--bg-secondary);
+    background: var(--surface);
     opacity: 0;
   }
   .group:hover .reveal-on-hover,

@@ -64,7 +64,7 @@ function ScoreSheet({
     <tr key={category} className="border-t border-slate-200 dark:border-slate-800">
       <th
         scope="row"
-        className="sticky left-0 z-10 bg-white py-1 pr-3 text-left font-normal dark:bg-(--bg-secondary)"
+        className="sticky left-0 z-10 bg-(--surface) py-1 pr-3 text-left font-normal dark:bg-(--bg-secondary)"
       >
         <span className="block font-semibold">{t.kniffel.categories[category]}</span>
         <span className="hidden text-xs text-(--text-secondary) sm:block">
@@ -103,7 +103,7 @@ function ScoreSheet({
     >
       <th
         scope="row"
-        className={`sticky left-0 z-10 bg-white py-2 pr-3 text-left dark:bg-(--bg-secondary) ${
+        className={`sticky left-0 z-10 bg-(--surface) py-2 pr-3 text-left dark:bg-(--bg-secondary) ${
           strong ? "font-bold text-(--accent)" : "font-semibold text-(--text-secondary)"
         }`}
       >
@@ -136,7 +136,7 @@ function ScoreSheet({
         </colgroup>
         <thead>
           <tr>
-            <th className="sticky left-0 z-10 bg-white dark:bg-(--bg-secondary)" />
+            <th className="sticky left-0 z-10 bg-(--surface) dark:bg-(--bg-secondary)" />
             {sheet.columns.map((column) => (
               <th key={column.id} scope="col" className="px-1 pb-2 align-bottom">
                 {/* Antippen setzt den Zug – nur für den Host. */}

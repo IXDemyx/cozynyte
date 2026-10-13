@@ -14,7 +14,7 @@ import type { Ack, Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
 import LanguageHint from "../components/LanguageHint";
-import { card, eyebrow, input } from "../components/ui";
+import { card, eyebrow, gameCard, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { SEO } from "../lib/seo";
 import { confirmRoom, getName, playerId, rememberPlayerId, saveName, socket } from "../lib/socket";
@@ -136,7 +136,7 @@ function Home() {
           </div>
           <div className="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {section.games.map(({ id, icon: Icon, meta, text }) => (
-              <article key={id} className={`${card} flex flex-col p-6`}>
+              <article key={id} className={`${gameCard} flex flex-col p-6`}>
                 <div className="flex items-center gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-slate-950">
                     <Icon aria-hidden="true" />

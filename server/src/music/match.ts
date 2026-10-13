@@ -103,10 +103,6 @@ export function maskText(text: string, revealed: ReadonlySet<number> = new Set()
   return text.replace(LETTER, (char) => (revealed.has(index++) ? char : "_"));
 }
 
-export function maskTitle(title: string, revealed?: ReadonlySet<number>): string {
-  return maskText(cleanTitle(title), revealed);
-}
-
 /** Montagsmaler: Tipp mit einem Begriff vergleichen (gleiche Toleranz wie bei Songtiteln). */
 export function matchWord(guess: string, word: string): MatchResult {
   const g = normalize(guess);
