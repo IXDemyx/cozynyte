@@ -83,13 +83,17 @@ function SlfLobby({ state }: { state: RoomState }) {
           <div className="sm:col-span-2">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm font-semibold">{t.slf.categories}</p>
-              <p className="text-xs text-(--text-secondary)">
-                {t.slf.categoryCount(categories.length, MIN_CATEGORIES, MAX_CATEGORIES)}
-              </p>
+              {isHost && (
+                <p className="text-xs text-(--text-secondary)">
+                  {t.slf.categoryCount(categories.length, MIN_CATEGORIES, MAX_CATEGORIES)}
+                </p>
+              )}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {SLF_PRESETS.map((id) => {
                 const active = categories.includes(`@${id}`);
+                // Mitspieler sehen nur, was gewählt ist – nicht die ganze Auswahl.
+                if (!isHost && !active) return null;
                 return (
                   <Option
                     key={id}

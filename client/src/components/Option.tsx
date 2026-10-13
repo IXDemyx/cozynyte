@@ -36,7 +36,10 @@ interface OptionGroupProps<T> {
   wide?: boolean;
 }
 
-/** Beschriftete Reihe von Auswahlknöpfen. */
+/**
+ * Beschriftete Reihe von Auswahlknöpfen. Wer nichts ändern darf (`disabled`, z. B. nicht Host),
+ * sieht statt aller Knöpfe nur kompakt, was eingestellt ist.
+ */
 export function OptionGroup<T>({
   label,
   value,
@@ -45,6 +48,17 @@ export function OptionGroup<T>({
   disabled,
   wide = false,
 }: OptionGroupProps<T>) {
+  if (disabled) {
+    const selected = options.find((option) => option.value === value);
+    return (
+      <div className={wide ? "sm:col-span-2" : undefined}>
+        <p className="text-xs text-(--text-secondary)">{label}</p>
+        <p className="mt-0.5 font-mono text-sm font-semibold text-(--accent)">
+          {selected?.label ?? "–"}
+        </p>
+      </div>
+    );
+  }
   return (
     <div className={wide ? "sm:col-span-2" : undefined}>
       <p className="text-sm font-semibold">{label}</p>

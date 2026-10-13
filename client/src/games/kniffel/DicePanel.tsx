@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type Dispatch,
@@ -92,6 +93,22 @@ function DicePanel({
   const comboKey = found && roll ? `${roll.count}:${roll.dice.join("")}` : "";
   const isKniffel = found?.combo === "kniffel";
 
+  // Der Würfelbereich behält im Zug die Höhe der Würfel-Eingabe, damit der Becher-Knopf nach dem
+  // ersten Wurf nicht nach oben springt (gerade am Handy landet der Finger sonst daneben).
+  const area = useRef<HTMLDivElement>(null);
+  const inputHeight = useRef(0);
+  const [areaMin, setAreaMin] = useState<number>();
+  useEffect(() => {
+    const el = area.current;
+    if (rolling || !el) return;
+    const observer = new ResizeObserver(() => (inputHeight.current = el.offsetHeight));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rolling]);
+  useLayoutEffect(() => {
+    setAreaMin(rolling && inputHeight.current ? inputHeight.current : undefined);
+  }, [rolling]);
+
   // Klang zum besonderen Wurf – nur bei einem live miterlebten Wurf, einmal pro Wurf.
   const lastCombo = useRef("");
   useEffect(() => {
@@ -145,146 +162,156 @@ function DicePanel({
         )}
       </div>
 
-      {rolling && roll ? (
-        <>
-          <p className="mt-1 text-sm text-(--text-secondary)">
-            {rollsLeft > 0 ? (canRoll ? t.kniffel.holdHint : "") : t.kniffel.noRolls}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
-            <div className="flex flex-wrap items-start gap-1.5">
-              {roll.dice.map((value, i) => {
-                const down = landed[i] ?? true;
-                const tense = suspense === i;
-                // Becher wird geschüttelt → rütteln; rollt noch → wackeln (der spannende Würfel
-                // stattdessen groß in Zeitlupe); gerade gelandet → nachfedern; Kniffel → springen.
-                const motion = tense
-                  ? ""
-                  : almostKniffel
-                    ? "animate-heartbeat"
-                    : shaking && !roll.held[i]
-                      ? "animate-rattle"
-                      : !down
-                        ? "animate-tumble"
-                        : isKniffel && live
-                          ? "animate-jump"
-                          : roll.held[i]
-                            ? ""
-                            : "animate-land";
-                return (
-                  <button
-                    key={`${roll.count}-${i}-${down}`}
-                    type="button"
-                    aria-label={t.kniffel.hold(value)}
-                    aria-pressed={roll.held[i]}
-                    disabled={!canRoll || rollsLeft === 0 || !settled}
-                    onClick={() => socket.emit("kniffel:hold", { index: i })}
-                    style={isKniffel && live ? { animationDelay: `${i * 0.07}s` } : undefined}
-                    className={`flex flex-col items-center gap-1 rounded-xl p-1 transition ${
-                      roll.held[i] ? "bg-(--accent-soft) ring-2 ring-(--accent)" : ""
-                    } ${motion}`}
-                  >
-                    {/* Würfel, die zum besonderen Wurf gehören, leuchten kurz auf. */}
-                    <span
-                      className={`block rounded-[10px] ${
-                        tense
-                          ? almostKniffel
-                            ? "animate-suspense-big"
-                            : "animate-suspense"
-                          : highlight.has(i)
-                            ? "animate-glow"
-                            : ""
-                      }`}
+      <div ref={area} style={{ minHeight: areaMin }}>
+        {rolling && roll ? (
+          <>
+            <p className="mt-1 text-sm text-(--text-secondary)">
+              {rollsLeft > 0 ? (canRoll ? t.kniffel.holdHint : "") : t.kniffel.noRolls}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <div className="flex flex-wrap items-start gap-1.5">
+                {roll.dice.map((value, i) => {
+                  const down = landed[i] ?? true;
+                  const tense = suspense === i;
+                  // Becher wird geschüttelt → rütteln; rollt noch → wackeln (der spannende Würfel
+                  // stattdessen groß in Zeitlupe); gerade gelandet → nachfedern; Kniffel → springen.
+                  const motion = tense
+                    ? ""
+                    : almostKniffel
+                      ? "animate-heartbeat"
+                      : shaking && !roll.held[i]
+                        ? "animate-rattle"
+                        : !down
+                          ? "animate-tumble"
+                          : isKniffel && live
+                            ? "animate-jump"
+                            : roll.held[i]
+                              ? ""
+                              : "animate-land";
+                  return (
+                    <button
+                      key={`${roll.count}-${i}-${down}`}
+                      type="button"
+                      aria-label={t.kniffel.hold(value)}
+                      aria-pressed={roll.held[i]}
+                      disabled={!canRoll || rollsLeft === 0 || !settled}
+                      onClick={() => socket.emit("kniffel:hold", { index: i })}
+                      style={isKniffel && live ? { animationDelay: `${i * 0.07}s` } : undefined}
+                      className={`flex flex-col items-center gap-1 rounded-xl p-1 transition ${
+                        roll.held[i] ? "bg-(--accent-soft) ring-2 ring-(--accent)" : ""
+                      } ${motion}`}
                     >
-                      <Die
-                        value={
-                          shaking && !roll.held[i] ? (shakeFaces[i] ?? value) : (faces[i] ?? value)
-                        }
-                        size={44}
-                      />
-                    </span>
-                    <span
-                      className={`font-mono text-[9px] uppercase ${
-                        roll.held[i] ? "text-(--accent)" : "invisible"
-                      }`}
-                    >
-                      {t.kniffel.held}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            {almostKniffel && (
-              <span
-                role="status"
-                className="animate-heartbeat rounded-full bg-(--accent) px-3 py-1 text-lg font-extrabold text-slate-950"
-              >
-                {t.kniffel.almostKniffel}
-              </span>
-            )}
-            {found && (
-              <span
-                key={comboKey}
-                role="status"
-                className={`animate-badge rounded-full px-3 py-1 font-bold ${
-                  isKniffel
-                    ? "bg-(--accent) text-lg text-slate-950"
-                    : "bg-(--accent-soft) text-sm text-(--accent)"
-                }`}
-              >
-                {t.kniffel.combos[found.combo]}
-              </span>
-            )}
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="mt-1 text-sm text-(--text-secondary)">{t.kniffel.diceHint}</p>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {Array.from({ length: 5 }, (_, i) =>
-              dice[i] ? (
-                <button
-                  key={i}
-                  type="button"
-                  aria-label={t.kniffel.removeDie(dice[i])}
-                  onClick={() => setDice(dice.filter((_, j) => j !== i))}
-                  className="transition hover:opacity-60"
-                >
-                  <Die value={dice[i]} size={44} />
-                </button>
-              ) : (
+                      {/* Würfel, die zum besonderen Wurf gehören, leuchten kurz auf. */}
+                      <span
+                        className={`block rounded-[10px] ${
+                          tense
+                            ? almostKniffel
+                              ? "animate-suspense-big"
+                              : "animate-suspense"
+                            : highlight.has(i)
+                              ? "animate-glow"
+                              : ""
+                        }`}
+                      >
+                        <Die
+                          value={
+                            shaking && !roll.held[i]
+                              ? (shakeFaces[i] ?? value)
+                              : (faces[i] ?? value)
+                          }
+                          size={44}
+                        />
+                      </span>
+                      <span
+                        className={`font-mono text-[9px] uppercase ${
+                          roll.held[i] ? "text-(--accent)" : "invisible"
+                        }`}
+                      >
+                        {t.kniffel.held}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {almostKniffel && (
                 <span
-                  key={i}
-                  className="h-11 w-11 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700"
-                />
-              ),
-            )}
-            {dice.length > 0 && (
-              <Button
-                variant="secondary"
-                size="small"
-                onClick={() => setDice([])}
-                className="ml-auto"
-              >
-                {t.kniffel.clearDice}
-              </Button>
-            )}
-          </div>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {[1, 2, 3, 4, 5, 6].map((face) => (
-              <button
-                key={face}
-                type="button"
-                aria-label={t.kniffel.addDie(face)}
-                disabled={dice.length === 5}
-                onClick={() => setDice([...dice, face].sort((a, b) => a - b))}
-                className="rounded-xl p-0.5 transition enabled:hover:scale-105 disabled:opacity-30"
-              >
-                <Die value={face} size={36} />
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+                  role="status"
+                  className="animate-heartbeat rounded-full bg-(--accent) px-3 py-1 text-lg font-extrabold text-slate-950"
+                >
+                  {t.kniffel.almostKniffel}
+                </span>
+              )}
+              {found && (
+                <span
+                  key={comboKey}
+                  role="status"
+                  className={`animate-badge rounded-full px-3 py-1 font-bold ${
+                    isKniffel
+                      ? "bg-(--accent) text-lg text-slate-950"
+                      : "bg-(--accent-soft) text-sm text-(--accent)"
+                  }`}
+                >
+                  {t.kniffel.combos[found.combo]}
+                </span>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Beim ersten Wurf im Zug klappern hier alle fünf Würfel – das Layout bleibt gleich,
+              damit der Becher-Knopf beim Schütteln nicht verrutscht. */}
+            <p className="mt-1 text-sm text-(--text-secondary)">{t.kniffel.diceHint}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {Array.from({ length: 5 }, (_, i) =>
+                shaking ? (
+                  <span key={i} className="animate-rattle">
+                    <Die value={shakeFaces[i] ?? 1 + i} size={44} />
+                  </span>
+                ) : dice[i] ? (
+                  <button
+                    key={i}
+                    type="button"
+                    aria-label={t.kniffel.removeDie(dice[i])}
+                    onClick={() => setDice(dice.filter((_, j) => j !== i))}
+                    className="transition hover:opacity-60"
+                  >
+                    <Die value={dice[i]} size={44} />
+                  </button>
+                ) : (
+                  <span
+                    key={i}
+                    className="h-11 w-11 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700"
+                  />
+                ),
+              )}
+              {dice.length > 0 && (
+                <Button
+                  variant="secondary"
+                  size="small"
+                  onClick={() => setDice([])}
+                  className={`ml-auto ${shaking ? "invisible" : ""}`}
+                >
+                  {t.kniffel.clearDice}
+                </Button>
+              )}
+            </div>
+            <div className={`mt-3 flex flex-wrap gap-2 ${shaking ? "invisible" : ""}`}>
+              {[1, 2, 3, 4, 5, 6].map((face) => (
+                <button
+                  key={face}
+                  type="button"
+                  aria-label={t.kniffel.addDie(face)}
+                  disabled={dice.length === 5}
+                  onClick={() => setDice([...dice, face].sort((a, b) => a - b))}
+                  className="rounded-xl p-0.5 transition enabled:hover:scale-105 disabled:opacity-30"
+                >
+                  <Die value={face} size={36} />
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
       {current && (
         <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4 dark:border-(--accent-soft)">
@@ -298,7 +325,7 @@ function DicePanel({
                 // Tastatur (Enter/Leertaste): sofort werfen, ohne Schütteln.
                 onClick={(e) => e.detail === 0 && canThrow && socket.emit("kniffel:roll")}
                 disabled={!canThrow && !shaking}
-                className={`touch-none select-none ${shaking ? "animate-rattle" : ""}`}
+                className={`touch-none select-none [-webkit-touch-callout:none] ${shaking ? "animate-rattle" : ""}`}
               >
                 {shaking ? t.kniffel.release : rolling ? t.kniffel.roll : t.kniffel.digital}
               </Button>

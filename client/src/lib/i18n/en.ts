@@ -171,7 +171,7 @@ export const en: Dictionary = {
     size: (n: number) => `Brush size ${n}`,
     rounds: "Rounds",
     time: "Time per drawing",
-    language: "Words",
+    language: "Language",
     langDe: "German",
     langEn: "English",
     mode: "Words",

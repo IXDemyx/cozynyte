@@ -172,7 +172,7 @@ export const de = {
     size: (n: number) => `Strichstärke ${n}`,
     rounds: "Runden",
     time: "Zeit pro Zeichnung",
-    language: "Begriffe",
+    language: "Sprache",
     langDe: "Deutsch",
     langEn: "Englisch",
     mode: "Begriffe",
