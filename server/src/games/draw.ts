@@ -226,13 +226,24 @@ export function chooseWord(room: Room, player: Player, index: number): boolean {
   return true;
 }
 
-/** Restzeit auf AFTER_FIRST_GUESS_MS kürzen. */
+/**
+ * Restzeit auf AFTER_FIRST_GUESS_MS kürzen. Die geplanten Hinweise kämen dann oft zu spät –
+ * deshalb gleich einen Buchstaben aufdecken und zur Hälfte der Restzeit noch einen
+ * (höchstens die Hälfte des Begriffs, wie sonst auch).
+ */
 function shortenTurn(room: Room, game: DrawGame) {
   const left = game.endsAt - Date.now();
   if (left <= AFTER_FIRST_GUESS_MS) return;
   game.endsAt = Date.now() + AFTER_FIRST_GUESS_MS;
   clearTimeout(game.timer);
   game.timer = setTimeout(() => endTurn(room), AFTER_FIRST_GUESS_MS);
+  game.hintTimers.forEach(clearTimeout);
+  openMore(game.hint);
+  game.hintTimers = [
+    setTimeout(() => {
+      if (room.draw === game && game.stage === "drawing" && openMore(game.hint)) broadcast(room);
+    }, AFTER_FIRST_GUESS_MS / 2),
+  ];
 }
 
 /** Zug beenden: Auflösung zeigen, danach ist der Nächste dran. */
