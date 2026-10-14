@@ -3,6 +3,7 @@
 import type { Socket } from "socket.io";
 import { LOBBY_GRACE_MS } from "./config";
 import { checkTurnDone } from "./games/draw";
+import { checkQuestionDone } from "./games/geo";
 import { removeColumn } from "./games/kniffel";
 import { endRound, everyoneDone } from "./games/music";
 import { io } from "./server";
@@ -51,6 +52,8 @@ export function detach(socket: Socket, leave: boolean) {
   ensureHost(room);
   // Montagsmaler: Ist der Zeichner weg (oder haben jetzt alle Übrigen geraten), geht es weiter.
   checkTurnDone(room);
+  // Länder-Quiz: Haben jetzt alle Übrigen geantwortet, gleich auflösen.
+  checkQuestionDone(room);
   // Nur noch Testbots da: der Raum gilt als leer und wird irgendwann aufgeräumt.
   if (humans(room).length === 0) room.emptySince = Date.now();
   broadcast(room);
@@ -73,6 +76,7 @@ export function removePlayer(room: Room, playerId: string, withColumn = false) {
   const played = room.phase === "picking" ? -1 : room.roundIndex;
   room.queue = room.queue.filter((q, i) => i <= played || q.pickerId !== playerId);
   checkTurnDone(room);
+  checkQuestionDone(room);
   const { round } = room;
   if (room.phase === "round" && round) {
     if (round.pickerId === playerId || everyoneDone(room, round)) endRound(room);

@@ -5,6 +5,7 @@
  */
 
 import { randomInt } from "node:crypto";
+import { COUNTRIES, COUNTRY_BY_CODE } from "../../../shared/countries";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, DRAW_COLORS } from "../../../shared/draw";
 import { CATEGORIES, scoreDice, type Category } from "../../../shared/kniffel";
 import { presetId, startsWithLetter } from "../../../shared/slf";
@@ -13,6 +14,7 @@ import { MAX_PLAYERS } from "../config";
 import { removePlayer } from "../connection";
 import { WORDS } from "../draw/words";
 import { addOps, chooseWord, handleDrawGuess, setWords } from "../games/draw";
+import { chooseAnswer, jokersLeft, typeAnswer, useJoker } from "../games/geo";
 import { ensureColumn, rollDice, writeCell } from "../games/kniffel";
 import { canPlace, drawStartCard, handleGuess, placeCard, submitYear } from "../games/music";
 import { callStop, finishDrawing, reciteNext, saveAnswers } from "../games/slf";
@@ -105,6 +107,7 @@ function act(room: Room) {
     }
     if (room.game === "slf") playSlf(room, bot);
     else if (room.game === "draw") playDraw(room, bot);
+    else if (room.game === "geo") playGeo(room, bot);
     else if (room.phase === "picking") pickSongs(room, bot);
     else if (room.phase === "round") playRound(room, bot);
     if (room.kniffel) playKniffel(room, bot);
@@ -355,4 +358,54 @@ function shapes() {
     ops.push({ id: ++botOpId, t: "line" as const, c: color(), s: randomInt(3), p: zigzag });
   }
   return ops;
+}
+
+/* ---------- Länder-Quiz ---------- */
+
+/**
+ * Meistens richtig, manchmal daneben – mal schnell, mal langsam. Beim Tippen ab und zu erst ein
+ * falsches Land oder ein Tippfehler.
+ */
+function playGeo(room: Room, bot: Player) {
+  const game = room.geo;
+  if (!game || room.phase !== "round" || game.stage !== "question") return;
+  const question = game.questions[game.index];
+  if (!claim(bot, `geo:${question.qid}`, "answer")) return;
+  const total = game.endsAt - game.startedAt;
+  const country = COUNTRY_BY_CODE.get(question.code)!;
+  const knows = randomInt(10) < 7;
+  const at = Math.round(total * (0.15 + Math.random() * 0.6));
+  const still = () =>
+    room.geo === game && game.stage === "question" && game.questions[game.index] === question;
+
+  if (question.options) {
+    // Wer unsicher ist, zieht ab und zu einen Joker.
+    if (!knows && randomInt(2) === 0 && jokersLeft(room, game, bot.id) > 0) {
+      later(room, bot, Math.round(at / 2), () => {
+        if (still() && useJoker(room, bot, question.qid)) broadcast(room);
+      });
+    }
+    later(room, bot, at, () => {
+      if (!still()) return;
+      const gone = game.fifty.has(bot.id)
+        ? question.options!.filter((c) => c !== question.code).slice(0, 2)
+        : [];
+      const wrong = question.options!.filter((c) => c !== question.code && !gone.includes(c));
+      if (chooseAnswer(room, bot, question.qid, knows ? question.code : pick(wrong)))
+        broadcast(room);
+    });
+    return;
+  }
+  const name = (c: typeof country) =>
+    question.kind === "capital" ? (c.capital?.de ?? c.de) : c.de;
+  const send = (text: string) => {
+    if (still() && typeAnswer(room, bot, question.qid, text) !== "wrong") broadcast(room);
+  };
+  if (randomInt(3) === 0) later(room, bot, Math.round(at / 2), () => send(name(pick(COUNTRIES))));
+  if (knows) {
+    later(room, bot, at, () => {
+      const answer = name(country);
+      send(randomInt(4) === 0 && answer.length > 5 ? answer.slice(0, -1) + "x" : answer);
+    });
+  }
 }

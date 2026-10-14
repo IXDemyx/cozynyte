@@ -45,7 +45,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     metaTitle:
       "Partyspiele online mit Freunden – Stadt Land Fluss, Montagsmaler, Musikquiz | games",
     metaDescription:
-      "Kostenlose Partyspiele im Browser: Stadt Land Fluss, Montagsmaler, Song erraten, Musikquiz und Kniffel. Raum erstellen, Link teilen, losspielen – ohne Anmeldung, auch per Videocall.",
+      "Kostenlose Partyspiele im Browser: Stadt Land Fluss, Montagsmaler, Song erraten, Musikquiz, Flaggen-Quiz und Kniffel. Raum erstellen, Link teilen, losspielen – ohne Anmeldung, auch per Videocall.",
     ogTitle: "Partyspiele im Browser – games",
     ogDescription:
       "Stadt Land Fluss, Montagsmaler, Song erraten, Kniffel und mehr – Raum erstellen, Link teilen, losspielen.",
@@ -85,6 +85,10 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         name: "Montagsmaler",
         text: "Einer zeichnet, alle anderen raten im Chat – mit großer Begriffsliste oder eigenen Begriffen zu einem Motto.",
       },
+      {
+        name: "Länder-Quiz",
+        text: "Flaggen, Landesumrisse und Hauptstädte aller Länder der Welt erraten – getippt oder per Auswahl, nach Kontinent filterbar.",
+      },
     ],
     faqTitle: "Häufige Fragen",
     faq: [
@@ -119,7 +123,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     metaTitle:
       "Party games online with friends – Draw & Guess, music quiz, Name Place Animal | games",
     metaDescription:
-      "Free multiplayer party games in your browser: Draw & Guess, Guess the Song, music quiz, Name Place Animal Thing and Yahtzee. Create a room, share the link, play – no sign-up, works over video calls.",
+      "Free multiplayer party games in your browser: Draw & Guess, Guess the Song, music quiz, flag quiz, Name Place Animal Thing and Yahtzee. Create a room, share the link, play – no sign-up, works over video calls.",
     ogTitle: "Party games in your browser – games",
     ogDescription:
       "Draw & Guess, Guess the Song, Yahtzee and more – create a room, share the link, play.",
@@ -158,6 +162,10 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       {
         name: "Draw & Guess",
         text: "One player draws, everyone else guesses in the chat – with a big word list or your own words for a theme.",
+      },
+      {
+        name: "Country Quiz",
+        text: "Guess flags, country shapes and capitals of every country in the world – type or multiple choice, filter by continent.",
       },
     ],
     faqTitle: "FAQ",

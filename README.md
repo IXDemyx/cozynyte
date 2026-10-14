@@ -6,22 +6,23 @@ same table or over a video call. Live at <https://games.daniel-keller.dev>.
 
 ## Games
 
-| Game                                              | What you do                                                                          |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| **Guess the Song** (Song erraten)                 | A preview plays; everyone types title and artist into the chat as fast as possible.  |
-| **Guess the Year** (Jahr schätzen)                | A preview plays; everyone guesses the release year.                                  |
-| **Song Timeline** (Zeitleiste)                    | Place each song in your own timeline; the first with enough correct cards wins.      |
-| **Name, Place, Animal, Thing** (Stadt Land Fluss) | A letter is drawn; fill in a word for every category before someone calls stop.      |
-| **Yahtzee** (Kniffel)                             | A shared score sheet – roll real dice at the table or roll digitally.                |
-| **Draw & Guess** (Montagsmaler)                   | One player picks one of three words and draws it; everyone else guesses in the chat. |
+| Game                                              | What you do                                                                               |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Guess the Song** (Song erraten)                 | A preview plays; everyone types title and artist into the chat as fast as possible.       |
+| **Guess the Year** (Jahr schätzen)                | A preview plays; everyone guesses the release year.                                       |
+| **Song Timeline** (Zeitleiste)                    | Place each song in your own timeline; the first with enough correct cards wins.           |
+| **Name, Place, Animal, Thing** (Stadt Land Fluss) | A letter is drawn; fill in a word for every category before someone calls stop.           |
+| **Yahtzee** (Kniffel)                             | A shared score sheet – roll real dice at the table or roll digitally.                     |
+| **Draw & Guess** (Montagsmaler)                   | One player picks one of three words and draws it; everyone else guesses in the chat.      |
+| **Country Quiz** (Länder-Quiz)                    | Guess the country from its flag or shape, or name its capital – typed or multiple choice. |
 
-The start page groups them into **Music** and **Classics**.
+The start page groups them into **Music**, **Classics** and **Quiz**.
 
 The three music games share the same flow: lobby → everyone picks their own songs → rounds →
 reveal → final scores (podium with confetti). The host can switch between them in the lobby,
 so a room can be reused without anyone leaving.
 
-Stadt Land Fluss and Draw & Guess have their own lobbies (see [Scoring and rules](#scoring-and-rules)).
+Stadt Land Fluss, Draw & Guess and the Country Quiz have their own lobbies (see [Scoring and rules](#scoring-and-rules)).
 Yahtzee works differently: there are no rounds, just one shared sheet. Everyone who joins gets
 their own column, players without a phone can be added by name, and every change shows up for
 everyone right away.
@@ -82,7 +83,8 @@ test bots to the room, so you can try the lobby, chat and games without a second
 - Bots count as players, so you can start a game alone.
 - They pick songs from the suggestions, guess titles and artists, enter years, place timeline
   cards, fill in Stadt Land Fluss answers, draw and guess in Draw & Guess (and submit words in
-  "Our own words" mode) and play their Yahtzee turn (roll three times, take the best free box).
+  "Our own words" mode), answer Country Quiz questions (usually right, sometimes not) and play
+  their Yahtzee turn (roll three times, take the best free box).
 - They answer chat messages now and then; "Make a bot chat" sends a message on demand.
 - "Remove all bots" takes them (and their Yahtzee columns) out again. Bots never become host.
 
@@ -109,11 +111,11 @@ The games container serves the frontend, the API and the WebSockets from one por
 
 ## Project structure
 
-| Folder    | Contents                                                                       |
-| --------- | ------------------------------------------------------------------------------ |
-| `client/` | React + TypeScript + Vite + Tailwind CSS (user interface)                      |
-| `server/` | Node + Express + Socket.IO (rooms, game logic, song search)                    |
-| `shared/` | Types and rules used by client and server (Yahtzee, Stadt Land Fluss, drawing) |
+| Folder    | Contents                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------- |
+| `client/` | React + TypeScript + Vite + Tailwind CSS (user interface)                                 |
+| `server/` | Node + Express + Socket.IO (rooms, game logic, song search)                               |
+| `shared/` | Types and rules used by client and server (Yahtzee, Stadt Land Fluss, drawing, countries) |
 
 ```
 client/src/
@@ -121,6 +123,7 @@ client/src/
   games/music/    Guess the Song, Guess the Year and Song Timeline (lobby, picking, rounds, results)
   games/slf/      Stadt Land Fluss (lobby, letter drawing, writing round, review)
   games/draw/     Draw & Guess (lobby, word collection, canvas, toolbar, renderer)
+  games/geo/      Country Quiz (lobby, question with picture, answers, reveal)
   games/kniffel/  Yahtzee score sheet (dice panel, sheet, entry dialog)
   hooks/          room connection, server clock, theme, volume, sound effects, two-click confirm
   lib/            socket connection and player IDs, sounds, translations (lib/i18n/de.ts, en.ts),
@@ -132,11 +135,15 @@ server/src/
   state.ts        room and player state
   view.ts         per-player view of a room (hides answers) and broadcasting
   connection.ts   joining, leaving and host hand-over
-  handlers/       socket events per area (room, chat, music, slf, draw, kniffel, dev)
-  games/          game logic (music, Stadt Land Fluss, Draw & Guess, Yahtzee)
+  handlers/       socket events per area (room, chat, music, slf, draw, geo, kniffel, dev)
+  games/          game logic (music, Stadt Land Fluss, Draw & Guess, Country Quiz, Yahtzee)
   draw/           word lists for Draw & Guess (German and English)
   music/          iTunes search, answer matching, song suggestions
   dev/            test bots for test mode
+
+server/assets/    Country Quiz pictures: flags (flags/*.svg) and country shapes (outlines.json),
+                  sources and licences in LICENSES.md
+shared/countries.ts  all 195 countries: names, capitals, continents, other spellings
 ```
 
 Run `npm run format` to format all code with Prettier and `npm run typecheck` to check types.
@@ -241,6 +248,35 @@ expects to live at the root of its address (e.g. its own subdomain), not under a
 - Correct guess: 50 points + up to 100 for speed + 30/20/10 for the first three. The drawer
   gets 25 and the word's author 15 for every correct guess.
 - Tools: pen, eraser, fill, 12 colours, 4 sizes, undo (Ctrl+Z) and clear.
+
+**Country Quiz (Länder-Quiz)**
+
+- 195 countries (all UN members plus the Vatican and Palestine) with names and capitals in
+  German and English. Flags from [flag-icons](https://github.com/lipis/flag-icons) (MIT),
+  country shapes generated from [Natural Earth](https://www.naturalearthdata.com/) (public
+  domain) – see `server/assets/LICENSES.md`.
+- Lobby: questions (flags, shapes, capitals or mixed), region (world or one continent;
+  "Americas" = North and South America), countries (well-known ≈ 95 or all), answers (type or
+  multiple choice), number of questions (10/15/20/30), time per question (10/15/20 s), and –
+  depending on the answer mode – hints on/off (typing) or 50:50 jokers per player (multiple
+  choice: off, 1, 2 or 3). The lobby shows how many countries are in the pool; with a small pool
+  fewer questions are played.
+- Everyone answers the same question at the same time after a 3-second countdown. The
+  question ends early once everyone has answered (multiple choice) or got it (typing), then
+  the reveal shows the country with flag, capital and continent for 4 seconds.
+- Typing: German or English names and common other spellings count ("USA", "Holland",
+  "Kiev" …), small typos too. Another country's name never counts ("Niger" is not "Nigeria").
+  Unlimited tries; near misses show "close" to everyone.
+- Multiple choice: one answer, no changing. Wrong options for flags are picked from flags that
+  look alike (Chad/Romania, Indonesia/Monaco, …), otherwise from the same region.
+- Typing hints (if on): continent at 40 % of the time, first letter at 70 % (for capitals the
+  first one and then two letters).
+- Multiple-choice jokers: each player can use the 50:50 joker as often per game as set in the
+  lobby, at most once per question and before answering. Two wrong answers disappear – only for
+  that player; the others see "… uses the 50:50 joker" in the chat.
+- Correct answer: 50 points + up to 100 for speed + 30/20/10 for the first three.
+- The picture is served by the server under a random ID per question, so the network tab does
+  not give the country away (and a shape question does not reveal the flag).
 
 **Yahtzee (Kniffel)**
 

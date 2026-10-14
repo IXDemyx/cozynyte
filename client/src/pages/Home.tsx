@@ -4,6 +4,7 @@ import { FiChevronDown } from "react-icons/fi";
 import {
   LuCalendarDays,
   LuDice5,
+  LuEarth,
   LuHeadphones,
   LuHistory,
   LuNotebookPen,
@@ -46,6 +47,11 @@ function Home() {
         { id: "kniffel", icon: LuDice5, meta: t.home.kniffelMeta, text: t.home.kniffelText },
         { id: "draw", icon: LuPalette, meta: t.home.meta, text: t.home.drawText },
       ],
+    },
+    {
+      title: t.home.quiz,
+      text: t.home.quizText,
+      games: [{ id: "geo", icon: LuEarth, meta: t.home.meta, text: t.home.geoText }],
     },
   ];
   const validName = name.trim().length > 0;

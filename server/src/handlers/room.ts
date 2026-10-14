@@ -8,10 +8,12 @@ import {
   SLF_SECONDS,
 } from "../../../shared/slf";
 import { DRAW_ROUNDS, DRAW_SECONDS, DRAW_WORDS_PER_PLAYER } from "../../../shared/draw";
+import { QUIZ_JOKERS, QUIZ_QUESTIONS, QUIZ_SECONDS } from "../../../shared/countries";
 import { MUSIC_GAMES } from "../../../shared/types";
 import { MAX_PLAYERS, MAX_SONGS_PER_PLAYER, ROUND_SECONDS, TIMELINE_GOALS } from "../config";
 import { attach, detach, removePlayer } from "../connection";
 import { addSeat, startDraw, startWordCollection } from "../games/draw";
+import { startGeo, stopTimers as stopGeoTimers } from "../games/geo";
 import { ensureColumn } from "../games/kniffel";
 import { drawStartCard, endRound, nextRound, startPicking } from "../games/music";
 import { startSlf } from "../games/slf";
@@ -32,7 +34,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!name || playerId.length < 8) return reply(cb, { ok: false, error: "name_required" });
     detach(socket, true);
 
-    const game = ["year", "timeline", "kniffel", "slf", "draw"].includes(data?.game)
+    const game = ["year", "timeline", "kniffel", "slf", "draw", "geo"].includes(data?.game)
       ? data.game
       : "song";
     const room = createRoom(newCode(), game, playerId);
@@ -147,6 +149,23 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     }
     const perPlayer = Number(data?.drawWordsPerPlayer);
     if (DRAW_WORDS_PER_PLAYER.includes(perPlayer)) settings.drawWordsPerPlayer = perPlayer;
+    // Länder-Quiz
+    if (["flag", "outline", "capital", "mix"].includes(data?.geoMode))
+      settings.geoMode = data.geoMode;
+    if (["world", "eu", "as", "af", "am", "oc"].includes(data?.geoRegion)) {
+      settings.geoRegion = data.geoRegion;
+    }
+    if (typeof data?.geoKnownOnly === "boolean") settings.geoKnownOnly = data.geoKnownOnly;
+    if (data?.geoAnswer === "type" || data?.geoAnswer === "choice") {
+      settings.geoAnswer = data.geoAnswer;
+    }
+    const geoQuestions = Number(data?.geoQuestions);
+    if (QUIZ_QUESTIONS.includes(geoQuestions)) settings.geoQuestions = geoQuestions;
+    const geoSeconds = Number(data?.geoSeconds);
+    if (QUIZ_SECONDS.includes(geoSeconds)) settings.geoSeconds = geoSeconds;
+    if (typeof data?.geoHints === "boolean") settings.geoHints = data.geoHints;
+    const geoJokers = Number(data?.geoJokers);
+    if (QUIZ_JOKERS.includes(geoJokers)) settings.geoJokers = geoJokers;
     if (typeof data?.theme === "string") {
       settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
     }
@@ -166,6 +185,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     // Wer nicht mehr verbunden ist, spielt die neue Partie nicht mit.
     for (const p of [...c.room.players.values()]) if (!p.socketId) c.room.players.delete(p.id);
     if (c.room.game === "slf") startSlf(c.room);
+    else if (c.room.game === "geo") startGeo(c.room);
     else if (c.room.game === "draw") {
       if (c.room.settings.drawWordMode === "players") startWordCollection(c.room);
       else startDraw(c.room);
@@ -191,6 +211,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     clearTimeout(room.slf?.timer);
     clearTimeout(room.draw?.timer);
     room.draw?.hintTimers.forEach(clearTimeout);
+    stopGeoTimers(room.geo);
     room.round = undefined;
     room.queue = [];
     room.roundIndex = 0;
@@ -199,6 +220,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     room.phase = "lobby";
     room.slf = undefined;
     room.draw = undefined;
+    room.geo = undefined;
     for (const p of [...c.room.players.values()]) {
       p.score = 0;
       p.picks = [];

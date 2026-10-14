@@ -7,6 +7,8 @@ import { card, eyebrow, input } from "../components/ui";
 import DrawCollect from "../games/draw/DrawCollect";
 import DrawLobby from "../games/draw/DrawLobby";
 import DrawRound from "../games/draw/DrawRound";
+import GeoLobby from "../games/geo/GeoLobby";
+import GeoRound from "../games/geo/GeoRound";
 import Kniffel from "../games/kniffel/Kniffel";
 import Final from "../games/music/Final";
 import Lobby from "../games/music/Lobby";
@@ -113,6 +115,11 @@ function Room() {
       {state.game === "draw" && state.phase === "lobby" && <DrawLobby state={state} />}
       {state.game === "draw" && state.phase === "round" && state.draw && (
         <DrawRound state={state} draw={state.draw} offset={offset} />
+      )}
+
+      {state.game === "geo" && state.phase === "lobby" && <GeoLobby state={state} />}
+      {state.game === "geo" && state.phase === "round" && state.geo && (
+        <GeoRound state={state} geo={state.geo} offset={offset} />
       )}
 
       {isMusic && state.phase === "lobby" && <Lobby state={state} />}

@@ -2,6 +2,7 @@
 
 import type { DrawView, RoomState, SlfView, TimelineCard, Track } from "../../shared/types";
 import { DEV_TOOLS } from "./config";
+import { geoView } from "./games/geo";
 import { canPlace, hasAnswered, opened } from "./games/music";
 import { judgeRound } from "./games/slf";
 import { cleanTitle, maskText } from "./music/match";
@@ -148,6 +149,8 @@ export function view(room: Room, playerId: string): RoomState {
   }
 
   if (room.draw && room.phase === "round") state.draw = drawView(room, playerId);
+
+  if (room.geo && room.phase === "round") state.geo = geoView(room, playerId);
 
   if (room.phase === "round" && round) {
     const isPicker = round.pickerId === playerId;

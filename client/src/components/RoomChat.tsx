@@ -22,7 +22,11 @@ function RoomChat({ state }: { state: RoomState }) {
   // Freie Texte aus der Runde stehen schon im Chat, deshalb nur die Ereignisse.
   const entries: Entry[] = [
     ...state.chat.map((message) => ({ id: message.id, message })),
-    ...(round?.feed ?? (state.phase === "round" ? state.draw?.feed : undefined) ?? [])
+    ...(
+      round?.feed ??
+      (state.phase === "round" ? (state.draw?.feed ?? state.geo?.feed) : undefined) ??
+      []
+    )
       .filter((e) => e.kind !== "wrong")
       .map((event) => ({ id: event.id, event })),
   ].sort((a, b) => a.id - b.id);
@@ -75,7 +79,7 @@ function RoomChat({ state }: { state: RoomState }) {
         {entries.map((entry) => (
           <li key={entry.id} className="break-words">
             {"event" in entry ? (
-              <FeedLine item={entry.event} you={state.you} />
+              <FeedLine item={entry.event} you={state.you} game={state.game} />
             ) : (
               <>
                 <span

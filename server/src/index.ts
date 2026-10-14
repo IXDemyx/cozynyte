@@ -2,10 +2,12 @@
 
 import { DEV_TOOLS, PORT, ROOM_TTL_MS } from "./config";
 import { enableBots } from "./dev/bots";
+import { stopTimers as stopGeoTimers } from "./games/geo";
 import { registerChatHandlers } from "./handlers/chat";
 import { createHandlers } from "./handlers/context";
 import { registerDevHandlers } from "./handlers/dev";
 import { registerDrawHandlers } from "./handlers/draw";
+import { registerGeoHandlers } from "./handlers/geo";
 import { registerKniffelHandlers } from "./handlers/kniffel";
 import { registerMusicHandlers } from "./handlers/music";
 import { registerRoomHandlers } from "./handlers/room";
@@ -22,6 +24,7 @@ io.on("connection", (socket) => {
   registerKniffelHandlers(handlers);
   registerSlfHandlers(handlers);
   registerDrawHandlers(handlers);
+  registerGeoHandlers(handlers);
   registerChatHandlers(handlers);
   if (DEV_TOOLS) registerDevHandlers(handlers);
 });
@@ -37,6 +40,7 @@ setInterval(() => {
       clearTimeout(room.slf?.timer);
       clearTimeout(room.draw?.timer);
       room.draw?.hintTimers.forEach(clearTimeout);
+      stopGeoTimers(room.geo);
       rooms.delete(room.code);
     }
   }

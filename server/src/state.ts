@@ -10,6 +10,7 @@ import type {
   Settings,
   Track,
 } from "../../shared/types";
+import type { QuizKind } from "../../shared/countries";
 import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
 import { DEFAULT_CATEGORIES } from "../../shared/slf";
 
@@ -146,6 +147,40 @@ export interface DrawGame {
   hintTimers: NodeJS.Timeout[];
 }
 
+/** Länder-Quiz: eine Frage der Partie. */
+export interface GeoQuestion {
+  /** Zufällige Kennung – steht in der Bild-Adresse statt des Länder-Codes. */
+  qid: string;
+  kind: QuizKind;
+  code: string;
+  /** Nur bei der Auswahl: vier Länder-Codes in fester (gemischter) Reihenfolge. */
+  options?: string[];
+}
+
+/** Länder-Quiz: Zustand der Partie und der laufenden Frage. */
+export interface GeoGame {
+  questions: GeoQuestion[];
+  /** Laufende Frage (0-basiert). */
+  index: number;
+  stage: "countdown" | "question" | "reveal";
+  startedAt: number;
+  endsAt: number;
+  /** Antworten dieser Frage: richtig? und – bei der Auswahl – was gewählt wurde. */
+  answers: Map<string, { correct: boolean; choice?: string }>;
+  /** Wer richtig lag – in der Reihenfolge (für den Platzbonus). */
+  order: string[];
+  gains: Map<string, number>;
+  feed: FeedItem[];
+  /** Wie viele Hinweise schon gegeben wurden (Tippen). */
+  hint: number;
+  /** Auswahl: verbleibende 50:50-Joker je Spieler (wer fehlt, hat noch alle). */
+  jokers: Map<string, number>;
+  /** Wer in der laufenden Frage den 50:50-Joker gezogen hat. */
+  fifty: Set<string>;
+  timer?: NodeJS.Timeout;
+  hintTimers: NodeJS.Timeout[];
+}
+
 export interface Room {
   code: string;
   game: Game;
@@ -184,6 +219,9 @@ export interface Room {
   // Montagsmaler
   draw?: DrawGame;
 
+  // Länder-Quiz
+  geo?: GeoGame;
+
   /** Hinweis in der Lobby, z. B. nach einem Abbruch durch den Host. */
   notice?: LobbyNotice;
 }
@@ -220,6 +258,14 @@ export function createRoom(code: string, game: Game, hostId: string): Room {
       drawLanguage: "de",
       drawWordMode: "standard",
       drawWordsPerPlayer: 5,
+      geoMode: "flag",
+      geoRegion: "world",
+      geoKnownOnly: true,
+      geoAnswer: "choice",
+      geoQuestions: 15,
+      geoSeconds: 15,
+      geoHints: true,
+      geoJokers: 2,
     },
     players: new Map(),
     banned: new Set(),

@@ -1,8 +1,9 @@
+import type { Continent, QuizAnswerMode, QuizKind, QuizMode, QuizRegion } from "./countries";
 import type { DrawStage } from "./draw";
 import type { KniffelState } from "./kniffel";
 import type { SlfVerdict } from "./slf";
 
-export type Game = "song" | "year" | "timeline" | "kniffel" | "slf" | "draw";
+export type Game = "song" | "year" | "timeline" | "kniffel" | "slf" | "draw" | "geo";
 
 /** Die Musikspiele teilen sich Lobby, Songauswahl und Runden – und lassen sich im Raum umschalten. */
 export const MUSIC_GAMES: Game[] = ["song", "year", "timeline"];
@@ -60,6 +61,16 @@ export interface Settings {
   drawWordMode: DrawWordMode;
   /** „Eigene Runde“: so viele Begriffe reicht jeder ein. */
   drawWordsPerPlayer: number;
+  /** Länder-Quiz: Fragenart, Region, nur bekannte Länder, Tippen oder Auswahl, Hinweise. */
+  geoMode: QuizMode;
+  geoRegion: QuizRegion;
+  geoKnownOnly: boolean;
+  geoAnswer: QuizAnswerMode;
+  geoQuestions: number;
+  geoSeconds: number;
+  geoHints: boolean;
+  /** Auswahl: so viele 50:50-Joker hat jeder pro Partie (0 = keine). */
+  geoJokers: number;
 }
 
 /** Eine Karte in der Song-Timeline – das Jahr ist sichtbar. */
@@ -93,7 +104,15 @@ export interface PlayerView {
   bot: boolean;
 }
 
-export type FeedKind = "wrong" | "close" | "title" | "artist" | "locked" | "placed" | "guessed";
+export type FeedKind =
+  | "wrong"
+  | "close"
+  | "title"
+  | "artist"
+  | "locked"
+  | "placed"
+  | "guessed"
+  | "joker";
 
 export interface FeedItem {
   id: number;
@@ -218,6 +237,44 @@ export interface DrawView {
   feed: FeedItem[];
 }
 
+/** Länder-Quiz: Stand der laufenden Frage. Die Lösung kommt erst, wenn man sie kennen darf. */
+export interface GeoView {
+  /** Laufende Frage (1-basiert) und Anzahl insgesamt. */
+  index: number;
+  total: number;
+  /** Countdown vor der ersten Frage, Frage, Auflösung. */
+  stage: "countdown" | "question" | "reveal";
+  kind: QuizKind;
+  /** Kennung der Frage – Teil der Bild-Adresse (verrät nichts über das Land). */
+  qid: string;
+  endsAt: number;
+  durationMs: number;
+  /** Hauptstadt-Frage: das gefragte Land (ist ja nicht geheim). */
+  asked?: string;
+  /** Auswahl: vier Länder-Codes; bei Hauptstadt-Fragen stehen sie für deren Hauptstädte. */
+  options?: string[];
+  /** 50:50-Joker eingelöst: diese zwei falschen Antworten sind für einen selbst weg. */
+  removed?: string[];
+  /** Auswahl: so viele Joker hat man in dieser Partie noch. */
+  jokers?: number;
+  /** Hinweis beim Tippen: der Kontinent … */
+  continent?: Continent;
+  /** … und Lücken mit aufgedeckten Buchstaben, je Sprache (die Spieler sprechen verschiedene). */
+  masks?: { de: string; en: string };
+  /** Die Lösung (Länder-Code) – in der Auflösung oder für den, der schon richtig lag. */
+  answer?: string;
+  /** Eigene Antwort: gewählte Option bzw. ob man es schon getippt hat. */
+  yourChoice?: string;
+  youGotIt?: boolean;
+  /** Wer schon geantwortet (Auswahl) bzw. es schon herausgefunden hat (Tippen). */
+  answered: string[];
+  /** Auflösung: wer richtig lag, wer was gewählt hat, Punkte dieser Frage. */
+  correct?: string[];
+  choices?: Record<string, string>;
+  gains?: Record<string, number>;
+  feed: FeedItem[];
+}
+
 export interface RoomState {
   code: string;
   game: Game;
@@ -237,6 +294,8 @@ export interface RoomState {
   slf?: SlfView;
   /** Nur bei Montagsmaler während der Partie. */
   draw?: DrawView;
+  /** Nur beim Länder-Quiz während der Partie. */
+  geo?: GeoView;
   round?: RoundView;
   reveal?: RevealView;
   /** Raum-Chat, die letzten Nachrichten. */
