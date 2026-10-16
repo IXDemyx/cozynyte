@@ -124,7 +124,7 @@ client/src/
   games/slf/      Stadt Land Fluss (lobby, letter drawing, writing round, review)
   games/draw/     Draw & Guess (lobby, word collection, canvas, toolbar, renderer)
   games/geo/      Country Quiz (lobby, question with picture, answers, reveal)
-  games/kniffel/  Yahtzee score sheet (dice panel, sheet, entry dialog)
+  games/kniffel/  Yahtzee score sheet (dice panel, sheet with direct entry)
   hooks/          room connection, server clock, theme, volume, sound effects, two-click confirm
   lib/            socket connection and player IDs, sounds, translations (lib/i18n/de.ts, en.ts),
                   search-engine texts (seo.ts), privacy text, donate link
@@ -283,7 +283,16 @@ expects to live at the root of its address (e.g. its own subdomain), not under a
 - Standard sheet: ones to sixes, bonus of 35 from 63 points in the upper section, three and
   four of a kind (sum of all dice), full house 25, small straight 30, large straight 40,
   Yahtzee 50, chance (sum of all dice). Columns all have the same width.
-- Any box can be crossed out (0) or cleared again to correct a mistake.
+- Entering: with dice (rolled digitally or tapped in) a tap on a box writes the suggested score
+  right away. Without dice – or to correct a box – the box turns into a small input: Enter (or
+  clicking elsewhere) saves, empty clears, 0 crosses out, Esc cancels; impossible scores (like 7 in
+  threes) are rejected.
+- Desktop (from 1280 px): the sheet fills the page with compact rows, dice and tools sit in a
+  column on the right and the chat opens as a panel over that column (with an unread counter) –
+  everything fits on screen without scrolling.
+- Phone (below 1024 px): a compact header (code, chat, "…" for volume, lock and new game),
+  the dice and a narrow sheet that fits up to four players without sideways scrolling; the chat
+  opens as a sheet from the bottom.
 - "Undo" takes back the last entry, including the turn and the digital roll from before it.
   With locked columns, only the owner of that column can undo it.
 - Turns move on automatically: after every new entry it is the next column's turn (full

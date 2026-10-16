@@ -15,6 +15,13 @@ interface RoomLayoutProps {
   players?: ReactNode;
   /** Mitte: das eigentliche Spielgeschehen. */
   children: ReactNode;
+  /**
+   * Ohne Spielerliste: Spalte rechts statt des Chats (Kniffel am Desktop – dort stehen Würfel und
+   * Werkzeuge neben dem Block, der Chat klappt bei Bedarf auf).
+   */
+  side?: ReactNode;
+  /** false = kein Chat in der Seitenleiste bzw. unter dem Spiel (Kniffel am Handy: eigener Knopf). */
+  chat?: boolean;
 }
 
 const devTools = (state: RoomState) =>
@@ -25,7 +32,30 @@ const devTools = (state: RoomState) =>
  * Breit: Raumcode und Spieler links, Spiel in der Mitte, Chat rechts. Mittel: Spiel links,
  * Spieler und Chat rechts übereinander. Schmal (Handy): Spiel, dann Chat, dann Spieler.
  */
-function RoomLayout({ state, players, children }: RoomLayoutProps) {
+function RoomLayout({ state, players, children, side, chat = true }: RoomLayoutProps) {
+  if (!chat && !players && !side) {
+    return (
+      <div className="min-w-0 space-y-6">
+        <LobbyNotice state={state} />
+        {children}
+        {devTools(state)}
+      </div>
+    );
+  }
+  if (side) {
+    return (
+      <div className="grid grid-cols-[minmax(0,max-content)_22rem] items-start justify-center gap-6">
+        <div className="min-w-0 space-y-6">
+          <LobbyNotice state={state} />
+          {children}
+        </div>
+        <div className="sticky top-24 space-y-4">
+          {side}
+          {devTools(state)}
+        </div>
+      </div>
+    );
+  }
   if (!players) {
     return (
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_20rem]">

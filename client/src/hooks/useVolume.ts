@@ -6,10 +6,12 @@ import { useSyncExternalStore } from "react";
  * und lesen beide von hier.
  */
 interface Playback {
-  /** Reglerstellung 0–1 (nicht die Signalstärke, siehe gain). */
+  /** Reglerstellung 0–1 (nicht die Signalstärke, siehe gain). 0 = stumm. */
   volume: number;
   muted: boolean;
   blocked: boolean;
+  /** Entspannte Hintergrundmusik (Kniffel) an? */
+  chill: boolean;
 }
 
 /**
@@ -21,7 +23,7 @@ const gain = (level: number) => level ** 3;
 function savedVolume(): number {
   try {
     const level = Number(localStorage.getItem("volumeLevel"));
-    if (level > 0 && level <= 1) return level;
+    if (level >= 0 && level <= 1 && localStorage.getItem("volumeLevel") !== null) return level;
     // Früher wurde die Signalstärke direkt gespeichert – umrechnen, damit es gleich laut bleibt.
     const old = Number(localStorage.getItem("volume"));
     return old > 0 && old <= 1 ? Math.cbrt(old) : 0.7;
@@ -38,7 +40,20 @@ function savedMuted(): boolean {
   }
 }
 
-let playback: Playback = { volume: savedVolume(), muted: savedMuted(), blocked: false };
+function savedChill(): boolean {
+  try {
+    return localStorage.getItem("chillMusic") === "1";
+  } catch {
+    return false;
+  }
+}
+
+let playback: Playback = {
+  volume: savedVolume(),
+  muted: savedMuted(),
+  blocked: false,
+  chill: savedChill(),
+};
 const listeners = new Set<() => void>();
 let retry: (() => void) | null = null;
 
@@ -47,7 +62,8 @@ function update(patch: Partial<Playback>) {
   listeners.forEach((listener) => listener());
 }
 
-function subscribe(listener: () => void) {
+/** Auch außerhalb von React mithören (z. B. die Hintergrundmusik passt ihre Lautstärke an). */
+export function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
@@ -71,9 +87,21 @@ export function setVolume(volume: number) {
   save("muted", "0");
 }
 
+/** Lautsprecher-Symbol: stumm schalten bzw. wieder an. Stand der Regler ganz links, geht er auf die Hälfte. */
 export function toggleMuted() {
+  if (playback.volume === 0) return setVolume(0.5);
   update({ muted: !playback.muted });
   save("muted", playback.muted ? "1" : "0");
+}
+
+export function toggleChill() {
+  update({ chill: !playback.chill });
+  save("chillMusic", playback.chill ? "1" : "0");
+}
+
+/** Stumm – per Symbol oder Regler ganz links. */
+export function isSilent(): boolean {
+  return playback.muted || playback.volume === 0;
 }
 
 export function setBlocked(blocked: boolean) {
@@ -92,14 +120,20 @@ export function retryPlayback() {
 /** Signalstärke fürs Audio-Element (0–1, stumm = 0) – gemeinsam für Vorhören und Spielrunde. */
 export function useVolume() {
   const { volume, muted } = usePlayback();
-  return [muted ? 0 : gain(volume), setVolume] as const;
+  return [muted || volume === 0 ? 0 : gain(volume), setVolume] as const;
 }
 
 /**
- * Lautstärke für die Soundeffekte (außerhalb von React abrufbar). Bei der Standardstellung (0.7)
- * klingen sie so laut wie bisher, ganz rechts etwas lauter, ganz links fast unhörbar.
+ * Lautstärke für die Soundeffekte (außerhalb von React abrufbar). Über den ganzen Regelweg
+ * gleichmäßig: ganz links stumm, Standardstellung (0.7) so laut wie früher, ganz rechts am lautesten.
  */
 export function effectsVolume(): number {
-  if (playback.muted) return 0;
-  return Math.min(1.5, (playback.volume / 0.7) ** 3);
+  if (isSilent()) return 0;
+  return 1.5 * playback.volume ** 1.2;
+}
+
+/** Lautstärke der Hintergrundmusik – folgt demselben Regler, bleibt aber dezent darunter. */
+export function musicVolume(): number {
+  if (isSilent() || !playback.chill) return 0;
+  return 0.55 * playback.volume ** 1.2;
 }

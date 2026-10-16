@@ -43,12 +43,12 @@ interface Decider {
  * Welcher der neu geworfenen Würfel entscheidet über Kniffel bzw. große Straße?
  * null = kein spannender Moment.
  */
-function findDecider(dice: number[], rolling: boolean[]): Decider | null {
+function findDecider(dice: number[], rolling: boolean[], skipStraight: boolean): Decider | null {
   for (let i = dice.length - 1; i >= 0; i--) {
     if (!rolling[i]) continue;
     const others = dice.filter((_, j) => j !== i);
     const kind = nearBigCombo(others);
-    if (!kind) continue;
+    if (!kind || (kind === "straight" && skipStraight)) continue;
     const target =
       kind === "kniffel"
         ? others[0]
@@ -66,7 +66,12 @@ function findDecider(dice: number[], rolling: boolean[]): Decider | null {
  * fehlende Zahl – bevor er (vielleicht) doch noch umkippt. Gehaltene Würfel bleiben liegen.
  * Beim Betreten des Raums (oder nach dem Neuladen) wird nichts nachgespielt.
  */
-export function useRollAnimation(roll: DigitalRoll | null, sounds: boolean) {
+export function useRollAnimation(
+  roll: DigitalRoll | null,
+  sounds: boolean,
+  /** Große Straße beim Spieler am Zug schon eingetragen (oder gestrichen)? Dann keine Zeitlupe. */
+  straightDone = false,
+) {
   const [faces, setFaces] = useState<number[]>(roll?.dice ?? []);
   const [landed, setLanded] = useState<boolean[]>(() => (roll?.dice ?? []).map(() => true));
   /** Index des Würfels, der gerade in Zeitlupe dreht (sonst null) – und worum es geht. */
@@ -77,6 +82,8 @@ export function useRollAnimation(roll: DigitalRoll | null, sounds: boolean) {
   const [liveCount, setLiveCount] = useState(-1);
   const soundsOn = useRef(sounds);
   soundsOn.current = sounds;
+  const skipStraight = useRef(straightDone);
+  skipStraight.current = straightDone;
 
   useEffect(() => {
     const count = roll?.count ?? 0;
@@ -95,7 +102,7 @@ export function useRollAnimation(roll: DigitalRoll | null, sounds: boolean) {
 
     setLiveCount(count);
     const rolling = roll.dice.map((_, i) => count === 1 || !roll.held[i]);
-    const decider = findDecider(roll.dice, rolling);
+    const decider = findDecider(roll.dice, rolling, skipStraight.current);
     const order = rolling.flatMap((r, i) => (r && i !== decider?.die ? [i] : []));
     let current = roll.dice.map((d, i) => (rolling[i] ? randomFace() : d));
     let down = rolling.map((r) => !r);

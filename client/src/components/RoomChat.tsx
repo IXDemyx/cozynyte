@@ -13,7 +13,7 @@ type Entry = { id: number } & ({ message: ChatMessage } | { event: FeedItem });
  * auch geraten: Ereignisse der Runde (erraten, knapp daneben, …) erscheinen zwischen den
  * Nachrichten, Tipps und Nachrichten laufen über den Server-Filter gegen Spoiler.
  */
-function RoomChat({ state }: { state: RoomState }) {
+function RoomChat({ state, fill = false }: { state: RoomState; fill?: boolean }) {
   const { t } = useLanguage();
   const round = state.phase === "round" ? state.round : undefined;
   const list = useRef<HTMLUListElement>(null);
@@ -66,14 +66,19 @@ function RoomChat({ state }: { state: RoomState }) {
   return (
     <section
       aria-label={t.chat.title}
-      className={`${card} flex flex-col p-5 xl:sticky xl:top-24 xl:h-[calc(100dvh-8rem)] xl:min-h-[28rem]`}
+      // `fill`: füllt den umgebenden Platz (Kniffel: aufgeklappt über der rechten Spalte).
+      className={`${card} flex flex-col p-5 ${
+        fill ? "h-full" : "xl:sticky xl:top-24 xl:h-[calc(100dvh-8rem)] xl:min-h-[28rem]"
+      }`}
     >
       <h2 className={eyebrow}>{t.chat.title}</h2>
       <ul
         ref={list}
         onScroll={onScroll}
         aria-live="polite"
-        className="mt-3 h-64 space-y-1.5 overflow-y-auto rounded-xl bg-slate-50 p-3 text-sm xl:h-auto xl:min-h-0 xl:flex-1 dark:bg-black/30"
+        className={`mt-3 space-y-1.5 overflow-y-auto rounded-xl bg-slate-50 p-3 text-sm dark:bg-black/30 ${
+          fill ? "min-h-0 flex-1" : "h-64 xl:h-auto xl:min-h-0 xl:flex-1"
+        }`}
       >
         {entries.length === 0 && <li className="text-(--text-secondary)">{t.chat.empty}</li>}
         {entries.map((entry) => (

@@ -33,6 +33,8 @@ interface DicePanelProps {
   sounds: boolean;
   /** Stand der Würfelanimation (liegt im Kniffel-Raum, damit der Block auf sie warten kann). */
   animation: ReturnType<typeof useRollAnimation>;
+  /** Schmale Spalte neben dem Block (Desktop): etwas weniger Innenabstand. */
+  compact?: boolean;
 }
 
 /** Alle so viele ms klappert es beim Schütteln (und vibriert das Handy kurz). */
@@ -48,6 +50,7 @@ function DicePanel({
   sounds,
   isHost,
   animation,
+  compact = false,
 }: DicePanelProps) {
   const { t } = useLanguage();
   const current = sheet.columns.find((c) => c.id === sheet.current);
@@ -122,7 +125,7 @@ function DicePanel({
 
   return (
     <section
-      className={`${card} relative overflow-hidden p-5 transition ${almostKniffel ? "animate-tension" : ""}`}
+      className={`${card} relative overflow-hidden ${compact ? "p-4" : "p-5"} transition ${almostKniffel ? "animate-tension" : ""}`}
     >
       {isKniffel && live && <Confetti key={comboKey} delay={0} />}
       <div className="flex flex-wrap items-center justify-between gap-3">

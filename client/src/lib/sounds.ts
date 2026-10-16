@@ -53,6 +53,11 @@ function audio(): { ctx: AudioContext; out: GainNode } | null {
   return { ctx: context, out: master! };
 }
 
+/** Gemeinsamer Audio-Kontext und Ausgang – auch für die Hintergrundmusik (lib/music.ts). */
+export function audioOut(): { ctx: AudioContext; out: GainNode } | null {
+  return audio();
+}
+
 // Sobald der Nutzer irgendwo klickt oder tippt, darf der Ton laufen.
 if (typeof window !== "undefined") {
   const unlock = () => void audio()?.ctx.resume();
