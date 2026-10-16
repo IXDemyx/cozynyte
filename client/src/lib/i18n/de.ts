@@ -347,6 +347,7 @@ export const de = {
     musicOn: "Chill-Musik an",
     musicOff: "Chill-Musik aus",
     musicStart: "Musik starten",
+    nextSong: (song: number) => `Nächster Song (läuft: Song ${song})`,
     pause: "Pause",
   },
   slf: {

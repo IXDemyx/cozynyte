@@ -343,6 +343,7 @@ export const en: Dictionary = {
     musicOn: "Chill music on",
     musicOff: "Chill music off",
     musicStart: "Start music",
+    nextSong: (song: number) => `Next song (playing: song ${song})`,
     pause: "Pause",
   },
   slf: {

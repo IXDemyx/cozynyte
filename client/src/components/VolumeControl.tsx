@@ -1,14 +1,15 @@
 import { FiVolume2, FiVolumeX } from "react-icons/fi";
-import { LuMusic } from "react-icons/lu";
+import { LuMusic, LuSkipForward } from "react-icons/lu";
 import {
   retryPlayback,
+  setTrack,
   setVolume,
   toggleChill,
   toggleMuted,
   usePlayback,
 } from "../hooks/useVolume";
 import { useLanguage } from "../lib/i18n";
-import { useMusicWaiting } from "../lib/music";
+import { TRACKS, useMusicWaiting } from "../lib/music";
 
 /**
  * Lautstärkeregler oben rechts in der Spielkarte – immer an derselben Stelle (Songauswahl,
@@ -17,7 +18,9 @@ import { useMusicWaiting } from "../lib/music";
  */
 function VolumeControl({ music = false }: { music?: boolean }) {
   const { t } = useLanguage();
-  const { volume, muted, blocked, chill } = usePlayback();
+  const { volume, muted, blocked, chill, track } = usePlayback();
+  // Songs sind nur durchnummeriert (1, 2, 3, …).
+  const song = (track % TRACKS.length) + 1;
   // Regler ganz links zählt wie stumm.
   const silent = muted || volume === 0;
   const waiting = useMusicWaiting() && music && chill && !silent;
@@ -67,6 +70,19 @@ function VolumeControl({ music = false }: { music?: boolean }) {
           className={`rounded-md p-1 transition hover:text-(--accent) ${chill ? "text-(--accent)" : ""}`}
         >
           <LuMusic aria-hidden="true" className={chill ? "animate-pulse" : ""} />
+        </button>
+      )}
+      {/* Nächstes Stück – die Zahl zeigt, was gerade läuft. */}
+      {music && chill && (
+        <button
+          type="button"
+          onClick={() => setTrack((track + 1) % TRACKS.length)}
+          aria-label={t.audio.nextSong(song)}
+          title={t.audio.nextSong(song)}
+          className="flex items-center gap-1 rounded-md px-1 py-0.5 text-xs font-medium transition hover:text-(--accent)"
+        >
+          <span className="font-mono tabular-nums">{song}</span>
+          <LuSkipForward aria-hidden="true" className="shrink-0" />
         </button>
       )}
       {/* Nach dem Neuladen wartet die Musik auf den ersten Klick (Vorgabe des Browsers) –

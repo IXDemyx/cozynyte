@@ -72,9 +72,9 @@ function Kniffel({ state }: { state: RoomState }) {
   // Entspannte Hintergrundmusik (über das Noten-Symbol neben dem Regler).
   useEffect(() => {
     if (!playback.chill) return;
-    startMusic();
+    startMusic(playback.track);
     return stopMusic;
-  }, [playback.chill]);
+  }, [playback.chill, playback.track]);
   useKniffelSounds(sheet, state.you, sounds);
 
   const targetId = sheet.current ?? undefined;

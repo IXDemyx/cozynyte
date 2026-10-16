@@ -12,6 +12,8 @@ interface Playback {
   blocked: boolean;
   /** Entspannte Hintergrundmusik (Kniffel) an? */
   chill: boolean;
+  /** Welches Stück der Hintergrundmusik (Index in TRACKS, lib/music.ts). */
+  track: number;
 }
 
 /**
@@ -48,11 +50,21 @@ function savedChill(): boolean {
   }
 }
 
+function savedTrack(): number {
+  try {
+    const track = Number(localStorage.getItem("chillTrack"));
+    return Number.isInteger(track) && track >= 0 ? track : 0;
+  } catch {
+    return 0;
+  }
+}
+
 let playback: Playback = {
   volume: savedVolume(),
   muted: savedMuted(),
   blocked: false,
   chill: savedChill(),
+  track: savedTrack(),
 };
 const listeners = new Set<() => void>();
 let retry: (() => void) | null = null;
@@ -97,6 +109,12 @@ export function toggleMuted() {
 export function toggleChill() {
   update({ chill: !playback.chill });
   save("chillMusic", playback.chill ? "1" : "0");
+}
+
+/** Anderes Stück der Hintergrundmusik. */
+export function setTrack(track: number) {
+  update({ track });
+  save("chillTrack", String(track));
 }
 
 /** Stumm – per Symbol oder Regler ganz links. */
