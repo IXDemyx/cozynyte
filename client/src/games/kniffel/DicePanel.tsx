@@ -317,7 +317,10 @@ function DicePanel({
       </div>
 
       {current && (
-        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4 dark:border-(--accent-soft)">
+        // Feste Aufteilung: links der Knopf (feste Mindestbreite), rechts übereinander „Noch x Würfe“
+        // und der Schüttel-Hinweis. Der Hinweis hält seinen Platz auch, wenn er gerade unsichtbar
+        // ist – so springt beim Würfeln nichts hin und her.
+        <div className="mt-4 flex items-center gap-3 border-t border-slate-200 pt-4 dark:border-(--accent-soft)">
           {canRoll ? (
             <>
               <Button
@@ -328,23 +331,34 @@ function DicePanel({
                 // Tastatur (Enter/Leertaste): sofort werfen, ohne Schütteln.
                 onClick={(e) => e.detail === 0 && canThrow && socket.emit("kniffel:roll")}
                 disabled={!canThrow && !shaking}
-                className={`touch-none select-none [-webkit-touch-callout:none] ${shaking ? "animate-rattle" : ""}`}
+                className={`min-w-40 shrink-0 touch-none select-none [-webkit-touch-callout:none] ${shaking ? "animate-rattle" : ""}`}
               >
                 {shaking ? t.kniffel.release : rolling ? t.kniffel.roll : t.kniffel.digital}
               </Button>
-              {canThrow && !shaking && (
-                <span className="text-xs text-(--text-secondary)">{t.kniffel.shakeHint}</span>
-              )}
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span
+                  className={`font-mono text-sm text-(--text-secondary) ${rolling ? "" : "invisible"}`}
+                >
+                  {t.kniffel.rollAgain(rollsLeft)}
+                </span>
+                <span
+                  className={`text-xs text-(--text-secondary) ${canThrow && !shaking ? "" : "invisible"}`}
+                >
+                  {t.kniffel.shakeHint}
+                </span>
+              </div>
             </>
           ) : (
-            <span className="text-sm text-(--text-secondary)">
-              {t.kniffel.notYourTurn(current.name)}
-            </span>
-          )}
-          {rolling && (
-            <span className="font-mono text-sm text-(--text-secondary)">
-              {t.kniffel.rollAgain(rollsLeft)}
-            </span>
+            <>
+              <span className="text-sm text-(--text-secondary)">
+                {t.kniffel.notYourTurn(current.name)}
+              </span>
+              {rolling && (
+                <span className="font-mono text-sm text-(--text-secondary)">
+                  {t.kniffel.rollAgain(rollsLeft)}
+                </span>
+              )}
+            </>
           )}
         </div>
       )}

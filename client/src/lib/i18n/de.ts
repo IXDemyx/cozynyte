@@ -271,7 +271,7 @@ export const de = {
       fourKind: "Viererpasch!",
     },
     digital: "Digital würfeln",
-    release: "Loslassen zum Werfen!",
+    release: "Loslassen!",
     almostKniffel: "Kniffel?!",
     shakeHint: "Gedrückt halten zum Schütteln",
     notYourTurn: (name: string) => `${name} würfelt …`,

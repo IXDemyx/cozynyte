@@ -269,7 +269,7 @@ export const en: Dictionary = {
       fourKind: "Four of a kind!",
     },
     digital: "Roll digitally",
-    release: "Let go to throw!",
+    release: "Let go!",
     almostKniffel: "Yahtzee?!",
     shakeHint: "Hold to shake the cup",
     notYourTurn: (name) => `${name} is rolling …`,
