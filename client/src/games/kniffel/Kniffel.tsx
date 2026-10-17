@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import {
+  FiGlobe,
   FiLock,
   FiMessageSquare,
   FiMoreHorizontal,
@@ -93,7 +94,7 @@ function Kniffel({ state }: { state: RoomState }) {
   // Digitaler Wurf hat Vorrang vor von Hand eingetippten Würfeln.
   const activeDice = rolling && roll ? roll.dice : dice;
   const diceReady = activeDice.length === 5;
-  const canEdit = (column: KniffelColumn) => canEditColumn(sheet, column, state.you);
+  const canEdit = (column: KniffelColumn) => canEditColumn(sheet, column, state.you, isHost);
   const canRoll = Boolean(currentColumn && canEdit(currentColumn));
   // Vorschläge im Block erst, wenn alle Würfel liegen – sonst verrät die Tabelle den Wurf.
   const suggestion = (columnId: string, category: Category) =>
@@ -148,7 +149,7 @@ function Kniffel({ state }: { state: RoomState }) {
         size="small"
         title={undoLabel}
         aria-label={undoLabel}
-        disabled={!lastColumn || !canEdit(lastColumn)}
+        disabled={!lastColumn || !canEdit(lastColumn) || sheet.strict}
         onClick={() => socket.emit("kniffel:undo")}
       >
         <FiRotateCcw aria-hidden="true" /> {t.kniffel.undo}
@@ -167,8 +168,33 @@ function Kniffel({ state }: { state: RoomState }) {
         <Button
           variant="secondary"
           size="small"
-          title={t.kniffel.lockHint}
+          title={state.settings.isPublic ? t.lobby.publicHint : t.lobby.privateHint}
+          aria-pressed={state.settings.isPublic}
+          onClick={() => socket.emit("settings:update", { isPublic: !state.settings.isPublic })}
+          className={state.settings.isPublic ? "border-(--accent)! text-(--accent)!" : ""}
+        >
+          <FiGlobe aria-hidden="true" />
+          <span className={desktop ? "sr-only" : undefined}>
+            {state.settings.isPublic ? t.kniffel.publicOn : t.kniffel.publicOff}
+          </span>
+        </Button>
+      ) : (
+        state.settings.isPublic && (
+          <span
+            className="flex items-center gap-1.5 text-sm text-(--text-secondary)"
+            title={t.lobby.publicHint}
+          >
+            <FiGlobe aria-hidden="true" /> {t.kniffel.publicOn}
+          </span>
+        )
+      )}
+      {isHost ? (
+        <Button
+          variant="secondary"
+          size="small"
+          title={sheet.strict ? t.kniffel.lockedPublic : t.kniffel.lockHint}
           aria-pressed={sheet.locked}
+          disabled={sheet.strict}
           onClick={() => socket.emit("kniffel:lock", { locked: !sheet.locked })}
           className={sheet.locked ? "border-(--accent)! text-(--accent)!" : ""}
         >
@@ -222,7 +248,8 @@ function Kniffel({ state }: { state: RoomState }) {
     />
   );
 
-  const addForm = (
+  // Öffentliche Räume: Spieler ohne Handy trägt nur der Host ein.
+  const addForm = !sheet.strict || isHost ? (
     <form
       onSubmit={addColumn}
       className={`${card} flex gap-2 ${desktop || mobile ? "p-4" : "p-5"}`}
@@ -246,7 +273,7 @@ function Kniffel({ state }: { state: RoomState }) {
         <span className={desktop ? "sr-only" : "hidden sm:inline"}>{t.kniffel.add}</span>
       </Button>
     </form>
-  );
+  ) : null;
 
   const winnerBanner = finished && (
     <p className="rounded-2xl border border-(--accent) bg-(--accent-soft) p-4 text-center font-semibold">

@@ -9,7 +9,7 @@ import {
 } from "../../../shared/slf";
 import { DRAW_ROUNDS, DRAW_SECONDS, DRAW_WORDS_PER_PLAYER } from "../../../shared/draw";
 import { QUIZ_JOKERS, QUIZ_QUESTIONS, QUIZ_SECONDS } from "../../../shared/countries";
-import { MUSIC_GAMES } from "../../../shared/types";
+import { MUSIC_GAMES, PUBLIC_GAMES, type Game } from "../../../shared/types";
 import { MAX_PLAYERS, MAX_SONGS_PER_PLAYER, ROUND_SECONDS, TIMELINE_GOALS } from "../config";
 import { attach, detach, removePlayer } from "../connection";
 import { addSeat, startDraw, startWordCollection } from "../games/draw";
@@ -18,6 +18,7 @@ import { ensureColumn } from "../games/kniffel";
 import { drawStartCard, endRound, nextRound, startPicking } from "../games/music";
 import { startSlf } from "../games/slf";
 import { io } from "../server";
+import { findPublicRoom, openRooms, setPublic } from "../lobbies";
 import { allowAttempt } from "../limits";
 import {
   cleanName,
@@ -50,12 +51,16 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
       ? data.game
       : "song";
     const playerId = newPlayerId();
-    const room = createRoom(newCode(), game, playerId);
+    const language = data?.language === "en" ? "en" : "de";
+    const room = createRoom(newCode(), game, playerId, language);
+
     const player = createPlayer(playerId, name);
     player.key = key;
     room.players.set(playerId, player);
     rooms.set(room.code, room);
     ensureColumn(room, player);
+    // Über „Zufälliger Raum“ erstellt: gleich öffentlich, damit andere dazukommen können.
+    if (data?.isPublic === true) setPublic(room, true);
     attach(socket, room, player);
     reply(cb, { ok: true, code: room.code });
     broadcast(room);
@@ -78,7 +83,8 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     // Unbekannte ID, aber gleicher Name wie jemand, der gerade nicht verbunden ist: Das ist sehr
     // wahrscheinlich dieselbe Person auf neuem Tab/Gerät (Handy hat den Tab verworfen, Link neu
     // geöffnet …) – sie übernimmt ihren Platz samt Punkten, statt doppelt mitzuspielen.
-    if (!player) {
+    // In öffentlichen Räumen nicht: Unter Fremden könnte sonst jeder per Namen Plätze übernehmen.
+    if (!player && !room.settings.isPublic) {
       player = [...room.players.values()].find(
         (p) => !p.socketId && !p.bot && sameName(p.name, name),
       );
@@ -94,9 +100,11 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
       }
       if (room.game === "draw" && room.phase === "round") addSeat(room, player);
       // Kniffel: Wer länger weg war, ist aus der Spielerliste raus – seine Spalte aber noch da.
-      const orphan = room.kniffel?.columns.find(
-        (c) => c.playerId && !room.players.has(c.playerId) && sameName(c.name, name),
-      );
+      const orphan = room.settings.isPublic
+        ? undefined
+        : room.kniffel?.columns.find(
+            (c) => c.playerId && !room.players.has(c.playerId) && sameName(c.name, name),
+          );
       if (orphan) orphan.playerId = player.id;
     } else {
       player.name = name;
@@ -109,6 +117,16 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     reply(cb, { ok: true, playerId: player.id });
     broadcast(room);
   });
+
+  // Zufälliger Raum: passenden öffentlichen Raum suchen. Kein Treffer = code null, dann erstellt
+  // der Client selbst einen öffentlichen Raum.
+  socket.on("room:random", (data, cb) => {
+    const game = PUBLIC_GAMES.includes(data?.game) ? (data.game as Game) : undefined;
+    const room = findPublicRoom(game, data?.language === "en" ? "en" : "de");
+    reply(cb, { ok: true, code: room?.code ?? null });
+  });
+
+  socket.on("rooms:open", (cb) => reply(cb, { ok: true, ...openRooms() }));
 
   socket.on("room:leave", () => detach(socket, true));
   socket.on("disconnect", () => detach(socket, false));
@@ -130,6 +148,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     const goal = Number(data?.timelineGoal);
     if (TIMELINE_GOALS.includes(goal)) settings.timelineGoal = goal;
     if (typeof data?.showSong === "boolean") settings.showSong = data.showSong;
+    if (typeof data?.isPublic === "boolean") setPublic(c.room, data.isPublic);
     // Stadt Land Fluss
     if (Array.isArray(data?.slfCategories)) {
       const categories = [

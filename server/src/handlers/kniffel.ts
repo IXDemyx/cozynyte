@@ -1,6 +1,12 @@
 /** Kniffel: Einträge, Rückgängig, Spalten, Zugreihenfolge, Sperre und digitale Würfel. */
 
-import { MAX_ROLLS, canEditColumn, type Category } from "../../../shared/kniffel";
+import {
+  MAX_ROLLS,
+  canEditColumn,
+  scoreDice,
+  type Category,
+  type KniffelState,
+} from "../../../shared/kniffel";
 import {
   addColumn,
   removeColumn,
@@ -13,15 +19,37 @@ import { cleanName } from "../state";
 import { broadcast } from "../view";
 import type { Handlers } from "./context";
 
+/**
+ * Öffentliche Räume: Eingetragen wird nur, was der digitale Wurf ergibt – in die eigene Spalte,
+ * wenn man dran ist, in ein freies Feld. Keine selbst gewählten Würfel, keine Korrekturen.
+ */
+function fromRoll(
+  sheet: KniffelState,
+  column: string,
+  category: Category,
+  value: number | null,
+): boolean {
+  const { roll } = sheet;
+  return (
+    column === sheet.current &&
+    !!roll &&
+    roll.count > 0 &&
+    value !== null &&
+    sheet.cells[column]?.[category] === undefined &&
+    value === scoreDice(category, roll.dice)
+  );
+}
+
 export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
   // Ohne Sperre darf jeder jede Spalte bearbeiten – wie ein Block, der auf dem Tisch liegt.
   socket.on("kniffel:set", (data) => {
     const c = ctx();
     const sheet = c?.room.kniffel;
     const column = sheet?.columns.find((col) => col.id === String(data?.column ?? ""));
-    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id)) return;
+    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id, c.isHost)) return;
     const value = data?.value === null ? null : Number(data?.value);
     const category = String(data?.category ?? "") as Category;
+    if (sheet.strict && !fromRoll(sheet, column.id, category, value)) return;
     if (writeCell(c.room, column.id, category, value)) broadcast(c.room);
   });
 
@@ -31,7 +59,9 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
     const sheet = c?.room.kniffel;
     const step = c?.room.kniffelHistory.at(-1);
     const column = sheet?.columns.find((col) => col.id === step?.column);
-    if (!c || !sheet || !step || !column || !canEditColumn(sheet, column, c.player.id)) return;
+    if (!c || !sheet || !step || !column || !canEditColumn(sheet, column, c.player.id, c.isHost)) return;
+    // Öffentlich kein Rückgängig – sonst ließe sich ein schlechter Wurf einfach neu würfeln.
+    if (sheet.strict) return;
 
     c.room.kniffelHistory.pop();
     const cells = (sheet.cells[step.column] ??= {});
@@ -47,6 +77,8 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
     const c = ctx();
     const name = cleanName(data?.name);
     if (!c || !c.room.kniffel || !name) return;
+    // Öffentlich: nur der Host trägt Spieler ohne Handy ein (sonst Spam durch Fremde).
+    if (c.room.kniffel.strict && !c.isHost) return;
     if (!addColumn(c.room, name)) return reply(cb, { ok: false, error: "room_full" });
     reply(cb, { ok: true });
     broadcast(c.room);
@@ -83,7 +115,8 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
 
   socket.on("kniffel:lock", (data) => {
     const c = ctx();
-    if (!c || !c.isHost || !c.room.kniffel) return;
+    // Öffentliche Räume bleiben gesperrt.
+    if (!c || !c.isHost || !c.room.kniffel || c.room.kniffel.strict) return;
     c.room.kniffel.locked = Boolean(data?.locked);
     broadcast(c.room);
   });
@@ -93,7 +126,7 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
     const c = ctx();
     const sheet = c?.room.kniffel;
     const column = sheet?.columns.find((col) => col.id === sheet.current);
-    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id)) return undefined;
+    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id, c.isHost)) return undefined;
     return { room: c.room, sheet };
   };
 

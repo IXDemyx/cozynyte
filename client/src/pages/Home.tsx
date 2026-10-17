@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { IconType } from "react-icons";
 import { FiArrowRight, FiChevronDown } from "react-icons/fi";
 import {
@@ -10,9 +10,10 @@ import {
   LuMoonStar,
   LuNotebookPen,
   LuPalette,
+  LuShuffle,
 } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
-import type { Ack, Game } from "../../../shared/types";
+import { PUBLIC_GAMES, type Ack, type Game, type OpenRooms } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
 import LanguageHint from "../components/LanguageHint";
@@ -28,6 +29,22 @@ function Home() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [open, setOpen] = useState<OpenRooms | null>(null);
+
+  // Wie viele öffentliche Räume gerade Mitspieler suchen – regelmäßig nachfragen.
+  useEffect(() => {
+    const load = () =>
+      socket.timeout(5000).emit("rooms:open", (failure: Error | null, res: Ack<OpenRooms>) => {
+        if (!failure && res.ok) setOpen({ total: res.total, byGame: res.byGame });
+      });
+    load();
+    const timer = setInterval(load, 15_000);
+    socket.on("connect", load);
+    return () => {
+      clearInterval(timer);
+      socket.off("connect", load);
+    };
+  }, []);
 
   type Entry = { id: Game; icon: IconType; meta: string; text: string };
   const sections: { title: string; text: string; games: Entry[] }[] = [
@@ -57,7 +74,7 @@ function Home() {
   ];
   const validName = name.trim().length > 0;
 
-  const create = (game: Game) => {
+  const create = (game: Game, isPublic = false) => {
     if (!validName) return setError("name_required");
     saveName(name);
     setBusy(true);
@@ -66,7 +83,7 @@ function Home() {
       .timeout(6000)
       .emit(
         "room:create",
-        { name: name.trim(), playerId, game },
+        { name: name.trim(), playerId, game, isPublic, language },
         (failure: Error | null, res: Ack<{ code: string }>) => {
           setBusy(false);
           if (failure) return setError("server_unreachable");
@@ -74,6 +91,33 @@ function Home() {
           confirmRoom(res.code);
           rememberPlayerId(res.code, playerId);
           navigate(`/r/${res.code}`);
+        },
+      );
+  };
+
+  // Zufälliger Raum: offenen öffentlichen Raum suchen (optional für ein Spiel). Gibt es keinen,
+  // wird ein neuer öffentlicher Raum erstellt, in den andere dann zufällig dazukommen.
+  const joinRandom = (game?: Game) => {
+    if (!validName) return setError("name_required");
+    saveName(name);
+    setBusy(true);
+    setError("");
+    socket
+      .timeout(6000)
+      .emit(
+        "room:random",
+        { game, language },
+        (failure: Error | null, res: Ack<{ code: string | null }>) => {
+          if (failure) {
+            setBusy(false);
+            return setError("server_unreachable");
+          }
+          if (res.ok && res.code) {
+            setBusy(false);
+            confirmRoom(res.code);
+            return navigate(`/r/${res.code}`);
+          }
+          create(game ?? "song", true);
         },
       );
   };
@@ -149,6 +193,26 @@ function Home() {
                 <Button type="submit">{t.home.join}</Button>
               </div>
             </form>
+            <div className="flex items-center gap-3 text-xs text-(--text-secondary)">
+              <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+              {t.home.or}
+              <span className="h-px flex-1 bg-slate-200 dark:bg-white/10" />
+            </div>
+            <div>
+              <Button
+                variant="secondary"
+                onClick={() => joinRandom()}
+                disabled={busy}
+                className="w-full"
+              >
+                <LuShuffle aria-hidden="true" /> {t.home.random}
+              </Button>
+              {open && (
+                <p className="mt-2 text-center text-xs text-(--text-secondary)">
+                  {t.home.openRooms(open.total)}
+                </p>
+              )}
+            </div>
           </div>
           <ErrorText code={error} />
         </section>
@@ -162,29 +226,49 @@ function Home() {
             <p className="text-sm text-(--text-secondary)">{section.text}</p>
           </div>
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {section.games.map(({ id, icon: Icon, meta, text }) => (
-              <button
-                key={id}
-                type="button"
-                onClick={() => create(id)}
-                disabled={busy}
-                aria-label={t.home.createGame(t.games[id])}
-                className={`${gameCard} group flex w-full items-center gap-3 p-4 text-left disabled:opacity-60 sm:p-5`}
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-(--on-accent)">
-                  <Icon aria-hidden="true" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <h3 className="font-bold tracking-tight">{t.games[id]}</h3>
-                  <span className="block text-xs text-(--text-secondary)">{text}</span>
-                  <span className="mt-0.5 block font-mono text-[11px] text-(--accent)">{meta}</span>
-                </span>
-                <FiArrowRight
-                  aria-hidden="true"
-                  className="shrink-0 text-(--text-secondary) transition group-hover:translate-x-0.5 group-hover:text-(--accent)"
-                />
-              </button>
-            ))}
+            {section.games.map(({ id, icon: Icon, meta, text }) => {
+              const openCount = open?.byGame[id] ?? 0;
+              return (
+                // Kachel = Raum erstellen; rechts daneben (außer Kniffel) „zufälliger Raum“.
+                <div key={id} className={`${gameCard} flex items-stretch`}>
+                  <button
+                    type="button"
+                    onClick={() => create(id)}
+                    disabled={busy}
+                    aria-label={t.home.createGame(t.games[id])}
+                    className="group flex min-w-0 flex-1 items-center gap-3 rounded-2xl p-4 text-left disabled:opacity-60 sm:p-5"
+                  >
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-(--on-accent)">
+                      <Icon aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <h3 className="font-bold tracking-tight">{t.games[id]}</h3>
+                      <span className="block text-xs text-(--text-secondary)">{text}</span>
+                      <span className="mt-0.5 block font-mono text-[11px] text-(--accent)">
+                        {meta}
+                        {openCount > 0 && ` · ${t.home.openShort(openCount)}`}
+                      </span>
+                    </span>
+                    <FiArrowRight
+                      aria-hidden="true"
+                      className="shrink-0 text-(--text-secondary) transition group-hover:translate-x-0.5 group-hover:text-(--accent)"
+                    />
+                  </button>
+                  {PUBLIC_GAMES.includes(id) && (
+                    <button
+                      type="button"
+                      onClick={() => joinRandom(id)}
+                      disabled={busy}
+                      aria-label={t.home.randomGame(t.games[id])}
+                      title={t.home.randomGame(t.games[id])}
+                      className="flex w-12 shrink-0 items-center justify-center rounded-r-2xl border-l border-slate-200 text-lg text-(--text-secondary) transition hover:bg-(--accent-soft) hover:text-(--accent) disabled:opacity-60 dark:border-white/10"
+                    >
+                      <LuShuffle aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       ))}

@@ -23,7 +23,7 @@ export const de = {
     imprint: "Impressum",
     privacy: "Datenschutz",
     donate: "Spendier mir einen Kaffee",
-    donateFinal: "War ein schöner Abend?",
+    donateFinal: "Hast du spaß gehabt?",
   },
   nav: {
     light: "Helles Design",
@@ -44,7 +44,7 @@ export const de = {
     songText: "Titel und Interpret erraten",
     yearText: "Erscheinungsjahr schätzen",
     timelineText: "Songs zeitlich einordnen",
-    kniffelMeta: "1–16 Spieler · echte Würfel",
+    kniffelMeta: "1–16 Spieler",
     kniffelText: "Der Block fürs Handy – Rechnen übernehmen wir",
     slfText: "Ein Buchstabe, viele Kategorien",
     joinTitle: "Raum beitreten",
@@ -53,6 +53,16 @@ export const de = {
     namePlaceholder: "z. B. Daniel",
     code: "Raumcode",
     join: "Beitreten",
+    or: "oder",
+    random: "Zufälliger Raum",
+    randomGame: (game: string) => `Zufälligen Raum für ${game} suchen`,
+    openRooms: (n: number) =>
+      n === 0
+        ? "Gerade sucht niemand – du machst einen Raum auf, andere kommen dazu."
+        : n === 1
+          ? "1 Raum sucht gerade Mitspieler."
+          : `${n} Räume suchen gerade Mitspieler.`,
+    openShort: (n: number) => `${n} offen`,
     music: "Musik",
     musicText: "Jeder bringt seine Lieblingssongs mit, alle raten mit.",
     classics: "Klassiker",
@@ -93,6 +103,11 @@ export const de = {
     theme: "Motto",
     themePlaceholder: "z. B. Nur 2000er (optional)",
     noTheme: "Kein Motto – alles darf mit",
+    visibility: "Wer darf rein?",
+    private: "Nur mit Code",
+    public: "Alle",
+    privateHint: "Nur wer Code oder Einladungslink hat, kommt rein.",
+    publicHint: "Öffentlich: Fremde können über „Zufälliger Raum“ dazukommen.",
     start: "Spiel starten",
     waitingPlayers: "Noch ist es ruhig hier – lad mindestens eine Person ein …",
     waitingHost: "Macht's euch bequem – der Host startet gleich …",
@@ -255,6 +270,8 @@ export const de = {
     dice: "Würfel eintragen",
     diceHint:
       "Tippe die fünf Würfel an – im Block steht dann bei jedem freien Feld, was der Wurf bringt. Nach jedem Eintrag ist automatisch der Nächste dran.",
+    diceHintPublic:
+      "Öffentlicher Raum: Hier wird digital gewürfelt – tippe danach im Block auf das Feld, in das der Wurf soll.",
     undo: "Rückgängig",
     undoWhat: (category: string, name: string) => `Zurücknehmen: ${category} bei ${name}`,
     lockOn: "Spalten gesperrt",
@@ -262,6 +279,11 @@ export const de = {
     closeChat: "Chat schließen",
     more: "Mehr",
     lockHint: "Gesperrt: Jeder schreibt und würfelt nur in der eigenen Spalte.",
+    lockedPublic: "Öffentliche Räume bleiben gesperrt.",
+    publicOn: "Öffentlich",
+    publicOff: "Privat",
+    sharedPublic:
+      "Öffentlicher Raum: Jeder schreibt nur in die eigene Spalte, Spieler ohne Handy trägt der Host ein.",
     sharedLocked:
       "Jeder kann nur in die eigene Spalte schreiben. Spieler ohne Handy kann jeder eintragen.",
     roll: "Würfeln",

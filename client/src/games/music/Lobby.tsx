@@ -3,6 +3,7 @@ import { MUSIC_GAMES, type Ack, type RoomState } from "../../../../shared/types"
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
 import InviteButton from "../../components/InviteButton";
+import PublicOption from "../../components/PublicOption";
 import { OptionGroup } from "../../components/Option";
 import PlayerList from "../../components/PlayerList";
 import RoomLayout from "../../components/RoomLayout";
@@ -48,6 +49,7 @@ function Lobby({ state }: { state: RoomState }) {
         </div>
 
         <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 sm:grid-cols-2 xl:mt-6 xl:border-t-0 xl:pt-0 dark:border-(--accent-soft)">
+          <PublicOption state={state} isHost={isHost} />
           <OptionGroup
             wide
             label={t.lobby.game}

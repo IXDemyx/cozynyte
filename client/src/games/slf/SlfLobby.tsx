@@ -14,6 +14,7 @@ import type { Ack, RoomState } from "../../../../shared/types";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
 import InviteButton from "../../components/InviteButton";
+import PublicOption from "../../components/PublicOption";
 import { Option, OptionGroup } from "../../components/Option";
 import PlayerList from "../../components/PlayerList";
 import RoomLayout from "../../components/RoomLayout";
@@ -80,6 +81,7 @@ function SlfLobby({ state }: { state: RoomState }) {
         </div>
 
         <div className="mt-8 grid gap-6 border-t border-slate-200 pt-6 sm:grid-cols-2 xl:mt-6 xl:border-t-0 xl:pt-0 dark:border-(--accent-soft)">
+          <PublicOption state={state} isHost={isHost} />
           <div className="sm:col-span-2">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="text-sm font-semibold">{t.slf.categories}</p>

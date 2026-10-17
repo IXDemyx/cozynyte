@@ -51,6 +51,11 @@ export interface KniffelState {
   current: string | null;
   /** Raumeinstellung: Jeder schreibt nur in die eigene Spalte (Spalten ohne Handy bleiben offen). */
   locked: boolean;
+  /**
+   * Öffentlicher Raum: Spalten sind immer gesperrt, und Spalten ohne Handy darf nur der Host
+   * beschreiben – sonst könnten Fremde den Block durcheinanderbringen.
+   */
+  strict?: boolean;
   /** Digitaler Wurf des aktuellen Zugs; null, solange (noch) nicht digital gewürfelt wird. */
   roll: DigitalRoll | null;
   /** Letzter Eintrag, der sich rückgängig machen lässt (null = nichts zum Zurücknehmen). */
@@ -76,8 +81,15 @@ export function canEditColumn(
   sheet: KniffelState,
   column: KniffelColumn,
   playerId: string,
+  isHost = false,
 ): boolean {
+  if (sheet.strict) return column.playerId ? column.playerId === playerId : isHost;
   return !sheet.locked || !column.playerId || column.playerId === playerId;
+}
+
+/** Steht schon irgendetwas im Block? (Dann gilt ein öffentlicher Raum nicht mehr als offen.) */
+export function hasEntries(sheet: KniffelState): boolean {
+  return Object.values(sheet.cells).some((cells) => Object.keys(cells ?? {}).length > 0);
 }
 
 /** Nächste Spalte nach `fromId` (reihum), die noch freie Felder hat – zuletzt `fromId` selbst. */

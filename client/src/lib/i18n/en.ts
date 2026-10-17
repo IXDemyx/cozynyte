@@ -25,7 +25,7 @@ export const en: Dictionary = {
     imprint: "Legal notice",
     privacy: "Privacy",
     donate: "Buy me a coffee",
-    donateFinal: "Had a lovely evening?",
+    donateFinal: "Did you have fun?",
   },
   nav: {
     light: "Light theme",
@@ -46,7 +46,7 @@ export const en: Dictionary = {
     songText: "Guess the title and artist",
     yearText: "Guess the release year",
     timelineText: "Put songs in order",
-    kniffelMeta: "1–16 players · real dice",
+    kniffelMeta: "1–16 players",
     kniffelText: "Score sheet for your phone – we do the maths",
     slfText: "One letter, lots of categories",
     joinTitle: "Join a room",
@@ -55,6 +55,16 @@ export const en: Dictionary = {
     namePlaceholder: "e.g. Daniel",
     code: "Room code",
     join: "Join",
+    or: "or",
+    random: "Random room",
+    randomGame: (game: string) => `Find a random room for ${game}`,
+    openRooms: (n: number) =>
+      n === 0
+        ? "Nobody's looking right now – you open a room and others join in."
+        : n === 1
+          ? "1 room is looking for players."
+          : `${n} rooms are looking for players.`,
+    openShort: (n: number) => `${n} open`,
     music: "Music",
     musicText: "Everyone brings their favourite songs, everyone guesses.",
     classics: "Classics",
@@ -94,6 +104,11 @@ export const en: Dictionary = {
     theme: "Theme",
     themePlaceholder: "e.g. 2000s only (optional)",
     noTheme: "No theme – everything's welcome",
+    visibility: "Who can join?",
+    private: "Code only",
+    public: "Everyone",
+    privateHint: "Only people with the code or invite link can join.",
+    publicHint: "Public: strangers can drop in via “Random room”.",
     start: "Start game",
     waitingPlayers: "Still quiet in here – invite at least one more person …",
     waitingHost: "Get comfy – the host will start in a moment …",
@@ -252,6 +267,8 @@ export const en: Dictionary = {
     dice: "Enter dice",
     diceHint:
       "Tap the five dice – every empty box then shows what the roll would score. After each entry it is automatically the next player's turn.",
+    diceHintPublic:
+      "Public room: dice are rolled digitally – then tap the box on the sheet where the roll should go.",
     undo: "Undo",
     undoWhat: (category, name) => `Undo: ${category} for ${name}`,
     lockOn: "Columns locked",
@@ -259,6 +276,11 @@ export const en: Dictionary = {
     closeChat: "Close chat",
     more: "More",
     lockHint: "Locked: everyone writes and rolls only in their own column.",
+    lockedPublic: "Public rooms stay locked.",
+    publicOn: "Public",
+    publicOff: "Private",
+    sharedPublic:
+      "Public room: everyone writes only in their own column, the host fills in players without a phone.",
     sharedLocked:
       "Everyone can only write in their own column. Anyone can fill in for players without a phone.",
     roll: "Roll",

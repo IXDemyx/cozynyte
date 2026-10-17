@@ -8,6 +8,15 @@ export type Game = "song" | "year" | "timeline" | "kniffel" | "slf" | "draw" | "
 /** Die Musikspiele teilen sich Lobby, Songauswahl und Runden – und lassen sich im Raum umschalten. */
 export const MUSIC_GAMES: Game[] = ["song", "year", "timeline"];
 
+/** Spiele, für die es öffentliche Räume gibt (Kniffel dann mit gesperrten Spalten). */
+export const PUBLIC_GAMES: Game[] = ["song", "year", "timeline", "slf", "draw", "geo", "kniffel"];
+
+/** Offene öffentliche Räume, die gerade Mitspieler suchen (für die Startseite). */
+export interface OpenRooms {
+  total: number;
+  byGame: Partial<Record<Game, number>>;
+}
+
 export type TimelineMode = "together" | "turns";
 
 export type SlfLetterMode = "random" | "recite";
@@ -33,6 +42,8 @@ export interface Track {
 export type Phase = "lobby" | "picking" | "round" | "reveal" | "finished";
 
 export interface Settings {
+  /** Öffentlicher Raum: Fremde können über „Zufälliger Raum“ beitreten. */
+  isPublic: boolean;
   songsPerPlayer: number;
   roundSeconds: number;
   /** Motto der Partie, vom Host frei wählbar (leer = keins). */

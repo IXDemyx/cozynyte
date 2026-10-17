@@ -158,6 +158,10 @@ export function endQuestion(room: Room) {
   const game = room.geo;
   if (!game || room.phase !== "round" || game.stage !== "question") return;
   stopTimers(game);
+  for (const [id, points] of game.gains) {
+    const player = room.players.get(id);
+    if (player) player.score += points;
+  }
   const now = Date.now();
   game.stage = "reveal";
   game.startedAt = now;
@@ -192,14 +196,17 @@ function current(game: GeoGame): GeoQuestion {
   return game.questions[game.index];
 }
 
-/** Punkte: je schneller, desto mehr – plus ein kleiner Bonus für die ersten drei. */
+/**
+ * Punkte: je schneller, desto mehr – plus ein kleiner Bonus für die ersten drei. Gutgeschrieben
+ * wird erst in der Auflösung (endQuestion): Sonst sähe man am Punktestand in der Spielerliste
+ * schon während der Frage, wer richtig lag.
+ */
 function award(room: Room, game: GeoGame, player: Player) {
   const total = game.endsAt - game.startedAt;
   const remaining = Math.max(0, Math.min(1, (game.endsAt - Date.now()) / total));
   game.order.push(player.id);
   const placeBonus = Math.max(0, 30 - 10 * (game.order.length - 1));
   const points = 50 + Math.round(100 * remaining) + placeBonus;
-  player.score += points;
   game.gains.set(player.id, points);
 }
 

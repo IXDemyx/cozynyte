@@ -87,7 +87,8 @@ function ScoreSheet({
   const tap = (column: KniffelColumn, category: Category, value: number | undefined) => {
     const hint = suggestion(column.id, category);
     if (value === undefined && hint !== undefined) onWrite(column, category, hint, true);
-    else setEditing(`${column.id}:${category}`);
+    // Öffentliche Räume: nur Werte aus dem digitalen Wurf, kein freies Eintippen.
+    else if (!sheet.strict) setEditing(`${column.id}:${category}`);
   };
 
   const remove = (column: KniffelColumn) => {
@@ -324,7 +325,11 @@ function ScoreSheet({
         </tbody>
       </table>
       <p className={`${tight ? "mt-2" : "mt-3"} text-xs text-(--text-secondary)`}>
-        {sheet.locked ? t.kniffel.sharedLocked : t.kniffel.shared}
+        {sheet.strict
+          ? t.kniffel.sharedPublic
+          : sheet.locked
+            ? t.kniffel.sharedLocked
+            : t.kniffel.shared}
       </p>
     </section>
   );

@@ -263,7 +263,9 @@ function DicePanel({
           <>
             {/* Beim ersten Wurf im Zug klappern hier alle fünf Würfel – das Layout bleibt gleich,
               damit der Becher-Knopf beim Schütteln nicht verrutscht. */}
-            <p className="mt-1 text-sm text-(--text-secondary)">{t.kniffel.diceHint}</p>
+            <p className="mt-1 text-sm text-(--text-secondary)">
+              {sheet.strict ? t.kniffel.diceHintPublic : t.kniffel.diceHint}
+            </p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {Array.from({ length: 5 }, (_, i) =>
                 shaking ? (
@@ -298,7 +300,10 @@ function DicePanel({
                 </Button>
               )}
             </div>
-            <div className={`mt-3 flex flex-wrap gap-2 ${shaking ? "invisible" : ""}`}>
+            {/* Echte Würfel eintippen – in öffentlichen Räumen nicht, dort zählt nur der digitale Wurf. */}
+            <div
+              className={`mt-3 flex flex-wrap gap-2 ${shaking ? "invisible" : ""} ${sheet.strict ? "hidden" : ""}`}
+            >
               {[1, 2, 3, 4, 5, 6].map((face) => (
                 <button
                   key={face}

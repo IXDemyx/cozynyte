@@ -192,6 +192,8 @@ export interface GeoGame {
 export interface Room {
   code: string;
   game: Game;
+  /** Sprache des Erstellers – bei der Zufallssuche bevorzugt. */
+  language: "de" | "en";
   hostId: string;
   phase: Phase;
   settings: Settings;
@@ -243,13 +245,20 @@ export function nextFeedId(): number {
   return ++feedId;
 }
 
-export function createRoom(code: string, game: Game, hostId: string): Room {
+export function createRoom(
+  code: string,
+  game: Game,
+  hostId: string,
+  language: "de" | "en" = "de",
+): Room {
   return {
     code,
     game,
+    language,
     hostId,
     phase: "lobby",
     settings: {
+      isPublic: false,
       songsPerPlayer: 3,
       roundSeconds: 30,
       theme: "",
