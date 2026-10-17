@@ -53,12 +53,12 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     otherLanguage: "Auch auf Deutsch verfügbar",
     title: "Partyspiele online mit Freunden",
     intro:
-      "Kostenlos im Browser, ohne Anmeldung und ohne App: Raum erstellen, Link teilen und gemeinsam spielen – am selben Tisch oder per Videocall.",
+      "Kostenlos im Browser, ohne Anmeldung und ohne App: Raum erstellen, Link teilen und es euch zusammen gemütlich machen – am selben Tisch oder per Videocall.",
     howTitle: "So funktioniert's",
     steps: [
       "Namen eingeben und ein Spiel antippen – der Raum wird sofort erstellt.",
       "Den Einladungslink oder den vierstelligen Raumcode an deine Freunde schicken.",
-      "Jeder spielt am eigenen Handy, Tablet oder Rechner – der Host startet, wenn alle da sind.",
+      "Jeder spielt am eigenen Handy, Tablet oder Rechner – der Host startet, wenn alle gemütlich sitzen.",
     ],
     games: [
       {
@@ -131,12 +131,12 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     otherLanguage: "Also available in English",
     title: "Party games online with friends",
     intro:
-      "Free in your browser, no sign-up and no app: create a room, share the link and play together – at the same table or over a video call.",
+      "Free in your browser, no sign-up and no app: create a room, share the link and settle in together – at the same table or over a video call.",
     howTitle: "How it works",
     steps: [
       "Enter your name and tap a game – your room is created right away.",
       "Send the invite link or the four-letter room code to your friends.",
-      "Everyone plays on their own phone, tablet or computer – the host starts once everyone is in.",
+      "Everyone plays on their own phone, tablet or computer – the host starts once everyone has settled in.",
     ],
     games: [
       {

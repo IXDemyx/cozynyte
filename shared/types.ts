@@ -105,14 +105,7 @@ export interface PlayerView {
 }
 
 export type FeedKind =
-  | "wrong"
-  | "close"
-  | "title"
-  | "artist"
-  | "locked"
-  | "placed"
-  | "guessed"
-  | "joker";
+  "wrong" | "close" | "title" | "artist" | "locked" | "placed" | "guessed" | "joker";
 
 export interface FeedItem {
   id: number;
