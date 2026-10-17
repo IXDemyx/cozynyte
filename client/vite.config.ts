@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { headHtml, staticHomeHtml, type SeoLanguage } from "./src/lib/seo";
+import { headHtml, staticHomeHtml, type SeoLanguage } from "./src/lib/seo.ts";
 
 /** Kopf und Startseiten-Text einer Sprache in die index.html einsetzen. */
 function localize(html: string, lang: SeoLanguage): string {

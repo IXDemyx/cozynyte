@@ -545,6 +545,7 @@ export const de = {
     search_rate_limited: "Puh, ganz schön viele Suchen – warte kurz und versuch's dann nochmal.",
     kicked: "Der Host hat dich aus dem Raum entfernt.",
     track_no_year: "Für diesen Song ist kein Erscheinungsjahr bekannt.",
+    too_many_attempts: "Ganz schön viele Versuche – warte kurz und probier's dann nochmal.",
   } as Record<string, string>,
 };
 

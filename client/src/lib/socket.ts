@@ -3,7 +3,10 @@ import { io } from "socket.io-client";
 /** Verbindet sich mit dem Server, der auch die Seite ausliefert (im Dev über den Vite-Proxy). */
 export const socket = io({ autoConnect: true });
 
-/** Pro Tab eine eigene ID – übersteht Neuladen, erlaubt aber Tests mit mehreren Tabs. */
+/**
+ * Pro Tab ein eigener geheimer Schlüssel – übersteht Neuladen, erlaubt aber Tests mit mehreren
+ * Tabs. Er geht nur beim Beitreten an den Server; im Raum sehen die anderen eine öffentliche ID.
+ */
 function createPlayerId(): string {
   const saved = sessionStorage.getItem("playerId");
   if (saved) return saved;

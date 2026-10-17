@@ -18,7 +18,16 @@ import { ensureColumn } from "../games/kniffel";
 import { drawStartCard, endRound, nextRound, startPicking } from "../games/music";
 import { startSlf } from "../games/slf";
 import { io } from "../server";
-import { cleanName, connected, createPlayer, createRoom, newCode, rooms } from "../state";
+import { allowAttempt } from "../limits";
+import {
+  cleanName,
+  connected,
+  createPlayer,
+  createRoom,
+  newCode,
+  newPlayerId,
+  rooms,
+} from "../state";
 import { broadcast } from "../view";
 import type { Handlers } from "./context";
 
@@ -30,15 +39,20 @@ function sameName(a: string, b: string): boolean {
 export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
   socket.on("room:create", (data, cb) => {
     const name = cleanName(data?.name);
-    const playerId = String(data?.playerId ?? "");
-    if (!name || playerId.length < 8) return reply(cb, { ok: false, error: "name_required" });
+    // Der Client nennt das Feld playerId – es ist aber sein geheimer Schlüssel (siehe Player.key).
+    const key = String(data?.playerId ?? "").slice(0, 100);
+    if (!name || key.length < 8) return reply(cb, { ok: false, error: "name_required" });
+    if (!allowAttempt("create", socket))
+      return reply(cb, { ok: false, error: "too_many_attempts" });
     detach(socket, true);
 
     const game = ["year", "timeline", "kniffel", "slf", "draw", "geo"].includes(data?.game)
       ? data.game
       : "song";
+    const playerId = newPlayerId();
     const room = createRoom(newCode(), game, playerId);
     const player = createPlayer(playerId, name);
+    player.key = key;
     room.players.set(playerId, player);
     rooms.set(room.code, room);
     ensureColumn(room, player);
@@ -50,13 +64,17 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
   socket.on("room:join", (data, cb) => {
     const code = String(data?.code ?? "").toUpperCase();
     const name = cleanName(data?.name);
-    const playerId = String(data?.playerId ?? "");
+    const key = String(data?.playerId ?? "").slice(0, 100);
     const room = rooms.get(code);
-    if (!room) return reply(cb, { ok: false, error: "room_not_found" });
-    if (!name || playerId.length < 8) return reply(cb, { ok: false, error: "name_required" });
-    if (room.banned.has(playerId)) return reply(cb, { ok: false, error: "kicked" });
+    // Fehlversuche zählen: sonst ließen sich offene Räume per Script durchprobieren.
+    if (!room) {
+      const allowed = allowAttempt("join", socket);
+      return reply(cb, { ok: false, error: allowed ? "room_not_found" : "too_many_attempts" });
+    }
+    if (!name || key.length < 8) return reply(cb, { ok: false, error: "name_required" });
+    if (room.banned.has(key)) return reply(cb, { ok: false, error: "kicked" });
 
-    let player = room.players.get(playerId);
+    let player = [...room.players.values()].find((p) => p.key === key);
     // Unbekannte ID, aber gleicher Name wie jemand, der gerade nicht verbunden ist: Das ist sehr
     // wahrscheinlich dieselbe Person auf neuem Tab/Gerät (Handy hat den Tab verworfen, Link neu
     // geöffnet …) – sie übernimmt ihren Platz samt Punkten, statt doppelt mitzuspielen.
@@ -68,8 +86,8 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!player) {
       if (room.players.size >= MAX_PLAYERS) return reply(cb, { ok: false, error: "room_full" });
       // Später beitreten ist erlaubt: mitten im Spiel rät man ab sofort mit, nur ohne eigene Songs.
-      player = createPlayer(playerId, name);
-      room.players.set(playerId, player);
+      player = createPlayer(newPlayerId(), name);
+      room.players.set(player.id, player);
       if (room.game === "timeline" && (room.phase === "round" || room.phase === "reveal")) {
         drawStartCard(room, player);
         room.turnOrder.push(player.id);
@@ -83,6 +101,8 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     } else {
       player.name = name;
     }
+    // Wer per Namen einen Platz übernimmt, meldet sich ab jetzt mit seinem eigenen Schlüssel an.
+    player.key = key;
     ensureColumn(room, player);
     if (socket.data.code && socket.data.code !== code) detach(socket, true);
     attach(socket, room, player);
@@ -260,7 +280,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (!c || !c.isHost || !target || targetId === c.player.id) return;
     const { room } = c;
 
-    room.banned.add(targetId);
+    if (target.key) room.banned.add(target.key);
     const targetSocket = target.socketId ? io.sockets.sockets.get(target.socketId) : undefined;
     if (targetSocket) {
       targetSocket.data.code = undefined;

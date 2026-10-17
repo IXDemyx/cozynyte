@@ -12,15 +12,14 @@ export function useRoom(code: string, name: string) {
     if (!name) return;
 
     const join = () => {
-      socket.emit(
-        "room:join",
-        { code, name, playerId: playerIdFor(code) },
-        (res: Ack<{ playerId?: string }>) => {
-          setError(res.ok ? "" : res.error);
-          // Der Server hat uns wiedererkannt (z. B. am Namen) – diese ID ab jetzt verwenden.
-          if (res.ok && res.playerId) rememberPlayerId(code, res.playerId);
-        },
-      );
+      // Geheimer Schlüssel dieses Browsers für den Raum. Der Server zeigt anderen nur eine
+      // öffentliche ID – mit dem Schlüssel kann sich niemand sonst als wir anmelden.
+      const key = playerIdFor(code);
+      socket.emit("room:join", { code, name, playerId: key }, (res: Ack<{ playerId?: string }>) => {
+        setError(res.ok ? "" : res.error);
+        // Beigetreten (auch wenn der Server uns am Namen wiedererkannt hat): Schlüssel merken.
+        if (res.ok) rememberPlayerId(code, key);
+      });
     };
     const onState = (next: RoomState) => {
       if (next.code !== code) return;

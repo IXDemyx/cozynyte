@@ -1,5 +1,6 @@
 /** Datenmodell des Servers: Räume, Spieler, Runden – und die Liste aller Räume. */
 
+import { randomBytes, randomInt } from "node:crypto";
 import type { DrawOp, DrawStage } from "../../shared/draw";
 import type {
   ChatMessage,
@@ -15,7 +16,14 @@ import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
 import { DEFAULT_CATEGORIES } from "../../shared/slf";
 
 export interface Player {
+  /** Öffentliche ID – alle im Raum sehen sie (Spielerliste, Host, Chat). */
   id: string;
+  /**
+   * Geheimer Schlüssel aus dem Browser des Spielers, nur zum (Wieder-)Beitreten. Verlässt den
+   * Server nie – sonst könnte jeder im Raum sich als dieser Spieler (oder als Host) anmelden.
+   * Testbots haben keinen.
+   */
+  key?: string;
   name: string;
   score: number;
   socketId?: string;
@@ -188,7 +196,7 @@ export interface Room {
   phase: Phase;
   settings: Settings;
   players: Map<string, Player>;
-  /** Vom Host entfernte Spieler dürfen nicht wieder beitreten. */
+  /** Vom Host entfernte Spieler dürfen nicht wieder beitreten (ihre geheimen Schlüssel). */
   banned: Set<string>;
   emptySince?: number;
   chat: ChatMessage[];
@@ -305,9 +313,14 @@ export function newCode(): string {
   const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
   for (;;) {
     let code = "";
-    for (let i = 0; i < 4; i++) code += letters[Math.floor(Math.random() * letters.length)];
+    for (let i = 0; i < 4; i++) code += letters[randomInt(letters.length)];
     if (!rooms.has(code)) return code;
   }
+}
+
+/** Neue öffentliche Spieler-ID – zufällig, nicht aus dem Schlüssel ableitbar. */
+export function newPlayerId(): string {
+  return `p_${randomBytes(9).toString("base64url")}`;
 }
 
 export function cleanName(name: unknown): string {

@@ -536,5 +536,6 @@ export const en: Dictionary = {
     search_rate_limited: "Phew, that's a lot of searches – wait a moment and try again.",
     kicked: "The host removed you from the room.",
     track_no_year: "No release year is known for this song.",
+    too_many_attempts: "That's a lot of attempts – wait a moment and try again.",
   },
 };
