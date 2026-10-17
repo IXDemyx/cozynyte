@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from "react";
 import type { IconType } from "react-icons";
-import { FiChevronDown } from "react-icons/fi";
+import { FiArrowRight, FiChevronDown } from "react-icons/fi";
 import {
   LuCalendarDays,
   LuDice5,
   LuEarth,
   LuHeadphones,
   LuHistory,
+  LuMoonStar,
   LuNotebookPen,
   LuPalette,
 } from "react-icons/lu";
@@ -89,74 +90,100 @@ function Home() {
   const seo = SEO[language];
 
   return (
-    <div className="animate-in space-y-6">
+    <div className="animate-in space-y-10">
       <LanguageHint />
-      <header>
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{seo.title}</h1>
-        <p className="mt-2 max-w-2xl text-(--text-secondary)">{seo.intro}</p>
-      </header>
 
-      <section className={`${card} p-6`}>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div>
-            <label htmlFor="name" className="text-sm font-semibold">
-              {t.home.name}
-            </label>
-            <input
-              id="name"
-              className={`${input} mt-2`}
-              value={name}
-              maxLength={16}
-              autoComplete="nickname"
-              placeholder={t.home.namePlaceholder}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <form onSubmit={join}>
-            <label htmlFor="code" className="text-sm font-semibold">
-              {t.home.joinTitle}
-            </label>
-            <div className="mt-2 flex gap-2">
+      {/* Oben: Begrüßung links, „Raum beitreten“ rechts – die meisten kommen mit einem Code. */}
+      <section className="grid items-center gap-8 lg:grid-cols-[1.15fr_1fr]">
+        <header>
+          <p className="flex items-center gap-2 text-sm font-semibold text-(--accent)">
+            <LuMoonStar aria-hidden="true" /> {t.home.tagline}
+          </p>
+          <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
+            {t.home.heroLead} <span className="text-(--accent)">{t.home.heroAccent}</span>
+          </h1>
+          <p className="mt-4 max-w-xl text-(--text-secondary)">{seo.intro}</p>
+          <ul className="mt-5 flex flex-wrap gap-2 text-xs text-(--text-secondary)">
+            {t.home.perks.map((perk) => (
+              <li
+                key={perk}
+                className="rounded-full border border-slate-200 px-3 py-1 dark:border-white/10"
+              >
+                {perk}
+              </li>
+            ))}
+          </ul>
+        </header>
+
+        <section className={`${card} p-6`}>
+          <h2 className="text-lg font-bold">{t.home.joinCardTitle}</h2>
+          <p className="mt-1 text-sm text-(--text-secondary)">{t.home.joinCardText}</p>
+          <div className="mt-5 space-y-4">
+            <div>
+              <label htmlFor="name" className="text-sm font-semibold">
+                {t.home.name}
+              </label>
               <input
-                id="code"
-                className={`${input} font-mono uppercase tracking-[0.3em]`}
-                value={code}
-                maxLength={4}
-                placeholder="CODE"
-                onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, ""))}
+                id="name"
+                className={`${input} mt-2`}
+                value={name}
+                maxLength={16}
+                autoComplete="nickname"
+                placeholder={t.home.namePlaceholder}
+                onChange={(e) => setName(e.target.value)}
               />
-              <Button type="submit" variant="secondary">
-                {t.home.join}
-              </Button>
             </div>
-          </form>
-        </div>
-        <ErrorText code={error} />
+            <form onSubmit={join}>
+              <label htmlFor="code" className="text-sm font-semibold">
+                {t.home.joinTitle}
+              </label>
+              <div className="mt-2 flex gap-2">
+                <input
+                  id="code"
+                  className={`${input} font-mono uppercase tracking-[0.3em]`}
+                  value={code}
+                  maxLength={4}
+                  placeholder="CODE"
+                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, ""))}
+                />
+                <Button type="submit">{t.home.join}</Button>
+              </div>
+            </form>
+          </div>
+          <ErrorText code={error} />
+        </section>
       </section>
 
+      {/* Spiele: kompakte Kacheln, ein Klick erstellt den Raum. */}
       {sections.map((section) => (
-        <section key={section.title} className="pt-4">
+        <section key={section.title}>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h2 className={eyebrow}>{section.title}</h2>
             <p className="text-sm text-(--text-secondary)">{section.text}</p>
           </div>
-          <div className="mt-4 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {section.games.map(({ id, icon: Icon, meta, text }) => (
-              <article key={id} className={`${gameCard} flex flex-col p-6`}>
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-(--on-accent)">
-                    <Icon aria-hidden="true" />
-                  </span>
-                  <div>
-                    <h3 className="text-lg font-bold tracking-tight">{t.games[id]}</h3>
-                    <p className="text-xs text-(--text-secondary)">{meta}</p>
-                  </div>
-                </div>
-                <p className="mt-4 flex-1 text-sm text-(--text-secondary)">{text}</p>
-                <Button className="mt-5 w-full" onClick={() => create(id)} disabled={busy}>
-                  {t.home.create}
-                </Button>
-              </article>
+              <button
+                key={id}
+                type="button"
+                onClick={() => create(id)}
+                disabled={busy}
+                aria-label={t.home.createGame(t.games[id])}
+                className={`${gameCard} group flex w-full items-center gap-3 p-4 text-left disabled:opacity-60 sm:p-5`}
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-(--on-accent)">
+                  <Icon aria-hidden="true" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <h3 className="font-bold tracking-tight">{t.games[id]}</h3>
+                  <span className="block text-xs text-(--text-secondary)">{text}</span>
+                  <span className="mt-0.5 block font-mono text-[11px] text-(--accent)">{meta}</span>
+                </span>
+                <FiArrowRight
+                  aria-hidden="true"
+                  className="shrink-0 text-(--text-secondary) transition group-hover:translate-x-0.5 group-hover:text-(--accent)"
+                />
+              </button>
             ))}
           </div>
         </section>
