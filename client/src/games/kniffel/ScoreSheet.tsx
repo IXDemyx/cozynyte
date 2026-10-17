@@ -238,7 +238,7 @@ function ScoreSheet({
                     narrow ? "px-1 text-xs" : "px-2 text-sm"
                   } ${
                     column.id === sheet.current
-                      ? "bg-(--accent) text-slate-950"
+                      ? "bg-(--accent) text-(--on-accent)"
                       : "enabled:hover:text-(--accent)"
                   }`}
                 >
@@ -264,7 +264,7 @@ function ScoreSheet({
                         onClick={() => makeHost(column.playerId!)}
                         className={`flex items-center rounded text-xs ${
                           armed === `host:${column.playerId}`
-                            ? "bg-(--accent) px-1.5 text-slate-950"
+                            ? "bg-(--accent) px-1.5 text-(--on-accent)"
                             : "text-(--text-secondary) hover:text-(--accent)"
                         }`}
                       >

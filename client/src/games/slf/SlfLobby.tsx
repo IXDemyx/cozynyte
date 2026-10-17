@@ -108,7 +108,7 @@ function SlfLobby({ state }: { state: RoomState }) {
               {own.map((name) => (
                 <span
                   key={name}
-                  className="flex h-10 items-center gap-1 rounded-lg border border-(--accent) bg-(--accent) pl-3 pr-1 font-mono text-sm font-semibold text-slate-950"
+                  className="flex h-10 items-center gap-1 rounded-lg border border-(--accent) bg-(--accent) pl-3 pr-1 font-mono text-sm font-semibold text-(--on-accent)"
                 >
                   {name}
                   {isHost && (

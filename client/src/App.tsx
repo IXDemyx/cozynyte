@@ -9,7 +9,7 @@ import Privacy from "./pages/Privacy";
 import Room from "./pages/Room";
 
 function App() {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, palette, togglePalette } = useTheme();
   // Räume brauchen Platz für drei Spalten (Spieler, Spiel, Chat), die Startseite nicht.
   // Montagsmaler-Runden dürfen noch breiter werden – für eine größere Zeichenfläche.
   const wide = useLocation().pathname.startsWith("/r/");
@@ -19,7 +19,13 @@ function App() {
   return (
     <ExtraWideContext.Provider value={setExtraWide}>
       <div className="flex min-h-screen flex-col">
-        <Navbar theme={theme} onToggleTheme={toggleTheme} width={width} />
+        <Navbar
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          palette={palette}
+          onTogglePalette={togglePalette}
+          width={width}
+        />
         <main className={`mx-auto w-full ${width} flex-1 px-4 pb-16 pt-8 sm:px-6`}>
           <Routes>
             <Route path="/" element={<Home />} />

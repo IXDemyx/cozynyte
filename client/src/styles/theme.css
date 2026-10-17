@@ -24,6 +24,11 @@
   --press: #9a3412;
   --button-glow: rgba(234, 88, 12, 0.25);
   --card-pop: rgba(234, 88, 12, 0.3);
+  /* Leuchten des Würfelbereichs kurz vor dem Kniffel. */
+  --tension-soft: rgba(249, 115, 22, 0.25);
+  --tension-strong: rgba(249, 115, 22, 0.45);
+  /* Schrift auf Flächen in Akzentfarbe (Knöpfe, Abzeichen). */
+  --on-accent: #020617;
 }
 
 .dark {
@@ -62,4 +67,179 @@ html:not(.dark) {
   --color-slate-700: #44403c;
   --color-slate-800: #292524;
   --color-slate-900: #1c1917;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Zweites Design „Cozy“ im Stil von Catppuccin (https://catppuccin.com, MIT): dunkel „Mocha“,
+   hell „Latte“, Blau als Akzent, Teal für die Spielkarten, runde Schrift. Umschaltbar über die
+   Navigation (Klasse „cozy“ am <html>-Element).
+   ------------------------------------------------------------------------------------------------ */
+
+/* Latte (hell) */
+html.cozy {
+  --bg-primary: #eff1f5;
+  --bg-secondary: #e6e9ef;
+  --bg-card: #f7f8fa;
+  --surface: #f7f8fa;
+  --border: #ccd0da;
+
+  --text-primary: #4c4f69;
+  --text-secondary: #6c6f85;
+
+  --accent: #1e66f5;
+  --accent-hover: #3b7af7;
+  --accent-soft: #e4ecfe;
+  --accent-border: #9dbcfa;
+  --on-accent: #ffffff;
+
+  --success: #40a02b;
+
+  --dots: rgba(76, 79, 105, 0.09);
+  --press: #1449b3;
+  --button-glow: rgba(30, 102, 245, 0.22);
+  --card-pop: rgba(23, 146, 153, 0.35);
+  --tension-soft: rgba(30, 102, 245, 0.25);
+  --tension-strong: rgba(30, 102, 245, 0.45);
+
+  --font-sans: "Nunito", "Inter", sans-serif;
+}
+
+html.cozy:not(.dark) {
+  --color-slate-50: #f2f3f6;
+  --color-slate-100: #e6e9ef;
+  --color-slate-200: #ccd0da;
+  --color-slate-300: #bcc0cc;
+  --color-slate-400: #9ca0b0;
+  --color-slate-500: #7c7f93;
+  --color-slate-600: #6c6f85;
+  --color-slate-700: #5c5f77;
+  --color-slate-800: #4c4f69;
+  --color-slate-900: #3a3c52;
+}
+
+/* Mocha (dunkel) */
+html.cozy.dark {
+  --bg-primary: #181825;
+  --bg-secondary: #1e1e2e;
+  --surface: #1e1e2e;
+  --bg-card: rgba(137, 180, 250, 0.05);
+  --border: #313244;
+
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+
+  --accent: #89b4fa;
+  --accent-hover: #a3c4fb;
+  --accent-soft: rgba(137, 180, 250, 0.1);
+  --accent-border: rgba(137, 180, 250, 0.35);
+  --on-accent: #11111b;
+
+  --success: #a6e3a1;
+
+  --dots: rgba(205, 214, 244, 0.06);
+  --press: #4f74b8;
+  --button-glow: rgba(137, 180, 250, 0.22);
+  --card-pop: rgba(148, 226, 213, 0.35);
+  --tension-soft: rgba(137, 180, 250, 0.25);
+  --tension-strong: rgba(137, 180, 250, 0.45);
+
+  --color-slate-200: #cdd6f4;
+  --color-slate-300: #bac2de;
+  --color-slate-400: #a6adc8;
+  --color-slate-500: #7f849c;
+  --color-slate-600: #6c7086;
+  --color-slate-700: #45475a;
+  --color-slate-800: #313244;
+  --color-slate-900: #1e1e2e;
+  --color-slate-950: #11111b;
+}
+
+/* ------------------------------------------------------------------------------------------------
+   Drittes Design „Gemütlicher Abend“: warmes Dunkelbraun wie ein Wohnzimmer bei Kerzenlicht,
+   Honiggelb als Akzent, altrosa Kartenschatten, Salbeigrün für Bestätigungen.
+   ------------------------------------------------------------------------------------------------ */
+
+/* Hell: cremefarbenes Papier */
+html.evening {
+  --bg-primary: #f5efe6;
+  --bg-secondary: #ece4d8;
+  --bg-card: #fbf8f3;
+  --surface: #fbf8f3;
+  --border: #e0d5c5;
+
+  --text-primary: #3b2f26;
+  --text-secondary: #6e5f50;
+
+  --accent: #a8742c;
+  --accent-hover: #b8853c;
+  --accent-soft: #f6ead6;
+  --accent-border: #dcc095;
+  --on-accent: #ffffff;
+
+  --success: #5f8a52;
+
+  --dots: rgba(80, 60, 40, 0.08);
+  --press: #6f4b18;
+  --button-glow: rgba(168, 116, 44, 0.22);
+  --card-pop: rgba(180, 110, 110, 0.3);
+  --tension-soft: rgba(168, 116, 44, 0.25);
+  --tension-strong: rgba(168, 116, 44, 0.45);
+
+  --font-sans: "Nunito", "Inter", sans-serif;
+}
+
+html.evening:not(.dark) {
+  --color-slate-50: #faf6f0;
+  --color-slate-100: #f1eadf;
+  --color-slate-200: #e0d5c5;
+  --color-slate-300: #cfc0ab;
+  --color-slate-400: #a8977f;
+  --color-slate-500: #85745f;
+  --color-slate-600: #6e5f50;
+  --color-slate-700: #54473b;
+  --color-slate-800: #3b2f26;
+  --color-slate-900: #2a211b;
+}
+
+/* Dunkel: Wohnzimmer bei Kerzenlicht */
+html.evening.dark {
+  --bg-primary: #1b1714;
+  --bg-secondary: #241f1b;
+  --surface: #241f1b;
+  --bg-card: rgba(232, 196, 140, 0.05);
+  --border: rgba(232, 196, 140, 0.16);
+
+  --text-primary: #efe6d8;
+  --text-secondary: #b3a594;
+
+  --accent: #e8c48c;
+  --accent-hover: #f0d3a6;
+  --accent-soft: rgba(232, 196, 140, 0.1);
+  --accent-border: rgba(232, 196, 140, 0.32);
+  --on-accent: #1b1714;
+
+  --success: #9cbf8f;
+
+  --dots: rgba(239, 230, 216, 0.05);
+  --press: #9a7a4a;
+  --button-glow: rgba(232, 196, 140, 0.2);
+  --card-pop: rgba(201, 140, 140, 0.4);
+  --tension-soft: rgba(232, 196, 140, 0.25);
+  --tension-strong: rgba(232, 196, 140, 0.45);
+
+  --color-slate-200: #e6dccd;
+  --color-slate-300: #d3c5b2;
+  --color-slate-400: #b3a594;
+  --color-slate-500: #8a7c6c;
+  --color-slate-600: #6b5f52;
+  --color-slate-700: #463c33;
+  --color-slate-800: #352d27;
+  --color-slate-900: #29231f;
+  --color-slate-950: #14110f;
+}
+
+/* Runde, freundliche Überschriften (Cozy und Gemütlicher Abend). */
+html:is(.cozy, .evening) :is(h1, h2, h3, .font-bold, .font-extrabold) {
+  font-family: "Fredoka", "Nunito", sans-serif;
+  letter-spacing: 0;
 }

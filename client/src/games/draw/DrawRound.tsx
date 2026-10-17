@@ -156,7 +156,7 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
                           type="button"
                           onClick={() => socket.emit("draw:choose", { index: i })}
                           style={{ animationDelay: `${i * 90}ms` }}
-                          className="animate-badge rounded-xl border-2 border-(--accent) bg-slate-950/60 px-3.5 py-2 text-base font-bold sm:px-5 sm:py-3 sm:text-lg text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-(--accent) hover:text-slate-950 active:scale-95"
+                          className="animate-badge rounded-xl border-2 border-(--accent) bg-slate-950/60 px-3.5 py-2 text-base font-bold sm:px-5 sm:py-3 sm:text-lg text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-(--accent) hover:text-(--on-accent) active:scale-95"
                         >
                           {choice}
                         </button>

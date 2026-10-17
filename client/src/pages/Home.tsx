@@ -144,7 +144,7 @@ function Home() {
             {section.games.map(({ id, icon: Icon, meta, text }) => (
               <article key={id} className={`${gameCard} flex flex-col p-6`}>
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-slate-950">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-(--on-accent)">
                     <Icon aria-hidden="true" />
                   </span>
                   <div>

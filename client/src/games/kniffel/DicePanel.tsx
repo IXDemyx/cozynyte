@@ -239,7 +239,7 @@ function DicePanel({
               {almostKniffel && (
                 <span
                   role="status"
-                  className="animate-heartbeat rounded-full bg-(--accent) px-3 py-1 text-lg font-extrabold text-slate-950"
+                  className="animate-heartbeat rounded-full bg-(--accent) px-3 py-1 text-lg font-extrabold text-(--on-accent)"
                 >
                   {t.kniffel.almostKniffel}
                 </span>
@@ -250,7 +250,7 @@ function DicePanel({
                   role="status"
                   className={`animate-badge rounded-full px-3 py-1 font-bold ${
                     isKniffel
-                      ? "bg-(--accent) text-lg text-slate-950"
+                      ? "bg-(--accent) text-lg text-(--on-accent)"
                       : "bg-(--accent-soft) text-sm text-(--accent)"
                   }`}
                 >

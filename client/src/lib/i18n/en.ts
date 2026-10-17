@@ -30,6 +30,8 @@ export const en: Dictionary = {
   nav: {
     light: "Light theme",
     dark: "Dark theme",
+    palette: (current: string, next: string) => `Theme: ${current} – switch to ${next}`,
+    palettes: { classic: "Classic", cozy: "Cozy", evening: "Cozy evening" },
     switchLanguage: "Auf Deutsch wechseln",
   },
   home: {

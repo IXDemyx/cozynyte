@@ -1,6 +1,6 @@
-# Games
+# Cozynyte
 
-Multiplayer party games in the browser, styled like the portfolio (orange, black/white).
+Multiplayer party games in the browser.
 No sign-up: create a room, share the four-letter code or the invite link, and play – at the
 same table or over a video call. Live at <https://cozynyte.com>.
 
@@ -60,7 +60,8 @@ everyone right away.
 **Everywhere**
 
 - Sound effects for every game, generated in the browser, with a volume control
-- German and English UI, light and dark theme
+- German and English UI, light and dark mode, three designs to switch between: Classic (orange/black,
+  like the portfolio), Cozy (Catppuccin colours) and Cozy Evening (warm candlelight tones)
 - Start page in two language versions (`/` German, `/en` English) for search engines
 - Optional "Buy me a coffee" link in the footer and on the final screen
 
@@ -125,7 +126,7 @@ client/src/
   games/draw/     Draw & Guess (lobby, word collection, canvas, toolbar, renderer)
   games/geo/      Country Quiz (lobby, question with picture, answers, reveal)
   games/kniffel/  Yahtzee score sheet (dice panel, sheet with direct entry)
-  hooks/          room connection, server clock, theme, volume, sound effects, two-click confirm
+  hooks/          room connection, server clock, theme and design, volume, sound effects, two-click confirm
   lib/            socket connection and player IDs, sounds, translations (lib/i18n/de.ts, en.ts),
                   search-engine texts (seo.ts), privacy text, donate link
   pages/          Home, Room and Privacy

@@ -17,7 +17,7 @@ export function Option({ active, disabled = false, onClick, children }: OptionPr
       onClick={onClick}
       className={`h-10 min-w-10 rounded-lg border px-3 font-mono text-sm font-semibold transition ${
         active
-          ? "border-(--accent) bg-(--accent) text-slate-950"
+          ? "border-(--accent) bg-(--accent) text-(--on-accent)"
           : "border-slate-300 text-(--text-secondary) enabled:hover:border-(--accent) dark:border-slate-700"
       } disabled:cursor-default`}
     >

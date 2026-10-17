@@ -10,12 +10,15 @@
     <!-- Titel, Beschreibung, Sprachversionen und Link-Vorschau: je Sprache aus src/lib/seo.ts -->
     <!--seo-head-->
 
-    <!-- Dunkles bzw. helles Design sofort setzen – sonst blitzt die Seite kurz weiß auf. -->
+    <!-- Dunkles bzw. helles Design (und Cozy-Design) sofort setzen – sonst blitzt die Seite kurz weiß auf. -->
     <script>
       try {
         var saved = localStorage.getItem("theme");
         var dark = saved ? saved === "dark" : !matchMedia("(prefers-color-scheme: light)").matches;
         document.documentElement.classList.toggle("dark", dark);
+        var palette = localStorage.getItem("palette");
+        if (palette === "cozy" || palette === "evening")
+          document.documentElement.classList.add(palette);
       } catch (e) {
         document.documentElement.classList.add("dark");
       }
@@ -29,9 +32,10 @@
         align-items: center;
         justify-content: center;
         font:
-          600 1.5rem/1 "JetBrains Mono",
-          ui-monospace,
-          monospace;
+          700 1.6rem/1 Inter,
+          system-ui,
+          sans-serif;
+        letter-spacing: -0.02em;
         color: var(--text-primary);
       }
       .prerender-splash span {

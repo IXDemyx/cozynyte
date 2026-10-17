@@ -293,7 +293,7 @@ function SlfRound({ state, slf, offset }: SlfRoundProps) {
             ) : (
               <p
                 key={`${slf.round}-${stage}`}
-                className={`mt-2 flex h-24 w-24 items-center justify-center rounded-2xl bg-(--accent) font-mono text-6xl font-bold text-slate-950 shadow-lg ${
+                className={`mt-2 flex h-24 w-24 items-center justify-center rounded-2xl bg-(--accent) font-mono text-6xl font-bold text-(--on-accent) shadow-lg ${
                   stage === "reveal" ? "animate-reveal" : ""
                 }`}
               >

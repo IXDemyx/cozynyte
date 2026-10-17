@@ -290,7 +290,7 @@ function Choices({
                   : wrongPick
                     ? "border-red-500 bg-red-500/10 text-red-500"
                     : code === chosen
-                      ? "border-(--accent) bg-(--accent) text-slate-950"
+                      ? "border-(--accent) bg-(--accent) text-(--on-accent)"
                       : removed
                         ? "border-slate-200 text-(--text-secondary) line-through opacity-40 dark:border-slate-800"
                         : "border-slate-300 enabled:hover:-translate-y-0.5 enabled:hover:border-(--accent) enabled:hover:text-(--accent) enabled:active:scale-[0.98] dark:border-slate-700"

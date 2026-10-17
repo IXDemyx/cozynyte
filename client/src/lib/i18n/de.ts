@@ -28,6 +28,8 @@ export const de = {
   nav: {
     light: "Helles Design",
     dark: "Dunkles Design",
+    palette: (current: string, next: string) => `Design: ${current} – wechseln zu ${next}`,
+    palettes: { classic: "Klassisch", cozy: "Cozy", evening: "Gemütlicher Abend" },
     switchLanguage: "Switch to English",
   },
   home: {

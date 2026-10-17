@@ -17,6 +17,23 @@
   src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2");
 }
 
+/* Schriften des Cozy-Designs (SIL Open Font License, siehe public/fonts/OFL-*.txt). */
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("/fonts/nunito-latin.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("/fonts/fredoka-latin.woff") format("woff");
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
   --font-sans: "Inter", sans-serif;
@@ -237,12 +254,12 @@ button:not(:disabled) {
   100% {
     box-shadow:
       0 0 0 2px var(--accent),
-      0 0 30px 0 rgba(249, 115, 22, 0.25);
+      0 0 30px 0 var(--tension-soft);
   }
   50% {
     box-shadow:
       0 0 0 2px var(--accent),
-      0 0 55px 6px rgba(249, 115, 22, 0.45);
+      0 0 55px 6px var(--tension-strong);
   }
 }
 

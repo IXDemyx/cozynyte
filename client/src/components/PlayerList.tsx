@@ -85,7 +85,7 @@ function PlayerList({ state, title, showScore = false, status }: PlayerListProps
                     onClick={() => makeHost(p.id)}
                     className={`rounded-md text-xs font-semibold transition ${
                       armed === `host:${p.id}`
-                        ? "bg-(--accent) px-2 py-1 text-slate-950"
+                        ? "bg-(--accent) px-2 py-1 text-(--on-accent)"
                         : "p-1 text-(--text-secondary) hover:text-(--accent)"
                     }`}
                   >

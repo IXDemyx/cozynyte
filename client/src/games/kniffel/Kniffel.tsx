@@ -415,7 +415,7 @@ function ChatToggle({
     >
       <FiMessageSquare aria-hidden="true" /> {t.chat.title}
       {unread > 0 && (
-        <span className="animate-badge absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-(--accent) px-1 font-mono text-xs font-bold text-slate-950">
+        <span className="animate-badge absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-(--accent) px-1 font-mono text-xs font-bold text-(--on-accent)">
           {unread}
         </span>
       )}

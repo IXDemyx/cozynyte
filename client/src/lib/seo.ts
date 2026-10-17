@@ -43,10 +43,10 @@ interface SeoText {
 export const SEO: Record<SeoLanguage, SeoText> = {
   de: {
     metaTitle:
-      "Partyspiele online mit Freunden – Stadt Land Fluss, Montagsmaler, Musikquiz | games",
+      "Partyspiele online mit Freunden – Stadt Land Fluss, Montagsmaler, Musikquiz | Cozynyte",
     metaDescription:
       "Kostenlose Partyspiele im Browser: Stadt Land Fluss, Montagsmaler, Song erraten, Musikquiz, Flaggen-Quiz und Kniffel. Raum erstellen, Link teilen, losspielen – ohne Anmeldung, auch per Videocall.",
-    ogTitle: "Partyspiele im Browser – games",
+    ogTitle: "Partyspiele im Browser – Cozynyte",
     ogDescription:
       "Stadt Land Fluss, Montagsmaler, Song erraten, Kniffel und mehr – Raum erstellen, Link teilen, losspielen.",
     ogLocale: "de_DE",
@@ -121,10 +121,10 @@ export const SEO: Record<SeoLanguage, SeoText> = {
   },
   en: {
     metaTitle:
-      "Party games online with friends – Draw & Guess, music quiz, Name Place Animal | games",
+      "Party games online with friends – Draw & Guess, music quiz, Name Place Animal | Cozynyte",
     metaDescription:
       "Free multiplayer party games in your browser: Draw & Guess, Guess the Song, music quiz, flag quiz, Name Place Animal Thing and Yahtzee. Create a room, share the link, play – no sign-up, works over video calls.",
-    ogTitle: "Party games in your browser – games",
+    ogTitle: "Party games in your browser – Cozynyte",
     ogDescription:
       "Draw & Guess, Guess the Song, Yahtzee and more – create a room, share the link, play.",
     ogLocale: "en_US",
@@ -208,7 +208,7 @@ export function staticHomeHtml(lang: SeoLanguage): string {
   const list = (items: string[]) => items.map((item) => `<li>${escape(item)}</li>`).join("");
   return [
     `<div class="prerender">`,
-    `<div class="prerender-splash" aria-hidden="true"><span>&lt;/</span>games<span>&gt;</span></div>`,
+    `<div class="prerender-splash" aria-hidden="true">cozy<span>nyte</span></div>`,
     `<main class="prerender-content">`,
     `<h1>${escape(s.title)}</h1>`,
     `<p>${escape(s.intro)}</p>`,
@@ -236,7 +236,7 @@ export function headHtml(lang: SeoLanguage): string {
     `<link rel="alternate" hreflang="en" href="${urlOf("en")}" />`,
     `<link rel="alternate" hreflang="x-default" href="${urlOf("en")}" />`,
     `<meta property="og:type" content="website" />`,
-    `<meta property="og:site_name" content="games" />`,
+    `<meta property="og:site_name" content="Cozynyte" />`,
     `<meta property="og:locale" content="${s.ogLocale}" />`,
     `<meta property="og:url" content="${urlOf(lang)}" />`,
     `<meta property="og:title" content="${escape(s.ogTitle)}" />`,
@@ -258,7 +258,7 @@ export function jsonLd(lang: SeoLanguage): string {
     "@graph": [
       {
         "@type": "WebSite",
-        name: "games",
+        name: "Cozynyte",
         url: urlOf(lang),
         inLanguage: lang,
       },

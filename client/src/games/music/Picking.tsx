@@ -245,7 +245,7 @@ function Picking({ state }: { state: RoomState }) {
                   onClick={() => suggest(category)}
                   className={`rounded-full border px-3 py-1 font-mono text-xs transition disabled:opacity-50 ${
                     category === "surprise"
-                      ? "border-(--accent) bg-(--accent) font-semibold text-slate-950 enabled:hover:bg-(--accent-hover)"
+                      ? "border-(--accent) bg-(--accent) font-semibold text-(--on-accent) enabled:hover:bg-(--accent-hover)"
                       : "border-slate-300 text-(--text-secondary) enabled:hover:border-(--accent) enabled:hover:text-(--accent) dark:border-slate-700"
                   }`}
                 >

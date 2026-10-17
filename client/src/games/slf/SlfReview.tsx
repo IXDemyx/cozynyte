@@ -61,7 +61,7 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
           </p>
           <div className="flex items-center gap-4">
             <VolumeControl />
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--accent) font-mono text-xl font-bold text-slate-950">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--accent) font-mono text-xl font-bold text-(--on-accent)">
               {slf.letter}
             </span>
           </div>
@@ -122,7 +122,7 @@ function SlfReview({ state, slf }: { state: RoomState; slf: SlfView }) {
                           onClick={() => mark(p.id, i)}
                           className={`flex h-6 w-7 shrink-0 items-center justify-center rounded-md text-xs transition ${
                             cell.marked
-                              ? "bg-(--accent) text-slate-950"
+                              ? "bg-(--accent) text-(--on-accent)"
                               : "text-(--text-secondary) hover:text-(--accent)"
                           }`}
                         >

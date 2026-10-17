@@ -10,7 +10,7 @@ export function places(ranking: PlayerView[]): number[] {
 
 /** Höhe und Farbe der Treppenstufe je Platz. */
 const STEPS: Record<number, string> = {
-  1: "h-32 sm:h-36 bg-(--accent) text-slate-950",
+  1: "h-32 sm:h-36 bg-(--accent) text-(--on-accent)",
   2: "h-24 sm:h-28 bg-(--accent-soft) text-(--accent) border border-(--accent-border)",
   3: "h-16 sm:h-20 bg-(--accent-soft) text-(--accent) border border-(--accent-border)",
 };

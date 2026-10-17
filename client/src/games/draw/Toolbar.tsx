@@ -120,7 +120,7 @@ function ToolButton({
       onClick={onClick}
       className={`flex h-9 w-9 items-center justify-center rounded-lg border text-base transition active:scale-90 ${
         active
-          ? "border-(--accent) bg-(--accent) text-slate-950"
+          ? "border-(--accent) bg-(--accent) text-(--on-accent)"
           : `border-slate-300 text-(--text-secondary) dark:border-slate-700 ${
               danger
                 ? "hover:border-red-500 hover:text-red-500"
