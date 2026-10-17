@@ -37,7 +37,7 @@ export const de = {
     tagline: "Spieleabend, aber gemütlich",
     heroLead: "Gemütliche Partyspiele",
     heroAccent: "mit Freunden",
-    perks: ["Kostenlos", "Ohne Anmeldung", "Bis 16 Spieler", "Am Tisch oder per Videocall"],
+    perks: ["Kostenlos", "Ohne Anmeldung", "Bis zu 16 Spieler", "Sehr spaßig"],
     joinCardTitle: "Schon eingeladen? Komm rein.",
     joinCardText: "Oder such dir unten ein Spiel aus und hol deine Leute dazu.",
     createGame: (game: string) => `Raum für ${game} erstellen`,
@@ -270,6 +270,9 @@ export const de = {
     dice: "Würfel eintragen",
     diceHint:
       "Tippe die fünf Würfel an – im Block steht dann bei jedem freien Feld, was der Wurf bringt. Nach jedem Eintrag ist automatisch der Nächste dran.",
+    diceHintDigital: "Halte den Becher gedrückt, schüttel und lass los – dann im Block das Feld antippen.",
+    realDiceOn: "Mit echten Würfeln am Tisch spielen?",
+    realDiceOff: "Doch lieber digital würfeln",
     diceHintPublic:
       "Öffentlicher Raum: Hier wird digital gewürfelt – tippe danach im Block auf das Feld, in das der Wurf soll.",
     undo: "Rückgängig",

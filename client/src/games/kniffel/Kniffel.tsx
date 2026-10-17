@@ -50,12 +50,40 @@ const EMPTY_SHEET: KniffelState = {
 };
 
 /** Kniffel-Raum: Kopfzeile mit Host-Werkzeugen, Würfel, Block und Spieler hinzufügen. */
+
+const REAL_DICE_KEY = "kniffelRealDice";
+
+function readRealDice(): boolean {
+  try {
+    return localStorage.getItem(REAL_DICE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function saveRealDice(on: boolean) {
+  try {
+    localStorage.setItem(REAL_DICE_KEY, on ? "1" : "0");
+  } catch {
+    // Ohne Speicher gilt die Wahl eben nur bis zum Neuladen.
+  }
+}
+
 function Kniffel({ state }: { state: RoomState }) {
   const { t } = useLanguage();
   const sheet = state.kniffel ?? EMPTY_SHEET;
   const isHost = state.hostId === state.you;
 
   const [dice, setDice] = useState<number[]>([]);
+  // Echte Würfel am Tisch: Würfel von Hand eintippen. Standardmäßig aus (es wird digital
+  // gewürfelt); die Wahl merkt sich jedes Gerät. In öffentlichen Räumen gibt es das nicht.
+  const [realDicePref, setRealDicePref] = useState(readRealDice);
+  const realDice = realDicePref && !sheet.strict;
+  const toggleRealDice = (on: boolean) => {
+    setRealDicePref(on);
+    saveRealDice(on);
+    if (!on) setDice([]);
+  };
   const [newName, setNewName] = useState("");
   const [chatOpen, setChatOpen] = useState(false);
   const { armed, confirm } = useConfirm();
@@ -245,6 +273,8 @@ function Kniffel({ state }: { state: RoomState }) {
       isHost={isHost}
       animation={animation}
       compact={desktop || mobile}
+      realDice={realDice}
+      onRealDice={toggleRealDice}
     />
   );
 
@@ -305,6 +335,7 @@ function Kniffel({ state }: { state: RoomState }) {
         suggestion={suggestion}
         onWrite={write}
         setTurn={setTurn}
+        manualEntry={realDice}
         variant={desktop ? "desktop" : mobile ? "mobile" : "regular"}
       />
       {kniffelHit && (

@@ -33,6 +33,9 @@ interface DicePanelProps {
   sounds: boolean;
   /** Stand der Würfelanimation (liegt im Kniffel-Raum, damit der Block auf sie warten kann). */
   animation: ReturnType<typeof useRollAnimation>;
+  /** Echte Würfel von Hand eintippen (sonst nur digital würfeln). */
+  realDice: boolean;
+  onRealDice: (on: boolean) => void;
   /** Schmale Spalte neben dem Block (Desktop): etwas weniger Innenabstand. */
   compact?: boolean;
 }
@@ -51,6 +54,8 @@ function DicePanel({
   isHost,
   animation,
   compact = false,
+  realDice,
+  onRealDice,
 }: DicePanelProps) {
   const { t } = useLanguage();
   const current = sheet.columns.find((c) => c.id === sheet.current);
@@ -264,7 +269,11 @@ function DicePanel({
             {/* Beim ersten Wurf im Zug klappern hier alle fünf Würfel – das Layout bleibt gleich,
               damit der Becher-Knopf beim Schütteln nicht verrutscht. */}
             <p className="mt-1 text-sm text-(--text-secondary)">
-              {sheet.strict ? t.kniffel.diceHintPublic : t.kniffel.diceHint}
+              {sheet.strict
+                ? t.kniffel.diceHintPublic
+                : realDice
+                  ? t.kniffel.diceHint
+                  : t.kniffel.diceHintDigital}
             </p>
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {Array.from({ length: 5 }, (_, i) =>
@@ -302,7 +311,7 @@ function DicePanel({
             </div>
             {/* Echte Würfel eintippen – in öffentlichen Räumen nicht, dort zählt nur der digitale Wurf. */}
             <div
-              className={`mt-3 flex flex-wrap gap-2 ${shaking ? "invisible" : ""} ${sheet.strict ? "hidden" : ""}`}
+              className={`mt-3 flex flex-wrap gap-2 ${shaking ? "invisible" : ""} ${realDice ? "" : "hidden"}`}
             >
               {[1, 2, 3, 4, 5, 6].map((face) => (
                 <button
@@ -317,6 +326,15 @@ function DicePanel({
                 </button>
               ))}
             </div>
+            {!sheet.strict && (
+              <button
+                type="button"
+                onClick={() => onRealDice(!realDice)}
+                className={`mt-3 text-xs font-semibold text-(--text-secondary) underline-offset-2 transition hover:text-(--accent) hover:underline ${shaking ? "invisible" : ""}`}
+              >
+                {realDice ? t.kniffel.realDiceOff : t.kniffel.realDiceOn}
+              </button>
+            )}
           </>
         )}
       </div>

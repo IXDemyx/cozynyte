@@ -37,6 +37,8 @@ interface ScoreSheetProps {
     fromDice?: boolean,
   ) => void;
   setTurn: (column: string | null) => void;
+  /** Echte Würfel: leere Felder lassen sich von Hand befüllen (sonst nur aus dem Wurf). */
+  manualEntry: boolean;
   /**
    * desktop: flache Zeilen, die mit der Fensterhöhe wachsen – der ganze Block passt ohne Scrollen
    * auf den Bildschirm. mobile: schmale Spalten (bis vier Spieler ohne seitliches Scrollen),
@@ -61,6 +63,7 @@ function ScoreSheet({
   suggestion,
   onWrite,
   setTurn,
+  manualEntry,
   variant = "regular",
 }: ScoreSheetProps) {
   const desktop = variant === "desktop";
@@ -87,8 +90,10 @@ function ScoreSheet({
   const tap = (column: KniffelColumn, category: Category, value: number | undefined) => {
     const hint = suggestion(column.id, category);
     if (value === undefined && hint !== undefined) onWrite(column, category, hint, true);
-    // Öffentliche Räume: nur Werte aus dem digitalen Wurf, kein freies Eintippen.
-    else if (!sheet.strict) setEditing(`${column.id}:${category}`);
+    // Von Hand: leere Felder nur mit echten Würfeln, Korrekturen immer – außer öffentlich.
+    else if (!sheet.strict && (manualEntry || value !== undefined)) {
+      setEditing(`${column.id}:${category}`);
+    }
   };
 
   const remove = (column: KniffelColumn) => {

@@ -39,7 +39,7 @@ export const en: Dictionary = {
     tagline: "Game night, but cozy",
     heroLead: "Cozy party games",
     heroAccent: "with friends",
-    perks: ["Free", "No sign-up", "Up to 16 players", "Same table or video call"],
+    perks: ["Free", "No sign-up", "Up to 16 players", "Bunch of fun"],
     joinCardTitle: "Already invited? Come on in.",
     joinCardText: "Or pick a game below and bring your people along.",
     createGame: (game: string) => `Create a room for ${game}`,
@@ -267,6 +267,9 @@ export const en: Dictionary = {
     dice: "Enter dice",
     diceHint:
       "Tap the five dice – every empty box then shows what the roll would score. After each entry it is automatically the next player's turn.",
+    diceHintDigital: "Hold the cup, shake and let go – then tap the box on the sheet.",
+    realDiceOn: "Playing with real dice at the table?",
+    realDiceOff: "Roll digitally instead",
     diceHintPublic:
       "Public room: dice are rolled digitally – then tap the box on the sheet where the roll should go.",
     undo: "Undo",
