@@ -2,7 +2,7 @@
 
 Multiplayer party games in the browser, styled like the portfolio (orange, black/white).
 No sign-up: create a room, share the four-letter code or the invite link, and play – at the
-same table or over a video call. Live at <https://games.daniel-keller.dev>.
+same table or over a video call. Live at <https://cozynyte.com>.
 
 ## Games
 

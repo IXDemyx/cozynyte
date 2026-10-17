@@ -5,7 +5,7 @@
  * Bewusst ohne Imports, damit auch die Vite-Konfiguration die Datei laden kann.
  */
 
-export const SITE_URL = "https://games.daniel-keller.dev/";
+export const SITE_URL = "https://cozynyte.com/";
 
 export type SeoLanguage = "de" | "en";
 
