@@ -68,7 +68,8 @@ everyone right away.
 ## Getting started
 
 ```bash
-cd games
+git clone https://github.com/IXDemyx/cozynyte.git
+cd cozynyte
 npm install
 npm run dev
 ```
@@ -92,23 +93,14 @@ test bots to the room, so you can try the lobby, chat and games without a second
 Test mode is off in the Docker image (`NODE_ENV=production`). Force it with `DEV_TOOLS=1` or
 `DEV_TOOLS=0`.
 
-### Together with the portfolio
-
-From the portfolio folder (one level up), `npm run dev` starts both:
-portfolio on <http://localhost:5173>, games on <http://localhost:5174>.
-Portfolio only: `npm run dev:portfolio`.
-
 ### Docker
-
-From the portfolio folder:
 
 ```bash
 docker compose up -d --build
 ```
 
-Portfolio on <http://localhost:5173>, games on <http://localhost:1337>.
-The games container serves the frontend, the API and the WebSockets from one port
-(3001 inside the container).
+Cozynyte then runs on <http://localhost:1337>. The container serves the frontend, the API and
+the WebSockets from one port (3001 inside the container).
 
 ## Project structure
 

@@ -1,0 +1,9 @@
+# Startet Cozynyte: Frontend, API und WebSockets aus einem Container.
+# Port 1337 wie bisher, damit der Cloudflare Tunnel unverändert weiterläuft.
+services:
+  cozynyte:
+    build: .
+    container_name: cozynyte
+    restart: unless-stopped
+    ports:
+      - "1337:3001"
