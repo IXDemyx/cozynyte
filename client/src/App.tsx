@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
@@ -12,9 +12,21 @@ function App() {
   const { theme, toggleTheme, palette, togglePalette } = useTheme();
   // Räume brauchen Platz für drei Spalten (Spieler, Spiel, Chat), die Startseite nicht.
   // Montagsmaler-Runden dürfen noch breiter werden – für eine größere Zeichenfläche.
-  const wide = useLocation().pathname.startsWith("/r/");
+  const { pathname } = useLocation();
+  const wide = pathname.startsWith("/r/");
   const [extraWide, setExtraWide] = useState(false);
   const width = !wide ? "max-w-5xl" : extraWide ? "max-w-[100rem]" : "max-w-7xl";
+
+  // Beim Neuladen nicht die alte Scrollposition wiederherstellen: Der Browser setzt sie, solange
+  // noch das vorgerenderte HTML dasteht – nach dem Wechsel auf die echte Seite stimmt sie nicht mehr.
+  useEffect(() => {
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+  }, []);
+
+  // Neue Seite (z. B. aus dem Raum zurück zur Startseite oder DE ↔ EN) beginnt oben.
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <ExtraWideContext.Provider value={setExtraWide}>
