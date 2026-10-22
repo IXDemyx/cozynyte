@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { card } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { IMPRINT_URL, privacy } from "../lib/privacy";
@@ -6,6 +7,15 @@ import { IMPRINT_URL, privacy } from "../lib/privacy";
 function Privacy() {
   const { language } = useLanguage();
   const text = privacy[language];
+
+  // Eigener Tab-Titel; zurück auf der Startseite gilt wieder deren Titel.
+  useEffect(() => {
+    const previous = document.title;
+    document.title = `${text.title} | Cozynyte`;
+    return () => {
+      document.title = previous;
+    };
+  }, [text.title]);
 
   return (
     <article className={`${card} animate-in mx-auto max-w-3xl p-7 sm:p-10`}>

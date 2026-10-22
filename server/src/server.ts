@@ -64,6 +64,20 @@ if (existsSync(dist)) {
   });
   // Englische Startseite: eigene Adresse mit eigenem Titel und Text (für Suchmaschinen).
   app.get("/en", (_req, res) => res.sendFile(path.join(dist, "en", "index.html")));
+  // Datenschutz: nicht in die Suchergebnisse. Die Adresse liefert (wie jede Unterseite) erst das
+  // HTML der Startseite aus – Google hielt sie sonst für die Startseite und zeigte sie bei der
+  // Suche nach „Cozynyte“ an. Links von dort zählen weiter (follow).
+  app.get("/privacy", (_req, res) => {
+    res.setHeader("X-Robots-Tag", "noindex, follow");
+    res.sendFile(path.join(dist, "index.html"));
+  });
   app.use(express.static(dist));
-  app.get(/^(?!\/socket\.io).*/, (_req, res) => res.sendFile(path.join(dist, "index.html")));
+  // Räume (/r/…) gibt es; jede andere unbekannte Adresse ist ein 404 – die App zeigt dann die
+  // Startseite, Suchmaschinen legen aber keine Kopien der Startseite unter fremden Adressen an.
+  app.get(/^(?!\/socket\.io).*/, (req, res) => {
+    if (!req.path.startsWith("/r/")) {
+      res.status(404).setHeader("X-Robots-Tag", "noindex");
+    }
+    res.sendFile(path.join(dist, "index.html"));
+  });
 }
