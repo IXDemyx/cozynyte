@@ -59,7 +59,8 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
     const sheet = c?.room.kniffel;
     const step = c?.room.kniffelHistory.at(-1);
     const column = sheet?.columns.find((col) => col.id === step?.column);
-    if (!c || !sheet || !step || !column || !canEditColumn(sheet, column, c.player.id, c.isHost)) return;
+    if (!c || !sheet || !step || !column || !canEditColumn(sheet, column, c.player.id, c.isHost))
+      return;
     // Öffentlich kein Rückgängig – sonst ließe sich ein schlechter Wurf einfach neu würfeln.
     if (sheet.strict) return;
 
@@ -126,7 +127,8 @@ export function registerKniffelHandlers({ socket, ctx, reply }: Handlers) {
     const c = ctx();
     const sheet = c?.room.kniffel;
     const column = sheet?.columns.find((col) => col.id === sheet.current);
-    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id, c.isHost)) return undefined;
+    if (!c || !sheet || !column || !canEditColumn(sheet, column, c.player.id, c.isHost))
+      return undefined;
     return { room: c.room, sheet };
   };
 

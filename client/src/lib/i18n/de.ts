@@ -5,7 +5,7 @@ export const de = {
   games: {
     song: "Song erraten",
     year: "Jahr schätzen",
-    timeline: "Zeitleiste",
+    timeline: "Song-Zeitleiste",
     kniffel: "Kniffel",
     slf: "Stadt Land Fluss",
     draw: "Montagsmaler",
@@ -37,7 +37,7 @@ export const de = {
     tagline: "Spieleabend",
     heroLead: "Gemütliche Partyspiele",
     heroAccent: "mit Freunden",
-    perks: ["Kostenlos", "Ohne Anmeldung", "Bis zu 16 Spieler", "Sehr spaßig"],
+    perks: ["Kostenlos", "Ohne Anmeldung", "Bis zu 16 Spieler", "Auch per Videocall"],
     joinCardTitle: "Schon eingeladen? Komm rein.",
     joinCardText: "Oder wähle unten ein Spiel und lade deine Freunde ein.",
     createGame: (game: string) => `Raum für ${game} erstellen`,
@@ -55,7 +55,6 @@ export const de = {
     join: "Beitreten",
     or: "oder",
     random: "Zufälliger Raum",
-    randomGame: (game: string) => `Zufälligen Raum für ${game} suchen`,
     openRooms: (n: number) =>
       n === 0
         ? "Gerade sucht niemand – du machst einen Raum auf, andere kommen dazu."
@@ -80,8 +79,7 @@ export const de = {
     toLobbyConfirm: "Spiel wirklich abbrechen? Die Punkte sind dann weg.",
     toLobbyYes: "Zur Lobby",
     cancel: "Abbrechen",
-    aborted: (name: string) =>
-      `${name} hat das Spiel beendet – ihr seid zurück in der Lobby.`,
+    aborted: (name: string) => `${name} hat das Spiel beendet – ihr seid zurück in der Lobby.`,
     dismiss: "Hinweis schließen",
     connecting: (code: string) => `Verbinde mit Raum ${code} …`,
   },
@@ -117,7 +115,7 @@ export const de = {
     title: (n: number) => (n === 1 ? "Wähle deinen Song" : `Wähle deine ${n} Songs`),
     hint: "Die anderen sehen deine Auswahl nicht. Du bekommst Punkte, wenn deine Songs erraten werden – zu schwer lohnt sich also nicht.",
     hintTimeline:
-      "Alle Songs kommen in den gemeinsamen Stapel – jeder startet mit einem zufälligen Startjahr. Schau aufs angezeigte Jahr: Bei Neuauflagen nennt iTunes manchmal ein späteres.",
+      "Alle Songs kommen in den gemeinsamen Stapel – alle starten mit demselben zufälligen Startjahr. Schau aufs angezeigte Jahr: Bei Neuauflagen nennt iTunes manchmal ein späteres.",
     hintYear:
       "Die anderen sehen deine Auswahl nicht. Du bekommst Punkte, wenn sie höchstens 2 Jahre danebenliegen. Schau aufs angezeigte Jahr: Bei Neuauflagen nennt iTunes manchmal ein späteres.",
     done: "Fertig! Warte auf die anderen …",
@@ -172,7 +170,7 @@ export const de = {
     choosing: (name: string) => `${name} wählt einen Begriff …`,
     youDraw: "Du zeichnest",
     guessHint: "Rate im Chat – richtige Tipps sieht niemand.",
-    wordWas: "Das Wort war",
+    wordWas: "Der Begriff war",
     waitOthers: "Warte auf die anderen …",
     guessedLabel: "Erraten",
     yourWordLabel: "Dein Begriff",
@@ -183,7 +181,7 @@ export const de = {
     placeholderGuess: "Dein Tipp …",
     placeholderDrawer: "Chatten – der Begriff wird ausgeblendet …",
     guessed: (name: string, me: boolean) =>
-      me ? "Du hast das Wort erraten!" : `${name} hat das Wort erraten!`,
+      me ? "Du hast den Begriff erraten!" : `${name} hat den Begriff erraten!`,
     tools: {
       pen: "Stift",
       eraser: "Radierer",
@@ -270,7 +268,8 @@ export const de = {
     dice: "Würfel eintragen",
     diceHint:
       "Tippe die fünf Würfel an – im Block steht dann bei jedem freien Feld, was der Wurf bringt. Nach jedem Eintrag ist automatisch der Nächste dran.",
-    diceHintDigital: "Halte den Becher gedrückt, schüttel und lass los – dann im Block das Feld antippen.",
+    diceHintDigital:
+      "Halte den Becher gedrückt, schüttle und lass los – dann im Block das Feld antippen.",
     realDiceOn: "Mit echten Würfeln am Tisch spielen?",
     realDiceOff: "Doch lieber digital würfeln",
     diceHintPublic:
@@ -322,15 +321,15 @@ export const de = {
     newGameConfirm: "Wirklich alles löschen?",
     removeColumn: (name: string) => `${name} entfernen`,
     shared: "Jeder im Raum kann jede Spalte bearbeiten.",
-    winner: (names: string, points: number) =>
-      `${names} gewinnt mit ${points} Punkten!`,
+    winner: (names: string[], points: number) =>
+      `${names.join(" & ")} ${names.length > 1 ? "gewinnen" : "gewinnt"} mit ${points} Punkten!`,
   },
   timeline: {
     goal: (n: number) => `Ziel: ${n} Karten`,
     startYear: "Startjahr",
     startYearHint: "Deine erste Karte – alles Weitere ordnest du davor oder danach ein.",
     gap: "Hier einordnen",
-    confirm: "Hier einsortieren",
+    confirm: "Hier einordnen",
     question: "Wo gehört der Song in deine Zeitleiste?",
     yourTurn: "Du bist dran – wo gehört der Song in deine Zeitleiste?",
     othersTurn: (name: string) => `${name} ordnet ein …`,
@@ -432,7 +431,7 @@ export const de = {
     },
     round: (round: number, rounds: number) => `Runde ${round} / ${rounds}`,
     letter: "Buchstabe",
-    getReady: "Gleich geht’s los …",
+    getReady: "Gleich geht's los …",
     stop: "Stopp!",
     stopHint: "Fülle alle Felder aus, dann kannst du Stopp rufen.",
     keys: "Enter: nächstes freies Feld · Strg/⌘+Enter: Stopp",
@@ -522,7 +521,8 @@ export const de = {
     off: "Aus",
     pool: (n: number) => `${n} Länder im Topf`,
     fewer: (n: number) => `– gespielt werden nur ${n} Fragen.`,
-    hintsOnType: "Nach und nach: Kontinent, dann Anfangsbuchstabe.",
+    hintsOnType:
+      "Nach und nach: Kontinent und Anfangsbuchstabe, bei Hauptstädten die ersten Buchstaben.",
     jokers: "50:50-Joker pro Spieler",
     jokersHint: (n: number) =>
       n

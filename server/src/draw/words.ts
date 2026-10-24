@@ -26,7 +26,7 @@ const DE = [
   "Regenschirm", "Brille", "Sonnenbrille", "Hut", "Mütze", "Schal", "Handschuh", "Socke", "Schuh", "Stiefel",
   "Hose", "Kleid", "Krawatte", "T-Shirt", "Jacke", "Rucksack", "Koffer", "Geldbeutel", "Ring", "Krone",
   "Buch", "Zeitung", "Brief", "Stift", "Bleistift", "Pinsel", "Radiergummi", "Lineal", "Kleber", "Papierflieger",
-  "Handy", "Laptop", "Tastatur", "Maus", "Fernseher", "Kamera", "Kopfhörer", "Mikrofon", "Radio", "Batterie",
+  "Handy", "Laptop", "Tastatur", "Fernseher", "Kamera", "Kopfhörer", "Mikrofon", "Radio", "Batterie",
   "Glühbirne", "Steckdose", "Hammer", "Nagel", "Schraube", "Säge", "Zange", "Magnet", "Kompass", "Lupe",
   "Ballon", "Geschenk", "Kalender", "Puzzle", "Würfel", "Teddybär", "Puppe", "Drachen", "Murmel", "Kreisel",
   // Fahrzeuge
@@ -36,8 +36,8 @@ const DE = [
   // Natur und Orte
   "Sonne", "Mond", "Stern", "Wolke", "Regen", "Regenbogen", "Blitz", "Schneemann", "Schneeflocke", "Tornado",
   "Berg", "Vulkan", "Insel", "Strand", "Welle", "Fluss", "Wasserfall", "Wüste", "Kaktus", "Palme",
-  "Baum", "Blume", "Rose", "Sonnenblume", "Tulpe", "Blatt", "Pilz", "Gras", "Wald", "Höhle",
-  "Haus", "Schloss", "Burg", "Kirche", "Leuchtturm", "Brücke", "Turm", "Zelt", "Iglu", "Windmühle",
+  "Baum", "Blume", "Rose", "Sonnenblume", "Tulpe", "Blatt", "Gras", "Wald", "Höhle",
+  "Haus", "Burg", "Kirche", "Leuchtturm", "Brücke", "Turm", "Zelt", "Iglu", "Windmühle",
   "Ampel", "Zaun", "Briefkasten", "Bank", "Spielplatz", "Rutsche", "Schaukel", "Brunnen", "Pyramide", "Erde",
   // Menschen und Berufe
   "Baby", "Oma", "Pirat", "Ritter", "Prinzessin", "König", "Hexe", "Zauberer", "Geist", "Vampir",
@@ -86,7 +86,7 @@ const DE = [
   "Japan", "Südkorea", "Thailand", "Australien", "Neuseeland", "Island", "Jamaika", "Hawaii", "Schottland", "Peru",
   // Sonstiges
   "Herzschlag", "Feuer", "Rauch", "Bombe", "Schatz", "Schatzkarte", "Anker", "Fahne", "Medaille", "Pokal",
-  "Ampel", "Sanduhr", "Glocke", "Pfeil", "Bogen", "Schwert", "Schild", "Zauberstab", "Kristallkugel", "Wunschbrunnen",
+  "Sanduhr", "Glocke", "Pfeil", "Bogen", "Schwert", "Schild", "Zauberstab", "Kristallkugel", "Wunschbrunnen",
 ];
 
 // prettier-ignore

@@ -143,7 +143,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           { label: "Mia", value: "Fast richtig" },
           { label: "Tom", value: "hat den Song gewählt", points: 30 },
         ],
-        note: "Je schneller, desto mehr Punkte. Wer den Song gewählt hat, verdient an jedem Treffer mit.",
+        note: "Je schneller, desto mehr Punkte. Wer den Song gewählt hat, bekommt für jeden erratenen Titel Punkte.",
       },
       steps: [
         {
@@ -159,7 +159,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       rules: [
         {
           title: "Raten",
-          text: "Titel und Interpret werden getrennt gewertet. Kleine Tippfehler zeigt das Spiel als „fast richtig“ an.",
+          text: "Titel und Interpret werden getrennt gewertet. Kleine Tippfehler zählen trotzdem, knapp daneben zeigt das Spiel als „fast richtig“ an.",
         },
         {
           title: "Hinweise",
@@ -239,11 +239,11 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       rules: [
         {
           title: "Guessing",
-          text: "Title and artist score separately. Small typos show up as “close”.",
+          text: "Title and artist score separately. Small typos still count, near misses show up as “close”.",
         },
         {
           title: "Hints",
-          text: "Letters of title and artist are revealed one by one as the round goes on.",
+          text: "Letters of title and artist are revealed bit by bit as the round goes on.",
         },
         {
           title: "Your own songs",
@@ -446,7 +446,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
         "Songs zeitlich einordnen: Jeder baut seine eigene Zeitleiste, wer zuerst genug Karten richtig liegen hat, gewinnt. Kostenlos im Browser.",
       ogTitle: "Song-Zeitleiste – Musikspiel online",
       ogDescription: "Songs hören und in die eigene Zeitleiste einordnen. Kostenlos im Browser.",
-      name: "Zeitleiste",
+      name: "Song-Zeitleiste",
       title: "Song-Zeitleiste online spielen",
       titleAccent: "Song-Zeitleiste",
       intro:
@@ -655,7 +655,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       scoreTitle: "Punkte",
       scores: [
         { label: "Einzige gültige Antwort in der Kategorie", value: "20" },
-        { label: "Eigene Antwort", value: "10" },
+        { label: "Antwort, die sonst keiner hat", value: "10" },
         { label: "Gleiche Antwort wie jemand anderes", value: "5" },
         { label: "Leer, falscher Buchstabe oder abgelehnt", value: "0" },
       ],
@@ -695,7 +695,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           { label: "River", value: "Mississippi", points: 5 },
           { label: "First name", value: "Mia", points: 10 },
           { label: "Job", value: "Mechanic", points: 20 },
-          { label: "Animal", value: "Moonfish", points: 0 },
+          { label: "Animal", value: "Mooseshark", points: 0 },
         ],
         note: "5 points: someone else had the same. 20 points: the only valid answer. 0: rejected.",
       },
@@ -731,7 +731,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       scoreTitle: "Points",
       scores: [
         { label: "Only valid answer in the category", value: "20" },
-        { label: "Unique answer", value: "10" },
+        { label: "Answer nobody else has", value: "10" },
         { label: "Same answer as someone else", value: "5" },
         { label: "Empty, wrong letter or rejected", value: "0" },
       ],
@@ -905,7 +905,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       faq: [
         {
           q: "Can I play with real dice?",
-          a: "Yes. In private rooms, tap “Play with real dice at the table?” and enter your rolls.",
+          a: "Yes. In private rooms, tap “Playing with real dice at the table?” and enter your rolls.",
         },
         {
           q: "Can I play Yahtzee solo?",
@@ -975,7 +975,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
         },
         {
           title: "Werkzeuge",
-          text: "Stift in zwölf Farben und vier Stärken, Radierer, Füllen und Rückgängig.",
+          text: "Stift in zwölf Farben und vier Stärken, Radierer, Füllen, Rückgängig und Alles löschen.",
         },
       ],
       scoreTitle: "Punkte",
@@ -1051,7 +1051,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
         },
         {
           title: "Tools",
-          text: "Pen in twelve colours and four sizes, eraser, fill and undo.",
+          text: "Pen in twelve colours and four sizes, eraser, fill, undo and clear all.",
         },
       ],
       scoreTitle: "Points",
@@ -1128,7 +1128,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
         },
         {
           title: "Hilfen",
-          text: "Beim Tippen auf Wunsch Hinweise: erst der Kontinent, dann der Anfangsbuchstabe. Bei der Auswahl bis zu drei 50:50-Joker.",
+          text: "Beim Tippen auf Wunsch Hinweise: Kontinent und Anfangsbuchstabe, bei Hauptstädten die ersten Buchstaben. Bei der Auswahl bis zu drei 50:50-Joker.",
         },
       ],
       scoreTitle: "Punkte",
@@ -1202,7 +1202,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
         },
         {
           title: "Help",
-          text: "When typing, optional hints: first the continent, then the first letter. In multiple choice up to three 50:50 jokers.",
+          text: "When typing, optional hints: continent and first letter, for capitals the first letters. In multiple choice up to three 50:50 jokers.",
         },
       ],
       scoreTitle: "Points",

@@ -279,35 +279,39 @@ function Kniffel({ state }: { state: RoomState }) {
   );
 
   // Öffentliche Räume: Spieler ohne Handy trägt nur der Host ein.
-  const addForm = !sheet.strict || isHost ? (
-    <form
-      onSubmit={addColumn}
-      className={`${card} flex gap-2 ${desktop || mobile ? "p-4" : "p-5"}`}
-    >
-      <input
-        aria-label={t.kniffel.addPlaceholder}
-        className={`${input} ${desktop || mobile ? "py-2" : ""}`}
-        value={newName}
-        maxLength={16}
-        placeholder={t.kniffel.addPlaceholder}
-        onChange={(e) => setNewName(e.target.value)}
-      />
-      <Button
-        type="submit"
-        variant="secondary"
-        size={desktop || mobile ? "small" : "default"}
-        disabled={!newName.trim()}
-        aria-label={t.kniffel.add}
+  const addForm =
+    !sheet.strict || isHost ? (
+      <form
+        onSubmit={addColumn}
+        className={`${card} flex gap-2 ${desktop || mobile ? "p-4" : "p-5"}`}
       >
-        <FiUserPlus aria-hidden="true" />{" "}
-        <span className={desktop ? "sr-only" : "hidden sm:inline"}>{t.kniffel.add}</span>
-      </Button>
-    </form>
-  ) : null;
+        <input
+          aria-label={t.kniffel.addPlaceholder}
+          className={`${input} ${desktop || mobile ? "py-2" : ""}`}
+          value={newName}
+          maxLength={16}
+          placeholder={t.kniffel.addPlaceholder}
+          onChange={(e) => setNewName(e.target.value)}
+        />
+        <Button
+          type="submit"
+          variant="secondary"
+          size={desktop || mobile ? "small" : "default"}
+          disabled={!newName.trim()}
+          aria-label={t.kniffel.add}
+        >
+          <FiUserPlus aria-hidden="true" />{" "}
+          <span className={desktop ? "sr-only" : "hidden sm:inline"}>{t.kniffel.add}</span>
+        </Button>
+      </form>
+    ) : null;
 
   const winnerBanner = finished && (
     <p className="rounded-2xl border border-(--accent) bg-(--accent-soft) p-4 text-center font-semibold">
-      {t.kniffel.winner(winners.map((c) => c.name).join(" & "), best)}
+      {t.kniffel.winner(
+        winners.map((c) => c.name),
+        best,
+      )}
     </p>
   );
 

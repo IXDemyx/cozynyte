@@ -98,7 +98,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         text: "Aus welchem Jahr ist der Song? Wer am nächsten dran liegt, bekommt die meisten Punkte.",
       },
       {
-        name: "Zeitleiste",
+        name: "Song-Zeitleiste",
         page: "timeline",
         text: "Ordnet Songs zeitlich in eure Zeitleiste ein – wer zuerst genug Karten richtig liegen hat, gewinnt.",
       },
@@ -110,7 +110,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       {
         name: "Kniffel",
         page: "kniffel",
-        text: "Der Kniffel-Block fürs Handy: mit echten Würfeln spielen, Würfe eintragen, alles wird automatisch gezählt.",
+        text: "Der Kniffel-Block fürs Handy: digital würfeln oder echte Würfe eintragen, alles wird automatisch gezählt.",
       },
       {
         name: "Montagsmaler",
@@ -160,7 +160,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     ogTitle: "Party games in your browser – Cozynyte",
     ogDescription:
       "Draw & Guess, Guess the Song, Yahtzee and more – create a room, share the link, play.",
-    ogLocale: "en_US",
+    ogLocale: "en_GB",
     otherLanguage: "Also available in English",
     title: "Party games online with friends",
     intro:
@@ -195,7 +195,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       {
         name: "Yahtzee",
         page: "kniffel",
-        text: "The Yahtzee score sheet for your phone: roll real dice, enter your rolls, everything is added up.",
+        text: "The Yahtzee score sheet for your phone: roll digital dice or enter real ones, everything is added up.",
       },
       {
         name: "Draw & Guess",

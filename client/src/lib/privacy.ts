@@ -59,7 +59,7 @@ export const privacy: Record<"de" | "en", PrivacyText> = {
       {
         title: "6. Speicherung im Browser",
         paragraphs: [
-          "Damit du nicht alles neu einstellen musst, speichert die Website einige Einstellungen lokal in deinem Browser (Local Storage bzw. Session Storage): deinen Namen, Sprache, Design, Lautstärke und Soundeinstellungen sowie eine zufällige Spieler-ID für die aktuelle Sitzung. Diese Daten bleiben auf deinem Gerät; nur Name und Spieler-ID werden beim Beitreten an den Server geschickt. Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.",
+          "Damit du nicht alles neu einstellen musst, speichert die Website einige Einstellungen lokal in deinem Browser (Local Storage bzw. Session Storage): deinen Namen, Sprache, Design, Lautstärke und Soundeinstellungen, eine zufällige Spieler-ID (pro Raum bis zu zwei Tage, damit du nach dem Neuladen deinen Platz behältst), die Würfelwahl bei Kniffel und ob du den Sprachhinweis ausgeblendet hast. Diese Daten bleiben auf deinem Gerät; nur Name und Spieler-ID werden beim Beitreten an den Server geschickt. Du kannst sie jederzeit über die Einstellungen deines Browsers löschen.",
           "Es werden keine Cookies gesetzt und keine Analyse- oder Werbedienste verwendet. Schriftarten werden vom eigenen Server geladen.",
         ],
       },
@@ -112,7 +112,7 @@ export const privacy: Record<"de" | "en", PrivacyText> = {
       {
         title: "6. Storage in your browser",
         paragraphs: [
-          "So you don't have to set everything again, the website stores a few settings locally in your browser (local storage or session storage): your name, language, theme, volume and sound settings, and a random player ID for the current session. This data stays on your device; only your name and player ID are sent to the server when you join a room. You can delete it at any time in your browser settings.",
+          "So you don't have to set everything again, the website stores a few settings locally in your browser (local storage or session storage): your name, language, theme, volume and sound settings, a random player ID (kept for up to two days per room, so you keep your seat after reloading), your dice choice in Yahtzee and whether you dismissed the language hint. This data stays on your device; only your name and player ID are sent to the server when you join a room. You can delete it at any time in your browser settings.",
           "No cookies are set and no analytics or advertising services are used. Fonts are served from my own server.",
         ],
       },

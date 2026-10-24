@@ -39,7 +39,7 @@ export const en: Dictionary = {
     tagline: "Game night",
     heroLead: "Cozy party games",
     heroAccent: "with friends",
-    perks: ["Free", "No sign-up", "Up to 16 players", "Bunch of fun"],
+    perks: ["Free", "No sign-up", "Up to 16 players", "Works over video calls"],
     joinCardTitle: "Already invited? Come on in.",
     joinCardText: "Or pick a game below and invite your friends.",
     createGame: (game: string) => `Create a room for ${game}`,
@@ -57,7 +57,6 @@ export const en: Dictionary = {
     join: "Join",
     or: "or",
     random: "Random room",
-    randomGame: (game: string) => `Find a random room for ${game}`,
     openRooms: (n: number) =>
       n === 0
         ? "Nobody's looking right now – you open a room and others join in."
@@ -118,7 +117,7 @@ export const en: Dictionary = {
     title: (n) => (n === 1 ? "Pick your song" : `Pick your ${n} songs`),
     hint: "The others can't see your picks. You earn points when your songs are guessed – so don't make them too hard.",
     hintTimeline:
-      "All songs go into the shared pile – everyone starts with a random start year. Check the year shown: for re-releases iTunes sometimes gives a later one.",
+      "All songs go into the shared pile – everyone starts with the same random start year. Check the year shown: for re-releases iTunes sometimes gives a later one.",
     hintYear:
       "The others can't see your picks. You earn points when they are at most 2 years off. Check the year shown: for re-releases iTunes sometimes gives a later one.",
     done: "Done! Waiting for the others …",
@@ -319,7 +318,8 @@ export const en: Dictionary = {
     newGameConfirm: "Really clear everything?",
     removeColumn: (name) => `Remove ${name}`,
     shared: "Everyone in the room can edit every column.",
-    winner: (names, points) => `${names} wins with ${points} points!`,
+    winner: (names, points) =>
+      `${names.join(" & ")} ${names.length > 1 ? "win" : "wins"} with ${points} points!`,
   },
   timeline: {
     goal: (n) => `Goal: ${n} cards`,
@@ -446,7 +446,7 @@ export const en: Dictionary = {
     vote: (name) => `Reject ${name}'s answer`,
     mark: (name) => `Mark ${name}'s answer as the same`,
     next: "Next round",
-    toFinal: "To the results",
+    toFinal: "Final scores",
     waitingHost: "The host moves on once everything is settled.",
     points: "Points",
   },
@@ -513,7 +513,7 @@ export const en: Dictionary = {
     off: "Off",
     pool: (n: number) => `${n} countries in the pool`,
     fewer: (n: number) => `– only ${n} questions will be played.`,
-    hintsOnType: "Step by step: continent, then the first letter.",
+    hintsOnType: "Step by step: continent and first letter, for capitals the first letters.",
     jokers: "50:50 jokers per player",
     jokersHint: (n: number) =>
       n
@@ -551,7 +551,7 @@ export const en: Dictionary = {
     room_not_found: "This room doesn't exist (anymore).",
     room_full: "The room is full.",
     game_running: "The game is already running. Wait for the next one.",
-    need_two_players: "It's cozier with two – you need at least 2 players.",
+    need_two_players: "You need at least 2 players.",
     need_words: "You need at least 3 words.",
     need_two_pickers: "At least 2 players must have picked a song.",
     search_unavailable: "Song search is unavailable right now.",
