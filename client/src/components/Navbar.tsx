@@ -1,8 +1,27 @@
 import { FaMoon, FaSun } from "react-icons/fa";
-import { LuLamp, LuMoonStar } from "react-icons/lu";
+import { LuMoonStar } from "react-icons/lu";
 import { Link } from "react-router-dom";
-import { nextPalette, type Palette, type Theme } from "../hooks/useTheme";
+import { PALETTES, nextPalette, type Palette, type Theme } from "../hooks/useTheme";
 import { useLanguage } from "../lib/i18n";
+
+/**
+ * Punkte im Design-Knopf: Akzentfarbe jedes Designs (hell/dunkel) und das Leuchten des aktiven
+ * Punkts in derselben Farbe – wie kleine Planeten.
+ */
+const PALETTE_DOT: Record<Palette, { dot: string; glow: string }> = {
+  cozy: {
+    dot: "bg-[#1e66f5] dark:bg-[#89b4fa]",
+    glow: "shadow-[0_0_6px_2px_rgba(30,102,245,0.6),0_0_16px_4px_rgba(30,102,245,0.3)] dark:shadow-[0_0_6px_2px_rgba(137,180,250,0.6),0_0_16px_4px_rgba(137,180,250,0.3)]",
+  },
+  evening: {
+    dot: "bg-[#a8742c] dark:bg-[#e8c48c]",
+    glow: "shadow-[0_0_6px_2px_rgba(168,116,44,0.6),0_0_16px_4px_rgba(168,116,44,0.3)] dark:shadow-[0_0_6px_2px_rgba(232,196,140,0.6),0_0_16px_4px_rgba(232,196,140,0.3)]",
+  },
+  classic: {
+    dot: "bg-[#ea580c] dark:bg-[#f97316]",
+    glow: "shadow-[0_0_6px_2px_rgba(234,88,12,0.6),0_0_16px_4px_rgba(234,88,12,0.3)] dark:shadow-[0_0_6px_2px_rgba(249,115,22,0.6),0_0_16px_4px_rgba(249,115,22,0.3)]",
+  },
+};
 
 interface NavbarProps {
   theme: Theme;
@@ -32,6 +51,38 @@ function Navbar({ theme, onToggleTheme, palette, onTogglePalette, width }: Navba
         </Link>
         {/* Sprache und Design wie in der Navigation des Portfolios. */}
         <div className="flex items-center gap-2">
+          {/* Design wechseln: drei Punkte in den Farben der Designs, der aktive größer und
+              leuchtend. Ganz links mit eigenem Platz, ein feiner Strich trennt sie von Sprache und
+              Hell/Dunkel. Reihenfolge Cozy → Gemütlicher Abend → Klassisch → Cozy … */}
+          <button
+            type="button"
+            onClick={onTogglePalette}
+            aria-label={t.nav.palette(
+              t.nav.palettes[palette],
+              t.nav.palettes[nextPalette(palette)],
+            )}
+            title={t.nav.palette(t.nav.palettes[palette], t.nav.palettes[nextPalette(palette)])}
+            className="group flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-xl px-1.5 outline-none focus-visible:ring-2 focus-visible:ring-(--accent-border)"
+          >
+            {/* Ohne Rahmen – die Punkte wirken wie kleine Planeten; beim Drüberfahren rücken sie
+                etwas auseinander. */}
+            <span
+              aria-hidden="true"
+              className="flex items-center gap-1.5 transition-all group-hover:gap-2"
+            >
+              {PALETTES.map((p) => (
+                <span
+                  key={p}
+                  className={`rounded-full transition-all ${PALETTE_DOT[p].dot} ${
+                    p === palette
+                      ? `h-2.5 w-2.5 ${PALETTE_DOT[p].glow}`
+                      : "h-1.5 w-1.5 opacity-50 group-hover:opacity-80"
+                  }`}
+                />
+              ))}
+            </span>
+          </button>
+          <span aria-hidden="true" className="mx-1 h-5 w-px bg-slate-200 dark:bg-white/10" />
           <button
             type="button"
             onClick={toggleLanguage}
@@ -53,24 +104,6 @@ function Navbar({ theme, onToggleTheme, palette, onTogglePalette, width }: Navba
                 </span>
               </span>
             ))}
-          </button>
-          {/* Designs zum Ausprobieren: Klassisch → Cozy → Gemütlicher Abend → Klassisch … */}
-          <button
-            type="button"
-            onClick={onTogglePalette}
-            aria-pressed={palette !== "classic"}
-            aria-label={t.nav.palette(
-              t.nav.palettes[palette],
-              t.nav.palettes[nextPalette(palette)],
-            )}
-            title={t.nav.palette(t.nav.palettes[palette], t.nav.palettes[nextPalette(palette)])}
-            className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border bg-(--surface) shadow-sm transition hover:border-(--accent) hover:text-(--accent) dark:bg-(--bg-secondary) dark:hover:border-(--accent) ${
-              palette !== "classic"
-                ? "border-(--accent-border) text-(--accent)"
-                : "border-slate-200 text-slate-700 dark:border-(--accent-border) dark:text-(--text-secondary)"
-            }`}
-          >
-            <LuLamp aria-hidden="true" />
           </button>
           <button
             type="button"

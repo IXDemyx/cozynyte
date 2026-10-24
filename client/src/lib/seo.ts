@@ -227,7 +227,8 @@ export function staticHomeHtml(lang: SeoLanguage): string {
 /** Titel, Beschreibung, Sprachversionen (hreflang) und Link-Vorschau für den <head>. */
 export function headHtml(lang: SeoLanguage): string {
   const s = SEO[lang];
-  const image = new URL("og-image.png", SITE_URL).href;
+  // Vorschaubild für geteilte Links – je Sprache eigenes Bild mit übersetztem Text.
+  const image = new URL(lang === "en" ? "og-image-en.png" : "og-image.png", SITE_URL).href;
   return [
     `<title>${escape(s.metaTitle)}</title>`,
     `<meta name="description" content="${escape(s.metaDescription)}" />`,

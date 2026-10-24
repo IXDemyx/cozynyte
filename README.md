@@ -60,8 +60,8 @@ everyone right away.
 **Everywhere**
 
 - Sound effects for every game, generated in the browser, with a volume control
-- German and English UI, light and dark mode, three designs to switch between: Classic (orange/black,
-  like the portfolio), Cozy (Catppuccin colours) and Cozy Evening (warm candlelight tones)
+- German and English UI, light and dark mode, three designs to switch between: Cozy (Catppuccin blue, the
+  default), Cozy Evening (warm candlelight tones) and Classic (orange/black, like the portfolio)
 - Start page in two language versions (`/` German, `/en` English) for search engines
 - Optional "Buy me a coffee" link in the footer and on the final screen
 

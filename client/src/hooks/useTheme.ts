@@ -2,18 +2,25 @@ import { useEffect, useState } from "react";
 
 export type Theme = "light" | "dark";
 /**
- * Farbwelt: das bisherige Orange-Schwarz, „Cozy“ (Catppuccin) oder „Gemütlicher Abend“
- * (Kerzenlicht). Wird als Klasse am <html>-Element gesetzt (außer „classic“).
+ * Farbwelt: „Cozy“ (Catppuccin-Blau, Standard), „Gemütlicher Abend“ (Kerzenlicht) oder das
+ * ursprüngliche Orange-Schwarz. Wird als Klasse am <html>-Element gesetzt (außer „classic“).
  */
-export const PALETTES = ["classic", "cozy", "evening"] as const;
+export const PALETTES = ["cozy", "evening", "classic"] as const;
 export type Palette = (typeof PALETTES)[number];
+
+/**
+ * Speicherschlüssel der Wahl. Neuer Name seit Blau der Standard ist: So landen alle einmal beim
+ * blauen Design (auch wer vorher durchprobiert hat) und können danach wieder frei wählen.
+ * Muss zum Inline-Skript in index.html passen.
+ */
+const PALETTE_KEY = "design";
 
 function getInitialPalette(): Palette {
   try {
-    const saved = localStorage.getItem("palette");
-    return PALETTES.find((p) => p === saved) ?? "classic";
+    const saved = localStorage.getItem(PALETTE_KEY);
+    return PALETTES.find((p) => p === saved) ?? "cozy";
   } catch {
-    return "classic";
+    return "cozy";
   }
 }
 
@@ -40,7 +47,7 @@ export function useTheme() {
     for (const p of PALETTES)
       document.documentElement.classList.toggle(p, p === palette && p !== "classic");
     try {
-      localStorage.setItem("palette", palette);
+      localStorage.setItem(PALETTE_KEY, palette);
     } catch {
       // Ohne Speicher gilt die Wahl nur bis zum Neuladen.
     }

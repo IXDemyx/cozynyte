@@ -146,7 +146,7 @@ function DrawRound({ state, draw, offset }: DrawRoundProps) {
               <Overlay>
                 {isDrawer && draw.choices ? (
                   <>
-                    <p className="text-sm font-semibold uppercase tracking-widest text-orange-300">
+                    <p className="text-sm font-semibold uppercase tracking-widest text-[color-mix(in_srgb,var(--accent)_55%,white)]">
                       {t.draw.choose}
                     </p>
                     <div className="mt-3 flex flex-wrap justify-center gap-2 sm:mt-5 sm:gap-3">
@@ -371,7 +371,7 @@ function letterIndices(mask: string): Set<number> {
 
 function Overlay({ children }: { children: ReactNode }) {
   return (
-    <div className="animate-in absolute inset-0 flex flex-col items-center justify-center bg-[radial-gradient(circle_at_50%_40%,rgba(249,115,22,0.18),transparent_60%),linear-gradient(#17181c,#0f0f10)] p-3 text-center sm:p-6">
+    <div className="animate-in absolute inset-0 flex flex-col items-center justify-center bg-[radial-gradient(circle_at_50%_40%,color-mix(in_srgb,var(--accent)_18%,transparent),transparent_60%),linear-gradient(#1e1e2e,#11111b)] p-3 text-center sm:p-6">
       {children}
     </div>
   );
