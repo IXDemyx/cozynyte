@@ -9,14 +9,17 @@ export const SITE_URL = "https://cozynyte.com/";
 
 export type SeoLanguage = "de" | "en";
 
-/** Jede Sprache hat ihre eigene Startseite – so kann Google beide getrennt anzeigen. */
-export const HOME_PATH: Record<SeoLanguage, string> = { de: "/", en: "/en" };
+/**
+ * Jede Sprache hat ihre eigene Startseite – so kann Google beide getrennt anzeigen.
+ * Englisch ist die Hauptseite (`/`), Deutsch liegt unter `/de`.
+ */
+export const HOME_PATH: Record<SeoLanguage, string> = { en: "/", de: "/de" };
 
 /** Sprache, die eine Adresse festlegt (nur die beiden Startseiten), sonst null. */
 export function languageOfPath(pathname: string): SeoLanguage | null {
   const path = pathname.replace(/\/+$/, "") || "/";
-  if (path === "/en") return "en";
-  if (path === "/") return "de";
+  if (path === "/de") return "de";
+  if (path === "/") return "en";
   return null;
 }
 

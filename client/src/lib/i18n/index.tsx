@@ -1,6 +1,6 @@
 /**
  * Sprachwahl (Deutsch/Englisch) und Zugriff auf die Texte.
- * Die Startseiten legen die Sprache über ihre Adresse fest (`/` deutsch, `/en` englisch) – damit
+ * Die Startseiten legen die Sprache über ihre Adresse fest (`/` englisch, `/de` deutsch) – damit
  * Suchmaschinen beide Versionen sauber getrennt sehen. Überall sonst gilt die eigene Wahl bzw.
  * die Browsersprache.
  */
@@ -35,7 +35,7 @@ interface LanguageValue {
   t: Dictionary;
   /** Übersetzt einen Fehlercode vom Server. */
   err: (code: string) => string;
-  /** Startseite in der aktuellen Sprache (`/` bzw. `/en`). */
+  /** Startseite in der aktuellen Sprache (`/` bzw. `/de`). */
   home: string;
 }
 

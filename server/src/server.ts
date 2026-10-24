@@ -62,8 +62,11 @@ if (existsSync(dist)) {
     res.setHeader("X-Robots-Tag", "noindex");
     next();
   });
-  // Englische Startseite: eigene Adresse mit eigenem Titel und Text (für Suchmaschinen).
-  app.get("/en", (_req, res) => res.sendFile(path.join(dist, "en", "index.html")));
+  // Deutsche Startseite: eigene Adresse mit eigenem Titel und Text (für Suchmaschinen).
+  // Die englische ist die Hauptseite unter „/“.
+  app.get("/de", (_req, res) => res.sendFile(path.join(dist, "de", "index.html")));
+  // Früher lag Englisch unter /en: dauerhaft auf die Hauptseite umleiten (alte Links, Google).
+  app.get("/en", (_req, res) => res.redirect(301, "/"));
   // Datenschutz: nicht in die Suchergebnisse. Die Adresse liefert (wie jede Unterseite) erst das
   // HTML der Startseite aus – Google hielt sie sonst für die Startseite und zeigte sie bei der
   // Suche nach „Cozynyte“ an. Links von dort zählen weiter (follow).

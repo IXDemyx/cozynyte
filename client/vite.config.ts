@@ -14,7 +14,7 @@ function localize(html: string, lang: SeoLanguage): string {
 }
 
 /**
- * Suchmaschinen: Jede Sprache bekommt ihre eigene Startseite – `/` deutsch, `/en` englisch – mit
+ * Suchmaschinen: Jede Sprache bekommt ihre eigene Startseite – `/` englisch, `/de` deutsch – mit
  * eigenem Titel, Beschreibung, hreflang-Verweisen, Vorab-HTML und strukturierten Daten.
  * React ersetzt das Vorab-HTML beim Start. Quelle der Texte ist src/lib/seo.ts.
  */
@@ -30,30 +30,30 @@ function seo(): Plugin {
       order: "pre",
       handler(html) {
         transformed = true;
-        return localize(html, "de");
+        return localize(html, "en");
       },
     },
-    // Nach dem Build: dieselbe Seite (mit den fertigen Asset-Links) noch einmal auf Englisch.
+    // Nach dem Build: dieselbe Seite (mit den fertigen Asset-Links) noch einmal auf Deutsch.
     closeBundle() {
       if (!transformed) return;
       const built = readFileSync(path.join(outDir, "index.html"), "utf8");
-      mkdirSync(path.join(outDir, "en"), { recursive: true });
-      writeFileSync(path.join(outDir, "en", "index.html"), toEnglish(built));
+      mkdirSync(path.join(outDir, "de"), { recursive: true });
+      writeFileSync(path.join(outDir, "de", "index.html"), toGerman(built));
     },
   };
 }
 
-/** Die fertige deutsche index.html in die englische umbauen (Kopf und Vorab-HTML tauschen). */
-function toEnglish(built: string): string {
-  const head = headHtml("de");
-  const body = staticHomeHtml("de");
+/** Die fertige englische index.html in die deutsche umbauen (Kopf und Vorab-HTML tauschen). */
+function toGerman(built: string): string {
+  const head = headHtml("en");
+  const body = staticHomeHtml("en");
   if (!built.includes(head) || !built.includes(body)) {
-    throw new Error("seo-prerender: deutsche Startseite nicht gefunden – englische Version fehlt");
+    throw new Error("seo-prerender: englische Startseite nicht gefunden – deutsche Version fehlt");
   }
   return built
-    .replace(/<html lang="de">/, '<html lang="en">')
-    .replace(head, () => headHtml("en"))
-    .replace(body, () => staticHomeHtml("en"));
+    .replace(/<html lang="en">/, '<html lang="de">')
+    .replace(head, () => headHtml("de"))
+    .replace(body, () => staticHomeHtml("de"));
 }
 
 export default defineConfig({

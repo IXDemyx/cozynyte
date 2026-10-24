@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { useTheme } from "./hooks/useTheme";
@@ -41,7 +41,9 @@ function App() {
         <main className={`mx-auto w-full ${width} flex-1 px-4 pb-16 pt-8 sm:px-6`}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/en" element={<Home />} />
+            <Route path="/de" element={<Home />} />
+            {/* Früher lag die englische Seite unter /en – heute ist sie die Hauptseite. */}
+            <Route path="/en" element={<Navigate to="/" replace />} />
             <Route path="/r/:code" element={<Room />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="*" element={<Home />} />

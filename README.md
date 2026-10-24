@@ -62,7 +62,7 @@ everyone right away.
 - Sound effects for every game, generated in the browser, with a volume control
 - German and English UI, light and dark mode, three designs to switch between: Cozy (Catppuccin blue, the
   default), Cozy Evening (warm candlelight tones) and Classic (orange/black, like the portfolio)
-- Start page in two language versions (`/` German, `/en` English) for search engines
+- Start page in two language versions (`/` English, `/de` German) for search engines
 - Optional "Buy me a coffee" link in the footer and on the final screen
 
 ## Getting started
@@ -149,8 +149,8 @@ still have to guess them.
 
 `client/src/lib/seo.ts` holds title, description, intro, "How it works" and FAQ for both
 languages. The start page shows them, and a small Vite plugin (`client/vite.config.ts`) writes
-them into the built HTML at build time: `dist/index.html` (German) and `dist/en/index.html`
-(English), each with its own title, description, `hreflang` links, structured data (JSON-LD)
+them into the built HTML at build time: `dist/index.html` (English) and `dist/de/index.html`
+(German), each with its own title, description, `hreflang` links, structured data (JSON-LD)
 and pre-rendered text. React replaces that text when it starts. `client/public/sitemap.xml`
 lists both pages; room pages (`/r/…`) are sent with `X-Robots-Tag: noindex`.
 
