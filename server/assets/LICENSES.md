@@ -29,3 +29,13 @@ Erzeugt aus [Natural Earth](https://www.naturalearthdata.com/) (Admin 0 – Coun
 gemeinfrei (public domain). Jedes Land ist flächentreu (Lambert azimutal) um seine Mitte
 projiziert, vereinfacht und auf 1000 Einheiten skaliert. Weit entfernte Überseegebiete sind
 weggelassen, damit die bekannte Form gut zu erkennen ist.
+
+## Flagge des Tages (`flag-grids.json`, `flag-centers.json`)
+
+`flag-grids.json` ist aus den Flaggen oben berechnet (`scripts/flag-grids.mjs`): jede Flagge auf
+64 × 48 Zellen, je Zelle die häufigste Farbe aus einer kleinen Palette.
+
+`flag-centers.json`: Mittelpunkt jedes Landes (Breite, Länge) für Entfernung und Richtung – die
+Beschriftungspunkte (`LABEL_Y`, `LABEL_X`) aus [Natural Earth](https://www.naturalearthdata.com/)
+(Admin 0 – Countries, 1:50m), gemeinfrei (public domain). Sie liegen im Kernland, nicht auf
+Überseegebieten.

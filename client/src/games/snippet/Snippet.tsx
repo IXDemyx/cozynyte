@@ -23,8 +23,11 @@ import {
 } from "../../../../shared/snippet";
 import Button from "../../components/Button";
 import ErrorText from "../../components/ErrorText";
+import { ArchiveList, berlinZone, Countdown, GlobalResult } from "../../components/DailyParts";
+import NextDaily from "../../components/NextDaily";
 import VolumeControl from "../../components/VolumeControl";
 import { card, eyebrow, input } from "../../components/ui";
+import { dayResults } from "../dailyStatus";
 import { useLanguage } from "../../lib/i18n";
 import { GAME_PATH } from "../../lib/seo";
 import { playEffect } from "../../lib/sounds";
@@ -88,18 +91,6 @@ type Mode = "daily" | "endless";
 /** Endlos-Modus anbieten? Vorerst aus – dann gibt es nur den Song des Tages (Code bleibt drin). */
 const ENDLESS = false;
 
-/** Zeitzone des Tageswechsels (Berlin) als Kürzel, je nach Jahreszeit: MEZ/MESZ bzw. CET/CEST. */
-function berlinZone(language: string): string {
-  return (
-    new Intl.DateTimeFormat(language === "de" ? "de-DE" : "en-GB", {
-      timeZone: "Europe/Berlin",
-      timeZoneName: "short",
-    })
-      .formatToParts(new Date())
-      .find((part) => part.type === "timeZoneName")?.value ?? ""
-  );
-}
-
 /** Zuletzt gewählter Modus; beim ersten Besuch der Song des Tages. */
 function savedMode(): Mode {
   if (!ENDLESS) return "daily";
@@ -117,164 +108,6 @@ function savedCategory(): string {
   } catch {
     return "surprise";
   }
-}
-
-/** Zeit bis zum nächsten Song des Tages (h:mm:ss), danach ein Knopf zum Laden. */
-function Countdown({ at, onReady }: { at: number; onReady: () => void }) {
-  const { t } = useLanguage();
-  const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const left = Math.max(0, Math.ceil((at - now) / 1000));
-  if (!left) {
-    return (
-      <button
-        type="button"
-        onClick={onReady}
-        className="text-sm font-semibold text-(--accent) transition hover:text-(--accent-hover)"
-      >
-        {t.snippet.dailyReady}
-      </button>
-    );
-  }
-  const two = (n: number) => String(n).padStart(2, "0");
-  const time = `${Math.floor(left / 3600)}:${two(Math.floor(left / 60) % 60)}:${two(left % 60)}`;
-  return (
-    <p className="text-sm text-(--text-secondary)">
-      {t.snippet.nextDaily}{" "}
-      <span className="font-mono font-bold tabular-nums text-(--text-primary)">{time}</span>
-    </p>
-  );
-}
-
-/**
- * Archiv: alle bisherigen Songs des Tages, neueste zuerst. Gespielte Tage zeigen das Ergebnis
- * (Versuche bzw. ✕), angefangene „…“, offene das Datum.
- */
-function ArchiveList({
-  today,
-  current,
-  dayLabel,
-  onPick,
-}: {
-  today: number;
-  current: number;
-  dayLabel: (date: string) => string;
-  onPick: (number: number) => void;
-}) {
-  const { t } = useLanguage();
-  const days = loadDays();
-  return (
-    <div className="mt-4 rounded-xl border border-slate-200 p-3 dark:border-white/10">
-      <p className="text-xs text-(--text-secondary)">{t.snippet.archiveHint}</p>
-      <ol className="mt-2 grid max-h-56 grid-cols-[repeat(auto-fill,minmax(4.25rem,1fr))] gap-1.5 overflow-y-auto">
-        {Array.from({ length: today }, (_, i) => today - i).map((number) => {
-          const date = dailyDateOf(number);
-          const day = days[date];
-          const last = day?.attempts.at(-1);
-          const status = day?.solution
-            ? last?.result === "right"
-              ? "won"
-              : "lost"
-            : day?.attempts.length
-              ? "open"
-              : "new";
-          return (
-            <li key={number}>
-              <button
-                type="button"
-                aria-current={number === current || undefined}
-                onClick={() => onPick(number)}
-                className={`flex w-full flex-col items-center rounded-lg border px-1 py-1.5 transition hover:border-(--accent) ${
-                  number === current
-                    ? "border-(--accent) bg-(--accent-soft)"
-                    : "border-transparent bg-slate-100 dark:bg-white/5"
-                }`}
-              >
-                <span className="font-mono text-xs font-bold">#{number}</span>
-                <span
-                  className={`text-[11px] ${
-                    status === "won"
-                      ? "font-bold text-(--success)"
-                      : status === "lost"
-                        ? "font-bold text-red-600 dark:text-red-400"
-                        : "text-(--text-secondary)"
-                  }`}
-                >
-                  {status === "won"
-                    ? `${day?.attempts.length}/${SNIPPET_STAGES.length}`
-                    : status === "lost"
-                      ? "✕"
-                      : status === "open"
-                        ? "…"
-                        : number === today
-                          ? t.snippet.todayShort
-                          : dayLabel(date)}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-    </div>
-  );
-}
-
-/**
- * Song des Tages: wie alle an dem Tag abgeschnitten haben – Anteil je Stufe, die eigene markiert.
- * `mine`: eigene Stufe (SNIPPET_STAGES.length = nicht erraten). `alone`: das eigene Ergebnis ist
- * mitgezählt (heute), ein einzelnes Ergebnis ist dann das eigene.
- */
-function GlobalResult({
-  global,
-  mine,
-  alone,
-  sec,
-}: {
-  global: SnippetGlobal;
-  mine: number;
-  alone: boolean;
-  sec: (s: number) => string;
-}) {
-  const { t, language } = useLanguage();
-  const values = [...global.byStage, global.lost];
-  const played = values.reduce((sum, n) => sum + n, 0);
-  const pct = (n: number) => (played ? Math.round((n / played) * 100) : 0);
-  const top = Math.max(1, ...values);
-  const note =
-    played <= (alone ? 1 : 0)
-      ? t.snippet.globalEmpty
-      : mine < SNIPPET_STAGES.length
-        ? t.snippet.globalSame(pct(values[mine]), sec(SNIPPET_STAGES[mine]))
-        : t.snippet.globalLost(pct(values[mine]));
-  return (
-    <div className="order-2 rounded-lg bg-slate-100 px-3 py-2.5 lg:order-none dark:bg-white/5">
-      <p className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
-        <span className="font-semibold">{note}</span>
-        <span className="text-xs text-(--text-secondary)">{t.snippet.globalTitle(played)}</span>
-      </p>
-      {played > 0 && (
-        <div className="mt-2 grid grid-cols-8 gap-1 text-center font-mono text-[10px] tabular-nums text-(--text-secondary)">
-          {values.map((value, i) => (
-            <div key={i} className="flex flex-col items-center gap-0.5">
-              <span className={i === mine ? "font-bold text-(--accent)" : ""}>{pct(value)} %</span>
-              <div className="flex h-10 w-full items-end">
-                <div
-                  className={`w-full rounded-sm ${i === mine ? "bg-(--accent)" : "bg-slate-300 dark:bg-white/15"}`}
-                  style={{ height: `${Math.max(4, (value / top) * 100)}%` }}
-                />
-              </div>
-              <span className={i === mine ? "font-bold text-(--accent)" : ""}>
-                {i < SNIPPET_STAGES.length ? SNIPPET_STAGES[i].toLocaleString(language) : "✕"}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
 
 /** Füllt die Stufe, solange der Ausschnitt läuft. */
@@ -767,7 +600,11 @@ function Snippet() {
         <ArchiveList
           today={daily.today}
           current={daily.number}
+          max={SNIPPET_STAGES.length}
+          dateOf={dailyDateOf}
+          result={dayResults("snippet")}
           dayLabel={dayLabel}
+          text={t.snippet}
           onPick={(number) => void startDaily(number)}
         />
       )}
@@ -998,7 +835,9 @@ function Snippet() {
                 global={global}
                 mine={won ? attempts.length - 1 : SNIPPET_STAGES.length}
                 alone={!archive}
-                sec={sec}
+                label={(i) => SNIPPET_STAGES[i].toLocaleString(language)}
+                same={(pct) => t.snippet.globalSame(pct, sec(SNIPPET_STAGES[attempts.length - 1]))}
+                text={t.snippet}
               />
             )}
 
@@ -1021,7 +860,12 @@ function Snippet() {
             </div>
             {mode === "daily" && daily && (
               <div className="order-7 lg:order-none">
-                <Countdown at={daily.nextAt} onReady={() => void startDaily()} />
+                <Countdown at={daily.nextAt} onReady={() => void startDaily()} text={t.snippet} />
+              </div>
+            )}
+            {mode === "daily" && daily && !archive && (
+              <div className="order-7 lg:order-none">
+                <NextDaily current="snippet" />
               </div>
             )}
             <ErrorText code={error} className="order-8 mt-0 lg:order-none" />

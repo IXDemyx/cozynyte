@@ -144,4 +144,36 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://cozynyte.com/flag-of-the-day</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/flag-of-the-day" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/flagge-des-tages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/flag-of-the-day" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/flagge-des-tages</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/flag-of-the-day" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/flagge-des-tages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/flag-of-the-day" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/shape-of-the-day</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/shape-of-the-day" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/umriss-des-tages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/shape-of-the-day" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/umriss-des-tages</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/shape-of-the-day" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/umriss-des-tages" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/shape-of-the-day" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

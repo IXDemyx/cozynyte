@@ -7,7 +7,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Server } from "socket.io";
 import { geoImage } from "./games/geo";
+import { flagRouter } from "./handlers/flag";
 import { snippetRouter } from "./handlers/snippet";
+import { outlineSvg } from "./outlines";
 import { rooms } from "./state";
 
 const app = express();
@@ -23,23 +25,13 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/snippet", snippetRouter);
 
+/* ---------- Flagge und Umriss des Tages (Einzelspieler, ohne Raum) ---------- */
+
+app.use("/api/flag", flagRouter);
+
 /* ---------- Länder-Quiz: Flaggen und Umrisse ---------- */
 
 const assets = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../assets");
-let outlines: Record<string, { w: number; h: number; d: string }> | undefined;
-
-/** Umriss als fertiges SVG (Catppuccin-Blau mit dunkler Kante – passt zu hellem und dunklem Modus). */
-function outlineSvg(code: string): string | null {
-  outlines ??= JSON.parse(readFileSync(path.join(assets, "outlines.json"), "utf8"));
-  const shape = outlines?.[code];
-  if (!shape) return null;
-  const pad = 30;
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-pad} ${-pad} ${shape.w + 2 * pad} ` +
-    `${shape.h + 2 * pad}"><path d="${shape.d}" fill="#89b4fa" stroke="#1e66f5" ` +
-    `stroke-width="4" stroke-linejoin="round" fill-rule="evenodd"/></svg>`
-  );
-}
 
 // Bild der laufenden Frage. Die Adresse verrät das Land nicht (zufällige Kennung der Frage).
 app.get("/quiz-img/:code/:qid/:type", (req, res) => {

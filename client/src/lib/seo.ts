@@ -127,6 +127,16 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         page: "snippet",
         text: "Für eine Person: Erkenne den Song an 0,1 Sekunden. Nach jedem Fehlversuch hörst du mehr. Jeden Tag ein Song des Tages.",
       },
+      {
+        name: "Flagge des Tages",
+        page: "flag",
+        text: "Für eine Person: Jeden Tag eine verdeckte Flagge. Jeder Tipp deckt auf, wo die Farben passen, dazu Entfernung und Richtung.",
+      },
+      {
+        name: "Umriss des Tages",
+        page: "outline",
+        text: "Für eine Person: Jeden Tag ein Land, nur am Umriss zu erkennen. Jeder Tipp zeigt Entfernung und Richtung.",
+      },
     ],
     faqTitle: "Häufige Fragen",
     faq: [
@@ -140,7 +150,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       },
       {
         q: "Wie viele können mitspielen?",
-        a: "Bis zu 16 Spieler pro Raum. Die meisten Spiele brauchen mindestens zwei, Kniffel geht auch allein und Song-Schnipsel ist für eine Person.",
+        a: "Bis zu 16 Spieler pro Raum. Die meisten Spiele brauchen mindestens zwei, Kniffel geht auch allein, Song-Schnipsel, Flagge und Umriss des Tages sind für eine Person.",
       },
       {
         q: "Können wir auch über Discord oder Zoom spielen?",
@@ -217,6 +227,16 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         page: "snippet",
         text: "For one player: name the song from 0.1 seconds. Every wrong guess plays a little more. A new song of the day, every day.",
       },
+      {
+        name: "Flag of the Day",
+        page: "flag",
+        text: "For one player: a hidden flag every day. Every guess reveals where the colours match, plus distance and direction.",
+      },
+      {
+        name: "Shape of the Day",
+        page: "outline",
+        text: "For one player: a country a day, shown only by its outline. Every guess shows distance and direction.",
+      },
     ],
     faqTitle: "FAQ",
     faq: [
@@ -227,7 +247,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       },
       {
         q: "How many people can play?",
-        a: "Up to 16 players per room. Most games need at least two, Yahtzee also works solo and Song Snippet is for one player.",
+        a: "Up to 16 players per room. Most games need at least two, Yahtzee also works solo, Song Snippet, Flag of the Day and Shape of the Day are for one player.",
       },
       {
         q: "Can we play over Discord or Zoom?",

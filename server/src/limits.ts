@@ -1,6 +1,6 @@
 /**
  * Einfache Rate-Limits gegen Scripts: Raumcodes durchprobieren, massenhaft Räume erstellen und
- * Song-Schnipsel (ohne Raum, daher nur pro IP) mit Anfragen fluten.
+ * Song-Schnipsel bzw. Flagge und Umriss des Tages (ohne Raum, daher nur pro IP) mit Anfragen fluten.
  * Gezählt wird pro IP-Adresse – hinter dem Cloudflare Tunnel steht die echte Adresse im Header
  * cf-connecting-ip, sonst gilt die Adresse der Verbindung.
  */
@@ -17,6 +17,8 @@ const LIMITS = {
   snippetNew: { max: 40, windowMs: 10 * 60_000 },
   snippetSearch: { max: 20, windowMs: 30_000 },
   snippetGuess: { max: 60, windowMs: 60_000 },
+  /** Flagge des Tages: Tipp, Aufgeben oder Laden eines Tages. */
+  flagPlay: { max: 60, windowMs: 60_000 },
 } as const;
 
 type Kind = keyof typeof LIMITS;

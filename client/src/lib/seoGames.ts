@@ -11,7 +11,16 @@ import type { SeoLanguage } from "./seo";
  * Englisch ohne Präfix, Deutsch unter `/de` – wie bei den Startseiten.
  */
 export type GamePageId =
-  "song" | "year" | "timeline" | "slf" | "kniffel" | "draw" | "geo" | "snippet";
+  | "song"
+  | "year"
+  | "timeline"
+  | "slf"
+  | "kniffel"
+  | "draw"
+  | "geo"
+  | "snippet"
+  | "flag"
+  | "outline";
 
 export const GAME_PATH: Record<GamePageId, Record<SeoLanguage, string>> = {
   song: { en: "/guess-the-song", de: "/de/song-erraten" },
@@ -22,6 +31,8 @@ export const GAME_PATH: Record<GamePageId, Record<SeoLanguage, string>> = {
   draw: { en: "/draw-and-guess", de: "/de/montagsmaler" },
   geo: { en: "/country-quiz", de: "/de/laender-quiz" },
   snippet: { en: "/song-snippet", de: "/de/song-schnipsel" },
+  flag: { en: "/flag-of-the-day", de: "/de/flagge-des-tages" },
+  outline: { en: "/shape-of-the-day", de: "/de/umriss-des-tages" },
 };
 
 export interface GamePageText {
@@ -1422,6 +1433,378 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
         {
           q: "Can we play it together?",
           a: "Song Snippet is for one player. For groups there's Guess the Song, Guess the Year and Song Timeline.",
+        },
+        FREE.en,
+      ],
+    },
+  },
+  flag: {
+    de: {
+      metaTitle: "Flagge des Tages: Flaggenrätsel mit Farben | Cozynyte",
+      metaDescription:
+        "Tägliches Flaggenrätsel für eine Person: Jeder Tipp deckt auf, wo die Farben passen. Dazu Entfernung und Richtung zum gesuchten Land. Kostenlos im Browser, ohne Anmeldung.",
+      ogTitle: "Flagge des Tages – das tägliche Flaggenrätsel",
+      ogDescription: "Eine verdeckte Flagge, sieben Tipps. Kostenlos im Browser.",
+      name: "Flagge des Tages",
+      title: "Flagge des Tages: Welches Land ist es?",
+      titleAccent: "Flagge des Tages",
+      intro:
+        "Die Flagge ist verdeckt. Jeder Tipp legt die Flagge des getippten Landes darüber: Wo an derselben Stelle dieselbe Farbe ist, wird die gesuchte sichtbar. Dazu siehst du Entfernung und Richtung. Jeden Tag eine neue Flagge, für alle dieselbe.",
+      facts: ["1 Spieler", "7 Versuche", "195 Länder", "Flagge des Tages", "Archiv"],
+      example: {
+        title: "Beispielrunde",
+        round: "Tipp 3",
+        rows: [
+          { label: "Portugal", value: "7.300 km ↙ · 64 %" },
+          { label: "Kolumbien", value: "2.800 km ↘ · 86 %" },
+          { label: "Brasilien", value: "Richtig" },
+        ],
+        note: "Die Prozent zeigen, wie nah das getippte Land am gesuchten liegt.",
+      },
+      steps: [
+        {
+          title: "Land tippen",
+          text: "Such ein Land und wähl es aus der Liste. Am Anfang ist die Flagge ganz verdeckt.",
+        },
+        {
+          title: "Farben aufdecken",
+          text: "Wo die Flagge deines Tipps dieselbe Farbe hat wie die gesuchte, wird diese sichtbar. Pfeil und Entfernung zeigen, wo das Land liegt.",
+        },
+        {
+          title: "Auflösung",
+          text: "Nach dem Treffer, dem siebten Tipp oder dem Aufgeben siehst du die Flagge, das Land und wie alle anderen abgeschnitten haben.",
+        },
+      ],
+      rules: [
+        {
+          title: "Farbvergleich",
+          text: "Verglichen wird Stelle für Stelle auf einem feinen Raster. Ähnliche Töne (z. B. zwei Rot) zählen als dieselbe Farbe.",
+        },
+        {
+          title: "Entfernung und Richtung",
+          text: "Gemessen zwischen den Mittelpunkten der Länder. 100 % wäre das gesuchte Land, 0 % die andere Seite der Erde.",
+        },
+        {
+          title: "Sieben Tipps",
+          text: "Jedes Land nur einmal, Überspringen gibt es nicht. Aufgeben zeigt die Lösung sofort.",
+        },
+        {
+          title: "Flagge des Tages",
+          text: "Jeden Tag ein Land, für alle dasselbe. Neue Flagge um 0 Uhr MEZ (im Sommer MESZ). Die Tagesserie zählt Tage am Stück, an denen du sie erraten hast.",
+        },
+        {
+          title: "Archiv und Vergleich",
+          text: "Frühere Flaggen kannst du im Archiv nachspielen (zählt nicht für die Tagesserie). Nach der Auflösung siehst du, beim wievielten Tipp alle anderen sie erkannt haben.",
+        },
+        {
+          title: "Hauptstadt-Bonus",
+          text: "Nach der Auflösung gibt es eine Bonusfrage: die Hauptstadt des Landes, vier zur Auswahl, ein Versuch.",
+        },
+      ],
+      scoreTitle: "Ergebnis und Serie",
+      scores: [
+        { label: "Ergebnis", value: "Versuche, z. B. 3/7" },
+        { label: "Nicht erraten", value: "X/7" },
+        { label: "Tagesserie", value: "Tage am Stück erraten" },
+        { label: "Vergleich", value: "Anteil aller Spieler je Versuch" },
+        { label: "Archiv", value: "zählt nicht für die Serie" },
+      ],
+      faq: [
+        {
+          q: "Welche Länder kommen vor?",
+          a: "Alle 193 UN-Mitglieder, dazu Vatikanstadt und Palästina – bekannte und weniger bekannte im Wechsel.",
+        },
+        {
+          q: "Wann gibt es die nächste Flagge des Tages?",
+          a: "Um 0 Uhr MEZ, im Sommer MESZ. Bis dahin kannst du im Archiv frühere Tage nachspielen.",
+        },
+        {
+          q: "Kann ich auf Englisch tippen?",
+          a: "Ja. Die Suche kennt deutsche und englische Ländernamen.",
+        },
+        {
+          q: "Braucht man ein Konto?",
+          a: "Nein. Die Statistik wird nur in deinem Browser gespeichert.",
+        },
+        {
+          q: "Kann man das auch zusammen spielen?",
+          a: "Die Flagge des Tages ist für eine Person. Für mehrere gibt es das Länder-Quiz mit Flaggen, Umrissen und Hauptstädten.",
+        },
+        FREE.de,
+      ],
+    },
+    en: {
+      metaTitle: "Flag of the Day: daily flag puzzle with colours | Cozynyte",
+      metaDescription:
+        "Daily flag puzzle for one: every guess reveals where the colours match, plus distance and direction to the hidden country. Free in your browser, no sign-up.",
+      ogTitle: "Flag of the Day – the daily flag puzzle",
+      ogDescription: "One hidden flag, seven guesses. Free in your browser.",
+      name: "Flag of the Day",
+      title: "Flag of the Day: which country is it?",
+      titleAccent: "Flag of the Day",
+      intro:
+        "The flag is hidden. Every guess lays the flag of your country over it: wherever the colour matches in the same spot, the hidden flag shows. You also see distance and direction. A new flag every day, the same for everyone.",
+      facts: ["1 player", "7 attempts", "195 countries", "Flag of the day", "Archive"],
+      example: {
+        title: "Example round",
+        round: "Guess 3",
+        rows: [
+          { label: "Portugal", value: "7,300 km ↙ · 64 %" },
+          { label: "Colombia", value: "2,800 km ↘ · 86 %" },
+          { label: "Brazil", value: "Correct" },
+        ],
+        note: "The percentage shows how close your guess is to the hidden country.",
+      },
+      steps: [
+        {
+          title: "Guess a country",
+          text: "Search for a country and pick it from the list. At the start the flag is completely hidden.",
+        },
+        {
+          title: "Uncover colours",
+          text: "Wherever your guess has the same colour as the hidden flag, that part shows. Arrow and distance point to the country.",
+        },
+        {
+          title: "The answer",
+          text: "After a correct guess, the seventh guess or giving up you see the flag, the country and how everyone else did.",
+        },
+      ],
+      rules: [
+        {
+          title: "Colour match",
+          text: "Compared spot by spot on a fine grid. Similar shades (two reds, say) count as the same colour.",
+        },
+        {
+          title: "Distance and direction",
+          text: "Measured between the centres of the countries. 100 % would be the hidden country, 0 % the other side of the earth.",
+        },
+        {
+          title: "Seven guesses",
+          text: "Each country only once, no skipping. Giving up shows the answer straight away.",
+        },
+        {
+          title: "Flag of the day",
+          text: "One country a day, the same for everyone. A new flag at midnight CET (CEST in summer). The daily streak counts the days in a row you got it.",
+        },
+        {
+          title: "Archive and comparison",
+          text: "Replay earlier flags in the archive (doesn't count towards your daily streak). After the answer you see on which guess everyone else got it.",
+        },
+        {
+          title: "Capital bonus",
+          text: "After the answer there's a bonus question: the country's capital, four to choose from, one try.",
+        },
+      ],
+      scoreTitle: "Result and streak",
+      scores: [
+        { label: "Result", value: "attempts, e.g. 3/7" },
+        { label: "Not guessed", value: "X/7" },
+        { label: "Daily streak", value: "days in a row guessed" },
+        { label: "Comparison", value: "share of all players per attempt" },
+        { label: "Archive", value: "doesn't count for the streak" },
+      ],
+      faq: [
+        {
+          q: "Which countries are included?",
+          a: "All 193 UN members plus Vatican City and Palestine – well-known and lesser-known ones taking turns.",
+        },
+        {
+          q: "When is the next flag of the day?",
+          a: "At midnight CET, CEST in summer (11 pm UK time). Until then you can replay earlier days in the archive.",
+        },
+        {
+          q: "Can I type country names in German?",
+          a: "Yes. The search knows English and German names.",
+        },
+        {
+          q: "Do I need an account?",
+          a: "No. Your stats are only stored in your browser.",
+        },
+        {
+          q: "Can we play it together?",
+          a: "Flag of the Day is for one player. For groups there's the Country Quiz with flags, shapes and capitals.",
+        },
+        FREE.en,
+      ],
+    },
+  },
+  outline: {
+    de: {
+      metaTitle: "Umriss des Tages: Welches Land ist das? | Cozynyte",
+      metaDescription:
+        "Tägliches Länderrätsel für eine Person: Erkenne das Land an seinem Umriss. Jeder Tipp zeigt Entfernung und Richtung. Kostenlos im Browser, ohne Anmeldung.",
+      ogTitle: "Umriss des Tages – das tägliche Länderrätsel",
+      ogDescription: "Ein Landesumriss, sieben Tipps. Kostenlos im Browser.",
+      name: "Umriss des Tages",
+      title: "Umriss des Tages: Welches Land ist es?",
+      titleAccent: "Umriss des Tages",
+      intro:
+        "Du siehst den Umriss eines Landes. Tipp, welches es ist: Zu jedem falschen Tipp siehst du, wie weit und in welcher Richtung das gesuchte Land liegt. Jeden Tag ein neuer Umriss, für alle derselbe.",
+      facts: ["1 Spieler", "7 Versuche", "165 Länder", "Umriss des Tages", "Archiv"],
+      example: {
+        title: "Beispielrunde",
+        round: "Tipp 3",
+        rows: [
+          { label: "Italien", value: "1.500 km ← · 93 %" },
+          { label: "Frankreich", value: "900 km ↙ · 96 %" },
+          { label: "Spanien", value: "Richtig" },
+        ],
+        note: "Die Prozent zeigen, wie nah das getippte Land am gesuchten liegt.",
+      },
+      steps: [
+        {
+          title: "Umriss ansehen",
+          text: "Der Umriss ist von Anfang an ganz zu sehen, ohne Nachbarländer und ohne Maßstab.",
+        },
+        {
+          title: "Land tippen",
+          text: "Such ein Land und wähl es aus der Liste. Pfeil und Entfernung zeigen, wo das gesuchte Land liegt.",
+        },
+        {
+          title: "Auflösung",
+          text: "Nach dem Treffer, dem siebten Tipp oder dem Aufgeben siehst du das Land, wie alle anderen abgeschnitten haben und die Bonusfrage zur Hauptstadt.",
+        },
+      ],
+      rules: [
+        {
+          title: "Entfernung und Richtung",
+          text: "Gemessen zwischen den Mittelpunkten der Länder. 100 % wäre das gesuchte Land, 0 % die andere Seite der Erde.",
+        },
+        {
+          title: "Sieben Tipps",
+          text: "Jedes Land nur einmal, Überspringen gibt es nicht. Aufgeben zeigt die Lösung sofort.",
+        },
+        {
+          title: "Umriss des Tages",
+          text: "Jeden Tag ein Land, für alle dasselbe. Neuer Umriss um 0 Uhr MEZ (im Sommer MESZ). Die Tagesserie zählt Tage am Stück, an denen du es erraten hast.",
+        },
+        {
+          title: "Archiv und Vergleich",
+          text: "Frühere Umrisse kannst du im Archiv nachspielen (zählt nicht für die Tagesserie). Nach der Auflösung siehst du, beim wievielten Tipp alle anderen das Land erkannt haben.",
+        },
+        {
+          title: "Hauptstadt-Bonus",
+          text: "Nach der Auflösung gibt es eine Bonusfrage: die Hauptstadt des Landes, vier zur Auswahl, ein Versuch.",
+        },
+      ],
+      scoreTitle: "Ergebnis und Serie",
+      scores: [
+        { label: "Ergebnis", value: "Versuche, z. B. 3/7" },
+        { label: "Nicht erraten", value: "X/7" },
+        { label: "Tagesserie", value: "Tage am Stück erraten" },
+        { label: "Vergleich", value: "Anteil aller Spieler je Versuch" },
+        { label: "Archiv", value: "zählt nicht für die Serie" },
+      ],
+      faq: [
+        {
+          q: "Welche Länder kommen vor?",
+          a: "Alle Länder, deren Umriss man erkennen kann – sehr kleine Inselstaaten und Stadtstaaten nicht. Tippen kannst du jedes Land.",
+        },
+        {
+          q: "Wann gibt es den nächsten Umriss des Tages?",
+          a: "Um 0 Uhr MEZ, im Sommer MESZ. Bis dahin kannst du im Archiv frühere Tage nachspielen.",
+        },
+        {
+          q: "Kann ich auf Englisch tippen?",
+          a: "Ja. Die Suche kennt deutsche und englische Ländernamen.",
+        },
+        {
+          q: "Braucht man ein Konto?",
+          a: "Nein. Die Statistik wird nur in deinem Browser gespeichert.",
+        },
+        {
+          q: "Kann man das auch zusammen spielen?",
+          a: "Der Umriss des Tages ist für eine Person. Für mehrere gibt es das Länder-Quiz mit Flaggen, Umrissen und Hauptstädten.",
+        },
+        FREE.de,
+      ],
+    },
+    en: {
+      metaTitle: "Shape of the Day: which country is it? | Cozynyte",
+      metaDescription:
+        "Daily country puzzle for one: name the country from its shape. Every guess shows distance and direction. Free in your browser, no sign-up.",
+      ogTitle: "Shape of the Day – the daily country puzzle",
+      ogDescription: "One country shape, seven guesses. Free in your browser.",
+      name: "Shape of the Day",
+      title: "Shape of the Day: which country is it?",
+      titleAccent: "Shape of the Day",
+      intro:
+        "You see the outline of a country. Guess which one it is: every wrong guess shows how far away the country is and in which direction. A new shape every day, the same for everyone.",
+      facts: ["1 player", "7 attempts", "165 countries", "Shape of the day", "Archive"],
+      example: {
+        title: "Example round",
+        round: "Guess 3",
+        rows: [
+          { label: "Italy", value: "1,500 km ← · 93 %" },
+          { label: "France", value: "900 km ↙ · 96 %" },
+          { label: "Spain", value: "Correct" },
+        ],
+        note: "The percentage shows how close your guess is to the hidden country.",
+      },
+      steps: [
+        {
+          title: "Look at the shape",
+          text: "The whole outline is visible from the start, without neighbours and without scale.",
+        },
+        {
+          title: "Guess a country",
+          text: "Search for a country and pick it from the list. Arrow and distance point to the hidden country.",
+        },
+        {
+          title: "The answer",
+          text: "After a correct guess, the seventh guess or giving up you see the country, how everyone else did and the capital bonus question.",
+        },
+      ],
+      rules: [
+        {
+          title: "Distance and direction",
+          text: "Measured between the centres of the countries. 100 % would be the hidden country, 0 % the other side of the earth.",
+        },
+        {
+          title: "Seven guesses",
+          text: "Each country only once, no skipping. Giving up shows the answer straight away.",
+        },
+        {
+          title: "Shape of the day",
+          text: "One country a day, the same for everyone. A new shape at midnight CET (CEST in summer). The daily streak counts the days in a row you got it.",
+        },
+        {
+          title: "Archive and comparison",
+          text: "Replay earlier shapes in the archive (doesn't count towards your daily streak). After the answer you see on which guess everyone else got it.",
+        },
+        {
+          title: "Capital bonus",
+          text: "After the answer there's a bonus question: the country's capital, four to choose from, one try.",
+        },
+      ],
+      scoreTitle: "Result and streak",
+      scores: [
+        { label: "Result", value: "attempts, e.g. 3/7" },
+        { label: "Not guessed", value: "X/7" },
+        { label: "Daily streak", value: "days in a row guessed" },
+        { label: "Comparison", value: "share of all players per attempt" },
+        { label: "Archive", value: "doesn't count for the streak" },
+      ],
+      faq: [
+        {
+          q: "Which countries are included?",
+          a: "Every country with a recognisable shape – very small island and city states are left out. You can guess any country.",
+        },
+        {
+          q: "When is the next shape of the day?",
+          a: "At midnight CET, CEST in summer (11 pm UK time). Until then you can replay earlier days in the archive.",
+        },
+        {
+          q: "Can I type country names in German?",
+          a: "Yes. The search knows English and German names.",
+        },
+        {
+          q: "Do I need an account?",
+          a: "No. Your stats are only stored in your browser.",
+        },
+        {
+          q: "Can we play it together?",
+          a: "Shape of the Day is for one player. For groups there's the Country Quiz with flags, shapes and capitals.",
         },
         FREE.en,
       ],

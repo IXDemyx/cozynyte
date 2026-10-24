@@ -121,7 +121,7 @@ export function play(id: string, guess?: Track, ip = ""): SnippetTurn | null {
 }
 
 /** Zeit bis Mitternacht in Berlin – gesucht statt gerechnet, so stimmt es auch bei Zeitumstellung. */
-function untilNextDay(now: number): number {
+export function untilNextDay(now: number): number {
   const today = dailyDate(now);
   let low = now;
   let high = now + 26 * 60 * 60_000;

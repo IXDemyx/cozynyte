@@ -236,3 +236,89 @@ html:is(.cozy, .evening) :is(h1, h2, h3, .font-bold, .font-extrabold) {
   font-family: "Fredoka", "Nunito", sans-serif;
   letter-spacing: 0;
 }
+
+/*
+ * Startseite: eigene Farbe je Bereich (Daily Challenges, Musik, Klassiker, Quiz) – für Überschrift,
+ * Symbol und Kachelschatten. Je Design und Modus passend zu dessen Akzent (gleiche Helligkeit, damit
+ * --on-accent auf dem Symbol lesbar bleibt).
+ */
+.tone-daily {
+  --tone: #ea580c;
+}
+.tone-music {
+  --tone: #db2777;
+}
+.tone-classics {
+  --tone: #0d9488;
+}
+.tone-quiz {
+  --tone: #0284c7;
+}
+.dark .tone-daily {
+  --tone: #f97316;
+}
+.dark .tone-music {
+  --tone: #f472b6;
+}
+.dark .tone-classics {
+  --tone: #2dd4bf;
+}
+.dark .tone-quiz {
+  --tone: #38bdf8;
+}
+/* Cozy: Catppuccin Latte bzw. Mocha (Pfirsich, Mauve, Grün, Blau). */
+html.cozy .tone-daily {
+  --tone: #fe640b;
+}
+html.cozy .tone-music {
+  --tone: #8839ef;
+}
+html.cozy .tone-classics {
+  --tone: #40a02b;
+}
+html.cozy .tone-quiz {
+  --tone: #1e66f5;
+}
+html.cozy.dark .tone-daily {
+  --tone: #fab387;
+}
+html.cozy.dark .tone-music {
+  --tone: #cba6f7;
+}
+html.cozy.dark .tone-classics {
+  --tone: #a6e3a1;
+}
+html.cozy.dark .tone-quiz {
+  --tone: #89b4fa;
+}
+/* Gemütlicher Abend: gedeckte, warme Töne. */
+html.evening .tone-daily {
+  --tone: #a8742c;
+}
+html.evening .tone-music {
+  --tone: #b4646e;
+}
+html.evening .tone-classics {
+  --tone: #5f8a52;
+}
+html.evening .tone-quiz {
+  --tone: #4f7a96;
+}
+html.evening.dark .tone-daily {
+  --tone: #e8c48c;
+}
+html.evening.dark .tone-music {
+  --tone: #e0a3a8;
+}
+html.evening.dark .tone-classics {
+  --tone: #a8c99a;
+}
+html.evening.dark .tone-quiz {
+  --tone: #9dbbd1;
+}
+.tone-daily,
+.tone-music,
+.tone-classics,
+.tone-quiz {
+  --card-pop: color-mix(in srgb, var(--tone) 40%, transparent);
+}

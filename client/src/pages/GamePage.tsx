@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import type { IconType } from "react-icons";
 import { FiArrowRight, FiChevronDown } from "react-icons/fi";
 import {
@@ -6,6 +6,8 @@ import {
   LuCalendarDays,
   LuDice5,
   LuEarth,
+  LuFlag,
+  LuMap,
   LuHeadphones,
   LuHistory,
   LuNotebookPen,
@@ -17,6 +19,7 @@ import type { Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
 import LanguageHint from "../components/LanguageHint";
+import Flag, { Outline } from "../games/flag/Flag";
 import Snippet from "../games/snippet/Snippet";
 import { card, eyebrow, gameCard, input } from "../components/ui";
 import { useOpenRooms } from "../hooks/useOpenRooms";
@@ -35,6 +38,15 @@ const ICONS: Record<GamePageId, IconType> = {
   draw: LuPalette,
   geo: LuEarth,
   snippet: LuAudioWaveform,
+  flag: LuFlag,
+  outline: LuMap,
+};
+
+/** Einzelspieler-Spiele: laufen ohne Raum direkt auf der Spielseite. */
+const SOLO: Partial<Record<GamePageId, ComponentType>> = {
+  snippet: Snippet,
+  flag: Flag,
+  outline: Outline,
 };
 
 /** Name eingeben, dann Raum erstellen oder einem zufälligen öffentlichen Raum beitreten. */
@@ -75,13 +87,14 @@ function RoomStart({ page }: { page: Game }) {
 /**
  * Eigene Seite pro Spiel (für Suchmaschinen): Einstieg zum Sofort-Spielen, Regeln, Punkte und
  * FAQ. Texte aus src/lib/seo.ts – dieselben landen beim Build als Vorab-HTML in der Seite.
- * Song-Schnipsel (Einzelspieler) läuft ohne Raum direkt hier: Überschrift oben, darunter das Spiel
- * über die ganze Breite (statt der Beispielrunde daneben).
+ * Einzelspieler-Spiele (Song-Schnipsel, Flagge und Umriss des Tages) laufen ohne Raum direkt hier: Überschrift
+ * oben, darunter das Spiel über die ganze Breite (statt der Beispielrunde daneben).
  */
 function GamePage({ page }: { page: GamePageId }) {
   const { language, home } = useLanguage();
   const s = GAME_SEO[page][language];
   const Icon = ICONS[page];
+  const Solo = SOLO[page];
 
   // Beim Wechsel aus der App heraus (z. B. von der Startseite) den Titel der Spielseite setzen.
   useEffect(() => {
@@ -108,7 +121,7 @@ function GamePage({ page }: { page: GamePageId }) {
     <div className="animate-in space-y-12">
       <LanguageHint />
 
-      <section className={`grid gap-8 ${page === "snippet" ? "" : "lg:grid-cols-[1.15fr_1fr]"}`}>
+      <section className={`grid gap-8 ${Solo ? "" : "lg:grid-cols-[1.15fr_1fr]"}`}>
         <div>
           <nav className="flex items-center gap-2 text-sm text-(--text-secondary)">
             <Link to={home} className="transition hover:text-(--accent)">
@@ -120,9 +133,7 @@ function GamePage({ page }: { page: GamePageId }) {
           <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
             {title}
           </h1>
-          <p
-            className={`mt-4 text-(--text-secondary) ${page === "snippet" ? "max-w-2xl" : "max-w-xl"}`}
-          >
+          <p className={`mt-4 text-(--text-secondary) ${Solo ? "max-w-2xl" : "max-w-xl"}`}>
             {s.intro}
           </p>
           <ul className="mt-5 flex flex-wrap gap-2 text-xs text-(--text-secondary)">
@@ -136,11 +147,11 @@ function GamePage({ page }: { page: GamePageId }) {
             ))}
           </ul>
 
-          {page !== "snippet" && <RoomStart page={page} />}
+          {!Solo && <RoomStart page={page as Game} />}
         </div>
 
-        {page === "snippet" ? (
-          <Snippet />
+        {Solo ? (
+          <Solo />
         ) : (
           /* Beispielrunde: zeigt auf einen Blick, wie das Spiel aussieht. */
           <figure className={`${gameCard} self-start p-5`}>

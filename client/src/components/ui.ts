@@ -9,4 +9,6 @@ export const gameCard =
 export const input =
   "w-full rounded-lg border border-slate-300 bg-(--bg-primary) px-4 py-3 text-sm text-(--text-primary) outline-none transition placeholder:text-slate-400 focus:border-(--accent) focus:ring-2 focus:ring-(--accent-border) dark:border-white/10 dark:bg-black/30";
 
-export const eyebrow = "font-mono text-xs font-semibold uppercase tracking-widest text-(--accent)";
+/** Kleine Überschrift ohne Farbe – für eigene Farben (z. B. die Bereiche der Startseite). */
+export const eyebrowBase = "font-mono text-xs font-semibold uppercase tracking-widest";
+export const eyebrow = `${eyebrowBase} text-(--accent)`;
