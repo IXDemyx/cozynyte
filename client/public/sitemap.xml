@@ -16,4 +16,116 @@
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://cozynyte.com/guess-the-song</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/guess-the-song" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/song-erraten" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/guess-the-song" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/song-erraten</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/guess-the-song" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/song-erraten" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/guess-the-song" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/guess-the-year</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/guess-the-year" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/jahr-schaetzen" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/guess-the-year" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/jahr-schaetzen</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/guess-the-year" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/jahr-schaetzen" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/guess-the-year" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/song-timeline</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/song-timeline" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/song-zeitleiste" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/song-timeline" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/song-zeitleiste</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/song-timeline" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/song-zeitleiste" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/song-timeline" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/name-place-animal-thing</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/name-place-animal-thing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/stadt-land-fluss" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/name-place-animal-thing" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/stadt-land-fluss</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/name-place-animal-thing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/stadt-land-fluss" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/name-place-animal-thing" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/yahtzee</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/yahtzee" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/kniffel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/yahtzee" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/kniffel</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/yahtzee" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/kniffel" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/yahtzee" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/draw-and-guess</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/draw-and-guess" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/montagsmaler" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/draw-and-guess" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/montagsmaler</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/draw-and-guess" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/montagsmaler" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/draw-and-guess" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/country-quiz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/country-quiz" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/laender-quiz" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/country-quiz" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/laender-quiz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/country-quiz" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/laender-quiz" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/country-quiz" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

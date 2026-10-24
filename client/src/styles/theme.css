@@ -17,8 +17,6 @@
 
   --success: #16a34a;
 
-  /* Hintergrund: feines Punktraster. */
-  --dots: rgba(68, 64, 60, 0.09);
   /* Harte, versetzte Schatten (Knöpfe: dunkleres Orange als Seitenkante, Spielkarten) und weiches
      Leuchten unter Knöpfen. */
   --press: #9a3412;
@@ -48,7 +46,6 @@
 
   --success: #22c55e;
 
-  --dots: rgba(255, 255, 255, 0.08);
   --press: #7c2d12;
   --button-glow: rgba(249, 115, 22, 0.22);
   --card-pop: rgba(249, 115, 22, 0.28);
@@ -94,7 +91,6 @@ html.cozy {
 
   --success: #40a02b;
 
-  --dots: rgba(76, 79, 105, 0.09);
   --press: #1449b3;
   --button-glow: rgba(30, 102, 245, 0.22);
   --card-pop: rgba(23, 146, 153, 0.35);
@@ -136,7 +132,6 @@ html.cozy.dark {
 
   --success: #a6e3a1;
 
-  --dots: rgba(205, 214, 244, 0.06);
   --press: #4f74b8;
   --button-glow: rgba(137, 180, 250, 0.22);
   --card-pop: rgba(148, 226, 213, 0.35);
@@ -178,7 +173,6 @@ html.evening {
 
   --success: #5f8a52;
 
-  --dots: rgba(80, 60, 40, 0.08);
   --press: #6f4b18;
   --button-glow: rgba(168, 116, 44, 0.22);
   --card-pop: rgba(180, 110, 110, 0.3);
@@ -220,7 +214,6 @@ html.evening.dark {
 
   --success: #9cbf8f;
 
-  --dots: rgba(239, 230, 216, 0.05);
   --press: #9a7a4a;
   --button-glow: rgba(232, 196, 140, 0.2);
   --card-pop: rgba(201, 140, 140, 0.4);

@@ -4,6 +4,8 @@ import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import { useTheme } from "./hooks/useTheme";
 import { ExtraWideContext } from "./lib/pageWidth";
+import { GAME_PAGES, GAME_PATH } from "./lib/seo";
+import GamePage from "./pages/GamePage";
 import Home from "./pages/Home";
 import Privacy from "./pages/Privacy";
 import Room from "./pages/Room";
@@ -12,7 +14,7 @@ function App() {
   const { theme, toggleTheme, palette, togglePalette } = useTheme();
   // Räume brauchen Platz für drei Spalten (Spieler, Spiel, Chat), die Startseite nicht.
   // Montagsmaler-Runden dürfen noch breiter werden – für eine größere Zeichenfläche.
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
   const wide = pathname.startsWith("/r/");
   const [extraWide, setExtraWide] = useState(false);
   const width = !wide ? "max-w-5xl" : extraWide ? "max-w-[100rem]" : "max-w-7xl";
@@ -23,10 +25,12 @@ function App() {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   }, []);
 
-  // Neue Seite (z. B. aus dem Raum zurück zur Startseite oder DE ↔ EN) beginnt oben.
+  // Neue Seite (z. B. aus dem Raum zurück zur Startseite) beginnt oben. Nur beim Wechsel DE ↔ EN
+  // bleibt die Scrollposition – es ist ja dieselbe Seite.
+  const keepScroll = (state as { keepScroll?: boolean } | null)?.keepScroll === true;
   useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+    if (!keepScroll) window.scrollTo(0, 0);
+  }, [pathname, keepScroll]);
 
   return (
     <ExtraWideContext.Provider value={setExtraWide}>
@@ -42,6 +46,11 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/de" element={<Home />} />
+            {GAME_PAGES.flatMap((page) =>
+              Object.values(GAME_PATH[page]).map((path) => (
+                <Route key={path} path={path} element={<GamePage page={page} />} />
+              )),
+            )}
             {/* Früher lag die englische Seite unter /en – heute ist sie die Hauptseite. */}
             <Route path="/en" element={<Navigate to="/" replace />} />
             <Route path="/r/:code" element={<Room />} />

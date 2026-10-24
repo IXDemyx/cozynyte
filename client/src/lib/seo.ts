@@ -15,15 +15,37 @@ export type SeoLanguage = "de" | "en";
  */
 export const HOME_PATH: Record<SeoLanguage, string> = { en: "/", de: "/de" };
 
-/** Sprache, die eine Adresse festlegt (nur die beiden Startseiten), sonst null. */
-export function languageOfPath(pathname: string): SeoLanguage | null {
+import { GAME_PATH, GAME_SEO, type GamePageId } from "./seoGames";
+
+export { GAME_PATH, GAME_SEO, type GamePageId };
+
+export const GAME_PAGES = Object.keys(GAME_PATH) as GamePageId[];
+
+/** Jede Seite mit eigenem vorgerendertem HTML: die Startseite und die Spielseiten. */
+export type SeoPage = "home" | GamePageId;
+
+const LANGUAGES: SeoLanguage[] = ["en", "de"];
+
+export function pathOf(page: SeoPage, lang: SeoLanguage): string {
+  return page === "home" ? HOME_PATH[lang] : GAME_PATH[page][lang];
+}
+
+/** Seite und Sprache zu einer Adresse (Startseiten und Spielseiten), sonst null. */
+export function pageOfPath(pathname: string): { page: SeoPage; lang: SeoLanguage } | null {
   const path = pathname.replace(/\/+$/, "") || "/";
-  if (path === "/de") return "de";
-  if (path === "/") return "en";
+  for (const page of ["home", ...GAME_PAGES] as SeoPage[]) {
+    for (const lang of LANGUAGES) if (pathOf(page, lang) === path) return { page, lang };
+  }
   return null;
 }
 
-const urlOf = (lang: SeoLanguage) => new URL(HOME_PATH[lang], SITE_URL).href;
+/** Sprache, die eine Adresse festlegt (Startseiten und Spielseiten), sonst null. */
+export function languageOfPath(pathname: string): SeoLanguage | null {
+  return pageOfPath(pathname)?.lang ?? null;
+}
+
+const urlOf = (lang: SeoLanguage, page: SeoPage = "home") =>
+  new URL(pathOf(page, lang), SITE_URL).href;
 
 interface SeoText {
   metaTitle: string;
@@ -37,7 +59,8 @@ interface SeoText {
   intro: string;
   howTitle: string;
   steps: string[];
-  games: { name: string; text: string }[];
+  /** `page`: Spiel hat eine eigene Spielseite – im Vorab-HTML wird der Name dorthin verlinkt. */
+  games: { name: string; text: string; page?: GamePageId }[];
   faqTitle: string;
   faq: { q: string; a: string }[];
   noscript: string;
@@ -59,37 +82,44 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       "Kostenlos im Browser, ohne Anmeldung und ohne App: Raum erstellen, Link teilen und gemeinsam spielen – am selben Tisch oder per Videocall.",
     howTitle: "So funktioniert's",
     steps: [
-      "Namen eingeben und ein Spiel antippen – der Raum wird sofort erstellt.",
+      "Spiel auswählen und auf seiner Seite einen Raum erstellen.",
       "Den Einladungslink oder den vierstelligen Raumcode an deine Freunde schicken.",
       "Jeder spielt am eigenen Handy, Tablet oder Rechner – der Host startet, wenn alle da sind.",
     ],
     games: [
       {
         name: "Song erraten",
+        page: "song",
         text: "Musikquiz: Jeder wählt Songs aus, alle raten Titel und Interpret der kurzen Hörprobe.",
       },
       {
         name: "Jahr schätzen",
+        page: "year",
         text: "Aus welchem Jahr ist der Song? Wer am nächsten dran liegt, bekommt die meisten Punkte.",
       },
       {
         name: "Zeitleiste",
+        page: "timeline",
         text: "Ordnet Songs zeitlich in eure Zeitleiste ein – wer zuerst genug Karten richtig liegen hat, gewinnt.",
       },
       {
         name: "Stadt Land Fluss",
+        page: "slf",
         text: "Der Klassiker online: Buchstabe auslosen oder aufsagen, eigene Kategorien, Stopp rufen und gemeinsam abstimmen.",
       },
       {
         name: "Kniffel",
+        page: "kniffel",
         text: "Der Kniffel-Block fürs Handy: mit echten Würfeln spielen, Würfe eintragen, alles wird automatisch gezählt.",
       },
       {
         name: "Montagsmaler",
+        page: "draw",
         text: "Einer zeichnet, alle anderen raten im Chat – mit großer Begriffsliste oder eigenen Begriffen zu einem Motto.",
       },
       {
         name: "Länder-Quiz",
+        page: "geo",
         text: "Flaggen, Landesumrisse und Hauptstädte aller Länder der Welt erraten – getippt oder per Auswahl, nach Kontinent filterbar.",
       },
     ],
@@ -137,37 +167,44 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       "Free in your browser, no sign-up and no app: create a room, share the link and play together – at the same table or over a video call.",
     howTitle: "How it works",
     steps: [
-      "Enter your name and tap a game – your room is created right away.",
+      "Pick a game and create a room on its page.",
       "Send the invite link or the four-letter room code to your friends.",
       "Everyone plays on their own phone, tablet or computer – the host starts once everyone is in.",
     ],
     games: [
       {
         name: "Guess the Song",
+        page: "song",
         text: "Music quiz: everyone picks songs, everyone guesses title and artist from a short preview.",
       },
       {
         name: "Guess the Year",
+        page: "year",
         text: "Which year is the song from? Whoever gets closest scores the most.",
       },
       {
         name: "Song Timeline",
+        page: "timeline",
         text: "Place songs in your timeline in the right order – first to get enough cards right wins.",
       },
       {
         name: "Name, Place, Animal, Thing",
+        page: "slf",
         text: "The German classic “Stadt Land Fluss”: random or recited letter, custom categories, call stop and vote together.",
       },
       {
         name: "Yahtzee",
+        page: "kniffel",
         text: "The Yahtzee score sheet for your phone: roll real dice, enter your rolls, everything is added up.",
       },
       {
         name: "Draw & Guess",
+        page: "draw",
         text: "One player draws, everyone else guesses in the chat – with a big word list or your own words for a theme.",
       },
       {
         name: "Country Quiz",
+        page: "geo",
         text: "Guess flags, country shapes and capitals of every country in the world – type or multiple choice, filter by continent.",
       },
     ],
@@ -217,7 +254,7 @@ export function staticHomeHtml(lang: SeoLanguage): string {
     `<p>${escape(s.intro)}</p>`,
     `<noscript><p><strong>${escape(s.noscript)}</strong></p></noscript>`,
     `<h2>${lang === "de" ? "Spiele" : "Games"}</h2>`,
-    `<ul>${s.games.map((g) => `<li><strong>${escape(g.name)}</strong> – ${escape(g.text)}</li>`).join("")}</ul>`,
+    `<ul>${s.games.map((g) => `<li><strong>${gameName(g, lang)}</strong> – ${escape(g.text)}</li>`).join("")}</ul>`,
     `<h2>${escape(s.howTitle)}</h2>`,
     `<ol>${list(s.steps)}</ol>`,
     `<h2>${escape(s.faqTitle)}</h2>`,
@@ -227,22 +264,56 @@ export function staticHomeHtml(lang: SeoLanguage): string {
   ].join("");
 }
 
+/** Spielname im Vorab-HTML der Startseite – mit Link, wenn das Spiel eine eigene Seite hat. */
+function gameName(game: SeoText["games"][number], lang: SeoLanguage): string {
+  const name = escape(game.name);
+  return game.page ? `<a href="${pathOf(game.page, lang)}">${name}</a>` : name;
+}
+
+/** Spielseite als schlichtes HTML – wie bei der Startseite ersetzt React es beim Start. */
+export function staticGameHtml(lang: SeoLanguage, page: GamePageId): string {
+  const s = GAME_SEO[page][lang];
+  const items = (list: { title: string; text: string }[]) =>
+    list.map((item) => `<h3>${escape(item.title)}</h3><p>${escape(item.text)}</p>`).join("");
+  return [
+    `<div class="prerender">`,
+    `<div class="prerender-splash" aria-hidden="true">cozy<span>nyte</span></div>`,
+    `<main class="prerender-content">`,
+    `<nav><a href="${pathOf("home", lang)}">${escape(s.breadcrumb)}</a> › ${escape(s.name)}</nav>`,
+    `<h1>${escape(s.title)}</h1>`,
+    `<p>${escape(s.intro)}</p>`,
+    `<noscript><p><strong>${escape(SEO[lang].noscript)}</strong></p></noscript>`,
+    `<ul>${s.facts.map((fact) => `<li>${escape(fact)}</li>`).join("")}</ul>`,
+    `<h2>${escape(s.howTitle)}</h2>`,
+    items(s.steps),
+    `<h2>${escape(s.rulesTitle)}</h2>`,
+    items(s.rules),
+    `<h2>${escape(s.scoreTitle)}</h2>`,
+    `<ul>${s.scores.map((row) => `<li>${escape(row.label)}: ${escape(row.value)}</li>`).join("")}</ul>`,
+    `<h2>${escape(s.faqTitle)}</h2>`,
+    s.faq.map((f) => `<h3>${escape(f.q)}</h3><p>${escape(f.a)}</p>`).join(""),
+    `<p><a href="${pathOf("home", lang)}">${escape(s.allGames)}</a></p>`,
+    `</main>`,
+    `</div>`,
+  ].join("");
+}
+
 /** Titel, Beschreibung, Sprachversionen (hreflang) und Link-Vorschau für den <head>. */
-export function headHtml(lang: SeoLanguage): string {
-  const s = SEO[lang];
+export function headHtml(lang: SeoLanguage, page: SeoPage = "home"): string {
+  const s = page === "home" ? SEO[lang] : GAME_SEO[page][lang];
   // Vorschaubild für geteilte Links – je Sprache eigenes Bild mit übersetztem Text.
   const image = new URL(lang === "en" ? "og-image-en.png" : "og-image.png", SITE_URL).href;
   return [
     `<title>${escape(s.metaTitle)}</title>`,
     `<meta name="description" content="${escape(s.metaDescription)}" />`,
-    `<link rel="canonical" href="${urlOf(lang)}" />`,
-    `<link rel="alternate" hreflang="de" href="${urlOf("de")}" />`,
-    `<link rel="alternate" hreflang="en" href="${urlOf("en")}" />`,
-    `<link rel="alternate" hreflang="x-default" href="${urlOf("en")}" />`,
+    `<link rel="canonical" href="${urlOf(lang, page)}" />`,
+    `<link rel="alternate" hreflang="de" href="${urlOf("de", page)}" />`,
+    `<link rel="alternate" hreflang="en" href="${urlOf("en", page)}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${urlOf("en", page)}" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:site_name" content="Cozynyte" />`,
-    `<meta property="og:locale" content="${s.ogLocale}" />`,
-    `<meta property="og:url" content="${urlOf(lang)}" />`,
+    `<meta property="og:locale" content="${SEO[lang].ogLocale}" />`,
+    `<meta property="og:url" content="${urlOf(lang, page)}" />`,
     `<meta property="og:title" content="${escape(s.ogTitle)}" />`,
     `<meta property="og:description" content="${escape(s.ogDescription)}" />`,
     `<meta property="og:image" content="${image}" />`,
@@ -250,8 +321,45 @@ export function headHtml(lang: SeoLanguage): string {
     `<meta property="og:image:height" content="630" />`,
     `<meta property="og:image:alt" content="${escape(s.ogTitle)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
-    `<script type="application/ld+json">${jsonLd(lang)}</script>`,
+    `<script type="application/ld+json">${page === "home" ? jsonLd(lang) : gameJsonLd(lang, page)}</script>`,
   ].join("\n    ");
+}
+
+/** Strukturierte Daten einer Spielseite: Spiel, Brotkrumen und FAQ. */
+export function gameJsonLd(lang: SeoLanguage, page: GamePageId): string {
+  const s = GAME_SEO[page][lang];
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        name: s.name,
+        url: urlOf(lang, page),
+        description: s.intro,
+        applicationCategory: "GameApplication",
+        operatingSystem: "Web",
+        inLanguage: lang,
+        isAccessibleForFree: true,
+        offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: s.breadcrumb, item: urlOf(lang) },
+          { "@type": "ListItem", position: 2, name: s.name, item: urlOf(lang, page) },
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: s.faq.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+    ],
+  };
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 /** Strukturierte Daten (schema.org) für Suchmaschinen. */

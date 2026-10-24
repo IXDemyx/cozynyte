@@ -74,6 +74,18 @@ if (existsSync(dist)) {
     res.setHeader("X-Robots-Tag", "noindex, follow");
     res.sendFile(path.join(dist, "index.html"));
   });
+  // Spielseiten (z. B. /de/stadt-land-fluss): beim Build vorgerendert als <adresse>/index.html.
+  // Ohne Schrägstrich am Ende ausliefern, mit Schrägstrich dorthin umleiten (eine Adresse je Seite).
+  const pageFile = (address: string) => path.join(dist, address, "index.html");
+  app.get(/^\/(de\/)?[a-z-]+$/, (req, res, next) => {
+    if (!existsSync(pageFile(req.path))) return next();
+    res.sendFile(pageFile(req.path));
+  });
+  app.get(/^\/(de\/)?[a-z-]+\/$/, (req, res, next) => {
+    const address = req.path.slice(0, -1);
+    if (!existsSync(pageFile(address))) return next();
+    res.redirect(301, address);
+  });
   app.use(express.static(dist));
   // Räume (/r/…) gibt es; jede andere unbekannte Adresse ist ein 404 – die App zeigt dann die
   // Startseite, Suchmaschinen legen aber keine Kopien der Startseite unter fremden Adressen an.

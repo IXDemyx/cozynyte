@@ -1,6 +1,6 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import type { IconType } from "react-icons";
-import { FiArrowRight, FiChevronDown } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 import {
   LuCalendarDays,
   LuDice5,
@@ -12,39 +12,25 @@ import {
   LuPalette,
   LuShuffle,
 } from "react-icons/lu";
-import { useNavigate } from "react-router-dom";
-import { PUBLIC_GAMES, type Ack, type Game, type OpenRooms } from "../../../shared/types";
+import { Link, useNavigate } from "react-router-dom";
+import type { Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
 import LanguageHint from "../components/LanguageHint";
 import { card, eyebrow, gameCard, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
-import { SEO } from "../lib/seo";
-import { confirmRoom, getName, playerId, rememberPlayerId, saveName, socket } from "../lib/socket";
+import { useOpenRooms } from "../hooks/useOpenRooms";
+import { useStartRoom } from "../hooks/useStartRoom";
+import { GAME_PATH, SEO } from "../lib/seo";
+import { confirmRoom, getName, saveName } from "../lib/socket";
 
 function Home() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [name, setName] = useState(getName);
   const [code, setCode] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [open, setOpen] = useState<OpenRooms | null>(null);
-
-  // Wie viele öffentliche Räume gerade Mitspieler suchen – regelmäßig nachfragen.
-  useEffect(() => {
-    const load = () =>
-      socket.timeout(5000).emit("rooms:open", (failure: Error | null, res: Ack<OpenRooms>) => {
-        if (!failure && res.ok) setOpen({ total: res.total, byGame: res.byGame });
-      });
-    load();
-    const timer = setInterval(load, 15_000);
-    socket.on("connect", load);
-    return () => {
-      clearInterval(timer);
-      socket.off("connect", load);
-    };
-  }, []);
+  const { joinRandom, busy, error, setError, validName } = useStartRoom(name);
+  const open = useOpenRooms();
 
   type Entry = { id: Game; icon: IconType; meta: string; text: string };
   const sections: { title: string; text: string; games: Entry[] }[] = [
@@ -72,56 +58,6 @@ function Home() {
       games: [{ id: "geo", icon: LuEarth, meta: t.home.meta, text: t.home.geoText }],
     },
   ];
-  const validName = name.trim().length > 0;
-
-  const create = (game: Game, isPublic = false) => {
-    if (!validName) return setError("name_required");
-    saveName(name);
-    setBusy(true);
-    setError("");
-    socket
-      .timeout(6000)
-      .emit(
-        "room:create",
-        { name: name.trim(), playerId, game, isPublic, language },
-        (failure: Error | null, res: Ack<{ code: string }>) => {
-          setBusy(false);
-          if (failure) return setError("server_unreachable");
-          if (!res.ok) return setError(res.error);
-          confirmRoom(res.code);
-          rememberPlayerId(res.code, playerId);
-          navigate(`/r/${res.code}`);
-        },
-      );
-  };
-
-  // Zufälliger Raum: offenen öffentlichen Raum suchen (optional für ein Spiel). Gibt es keinen,
-  // wird ein neuer öffentlicher Raum erstellt, in den andere dann zufällig dazukommen.
-  const joinRandom = (game?: Game) => {
-    if (!validName) return setError("name_required");
-    saveName(name);
-    setBusy(true);
-    setError("");
-    socket
-      .timeout(6000)
-      .emit(
-        "room:random",
-        { game, language },
-        (failure: Error | null, res: Ack<{ code: string | null }>) => {
-          if (failure) {
-            setBusy(false);
-            return setError("server_unreachable");
-          }
-          if (res.ok && res.code) {
-            setBusy(false);
-            confirmRoom(res.code);
-            return navigate(`/r/${res.code}`);
-          }
-          create(game ?? "song", true);
-        },
-      );
-  };
-
   const join = (event: FormEvent) => {
     event.preventDefault();
     if (!validName) return setError("name_required");
@@ -218,7 +154,7 @@ function Home() {
         </section>
       </section>
 
-      {/* Spiele: kompakte Kacheln, ein Klick erstellt den Raum. */}
+      {/* Spiele: kompakte Kacheln, ein Klick führt zur Spielseite – dort wird der Raum erstellt. */}
       {sections.map((section) => (
         <section key={section.title}>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
@@ -229,44 +165,25 @@ function Home() {
             {section.games.map(({ id, icon: Icon, meta, text }) => {
               const openCount = open?.byGame[id] ?? 0;
               return (
-                // Kachel = Raum erstellen; rechts daneben (außer Kniffel) „zufälliger Raum“.
-                <div key={id} className={`${gameCard} flex items-stretch`}>
-                  <button
-                    type="button"
-                    onClick={() => create(id)}
-                    disabled={busy}
-                    aria-label={t.home.createGame(t.games[id])}
-                    className="group flex min-w-0 flex-1 items-center gap-3 rounded-2xl p-4 text-left disabled:opacity-60 sm:p-5"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-(--on-accent)">
-                      <Icon aria-hidden="true" />
+                <Link
+                  key={id}
+                  to={GAME_PATH[id][language]}
+                  // Name mitnehmen: Die Spielseite füllt ihn aus dem Speicher vor.
+                  onClick={() => validName && saveName(name)}
+                  className={`${gameCard} flex min-w-0 items-center gap-3 p-4 sm:p-5`}
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-(--accent) text-xl text-(--on-accent)">
+                    <Icon aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <h3 className="font-bold tracking-tight">{t.games[id]}</h3>
+                    <span className="block text-xs text-(--text-secondary)">{text}</span>
+                    <span className="mt-0.5 block font-mono text-[11px] text-(--accent)">
+                      {meta}
+                      {openCount > 0 && ` · ${t.home.openShort(openCount)}`}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <h3 className="font-bold tracking-tight">{t.games[id]}</h3>
-                      <span className="block text-xs text-(--text-secondary)">{text}</span>
-                      <span className="mt-0.5 block font-mono text-[11px] text-(--accent)">
-                        {meta}
-                        {openCount > 0 && ` · ${t.home.openShort(openCount)}`}
-                      </span>
-                    </span>
-                    <FiArrowRight
-                      aria-hidden="true"
-                      className="shrink-0 text-(--text-secondary) transition group-hover:translate-x-0.5 group-hover:text-(--accent)"
-                    />
-                  </button>
-                  {PUBLIC_GAMES.includes(id) && (
-                    <button
-                      type="button"
-                      onClick={() => joinRandom(id)}
-                      disabled={busy}
-                      aria-label={t.home.randomGame(t.games[id])}
-                      title={t.home.randomGame(t.games[id])}
-                      className="flex w-12 shrink-0 items-center justify-center rounded-r-2xl border-l border-slate-200 text-lg text-(--text-secondary) transition hover:bg-(--accent-soft) hover:text-(--accent) disabled:opacity-60 dark:border-white/10"
-                    >
-                      <LuShuffle aria-hidden="true" />
-                    </button>
-                  )}
-                </div>
+                  </span>
+                </Link>
               );
             })}
           </div>

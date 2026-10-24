@@ -1,13 +1,13 @@
 /**
  * Sprachwahl (Deutsch/Englisch) und Zugriff auf die Texte.
- * Die Startseiten legen die Sprache über ihre Adresse fest (`/` englisch, `/de` deutsch) – damit
+ * Start- und Spielseiten legen die Sprache über ihre Adresse fest (`/` englisch, `/de` deutsch) – damit
  * Suchmaschinen beide Versionen sauber getrennt sehen. Überall sonst gilt die eigene Wahl bzw.
  * die Browsersprache.
  */
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { HOME_PATH, languageOfPath } from "../seo";
+import { HOME_PATH, pageOfPath, pathOf } from "../seo";
 import { de, type Dictionary } from "./de";
 import { en } from "./en";
 
@@ -44,9 +44,10 @@ const LanguageContext = createContext<LanguageValue | null>(null);
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const fromPath = languageOfPath(pathname);
+  const page = pageOfPath(pathname);
+  const fromPath = page?.lang ?? null;
   const [chosen, setChosen] = useState<Language>(() => readSaved() ?? browserLanguage());
-  // Auf den Startseiten bestimmt die Adresse – und wird für den Rest (z. B. Räume) übernommen.
+  // Auf Start- und Spielseiten bestimmt die Adresse – und wird für den Rest (z. B. Räume) übernommen.
   const language = fromPath ?? chosen;
 
   useEffect(() => {
@@ -68,8 +69,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     toggleLanguage: () => {
       const next: Language = language === "de" ? "en" : "de";
       setChosen(next);
-      // Auf der Startseite: zur Startseite der anderen Sprache wechseln.
-      if (fromPath) navigate(HOME_PATH[next]);
+      // Auf Start- und Spielseiten: zur selben Seite in der anderen Sprache wechseln – an derselben
+      // Stelle, also ohne nach oben zu springen (siehe App.tsx).
+      if (page) navigate(pathOf(page.page, next), { state: { keepScroll: true } });
     },
     t,
     err: (code) => (code ? (t.errors[code] ?? code) : ""),
