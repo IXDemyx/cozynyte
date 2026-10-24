@@ -10,7 +10,8 @@ import type { SeoLanguage } from "./seo";
  * Spiel findet (z. B. „Stadt Land Fluss online“). Die IDs sind dieselben wie die Spiel-IDs.
  * Englisch ohne Präfix, Deutsch unter `/de` – wie bei den Startseiten.
  */
-export type GamePageId = "song" | "year" | "timeline" | "slf" | "kniffel" | "draw" | "geo";
+export type GamePageId =
+  "song" | "year" | "timeline" | "slf" | "kniffel" | "draw" | "geo" | "snippet";
 
 export const GAME_PATH: Record<GamePageId, Record<SeoLanguage, string>> = {
   song: { en: "/guess-the-song", de: "/de/song-erraten" },
@@ -20,6 +21,7 @@ export const GAME_PATH: Record<GamePageId, Record<SeoLanguage, string>> = {
   kniffel: { en: "/yahtzee", de: "/de/kniffel" },
   draw: { en: "/draw-and-guess", de: "/de/montagsmaler" },
   geo: { en: "/country-quiz", de: "/de/laender-quiz" },
+  snippet: { en: "/song-snippet", de: "/de/song-schnipsel" },
 };
 
 export interface GamePageText {
@@ -1225,6 +1227,178 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           a: "No. English and German are both recognised, small typos are fine.",
         },
         VIDEO_CALL.en,
+        FREE.en,
+      ],
+    },
+  },
+  snippet: {
+    de: {
+      metaTitle: "Song-Schnipsel: Song erraten aus 0,1 Sekunden | Cozynyte",
+      metaDescription:
+        "Musikrätsel für eine Person: Erkenne den Song an 0,1 Sekunden. Nach jedem Fehlversuch hörst du mehr. Kostenlos im Browser, ohne Anmeldung.",
+      ogTitle: "Song-Schnipsel – Song erraten aus 0,1 Sekunden",
+      ogDescription: "Ein Song, sieben Versuche, zuerst 0,1 Sekunden. Kostenlos im Browser.",
+      name: "Song-Schnipsel",
+      title: "Song-Schnipsel: Erkennst du den Song?",
+      titleAccent: "Song-Schnipsel",
+      intro:
+        "Du hörst zuerst 0,1 Sekunden eines bekannten Songs. Nach jedem Fehlversuch oder Überspringen wird der Ausschnitt länger. Für eine Person, ohne Raum und ohne Anmeldung.",
+      facts: ["1 Spieler", "7 Versuche", "0,1 bis 16 Sek.", "Hörproben über iTunes"],
+      example: {
+        title: "Beispielrunde",
+        round: "Song 4",
+        rows: [
+          { label: "0,1 s", value: "Übersprungen" },
+          { label: "0,5 s", value: "Somebody Told Me – The Killers" },
+          { label: "1 s", value: "Mr. Brightside – The Killers" },
+        ],
+        note: "Gelb heißt: richtiger Interpret, anderer Song.",
+      },
+      steps: [
+        {
+          title: "Anhören",
+          text: "Spiel den Ausschnitt ab, so oft du willst. Am Anfang sind es 0,1 Sekunden.",
+        },
+        {
+          title: "Raten oder überspringen",
+          text: "Such den Song und wähl ihn aus der Liste. Falsch oder übersprungen: Der Ausschnitt wird länger.",
+        },
+        {
+          title: "Auflösung",
+          text: "Nach dem Treffer oder dem siebten Versuch siehst du den Song und kannst die ganze Hörprobe hören.",
+        },
+      ],
+      rules: [
+        {
+          title: "Stufen",
+          text: "0,1 · 0,5 · 1 · 2 · 4 · 8 · 16 Sekunden. Jeder Ausschnitt beginnt an derselben Stelle.",
+        },
+        {
+          title: "Raten",
+          text: "Nur Songs aus der Suche. Andere Versionen desselben Songs (Remaster, Album, Single) zählen als richtig.",
+        },
+        {
+          title: "Interpret stimmt",
+          text: "Gelb heißt: richtiger Interpret, anderer Song. Der Versuch ist trotzdem verbraucht.",
+        },
+        {
+          title: "Kategorien",
+          text: "Aktuell, Pop, Rock, Hip-Hop, Deutsch, 80er, 90er, 2000er, Elektro oder gemischt. Jede hat ihre eigene Serie.",
+        },
+        {
+          title: "Tastatur",
+          text: "Leertaste spielt ab, Enter rät und holt den nächsten Song, Tab im leeren Suchfeld überspringt.",
+        },
+      ],
+      scoreTitle: "Punkte und Serie",
+      scores: [
+        { label: "Erraten bei 0,1 s", value: "7" },
+        { label: "Jede weitere Stufe", value: "−1" },
+        { label: "Erraten bei 16 s", value: "1" },
+        { label: "Serie", value: "pro Kategorie, mit Rekord" },
+      ],
+      faq: [
+        {
+          q: "Woher kommen die Songs?",
+          a: "Bekannte Songs von Interpreten aus der gewählten Kategorie, abgespielt als Hörprobe über die Musiksuche von Apple (iTunes).",
+        },
+        {
+          q: "Warum beginnt der Ausschnitt nicht am Anfang des Songs?",
+          a: "Apple stellt 30 Sekunden lange Hörproben bereit, meist aus der Mitte oder dem Refrain. Daraus stammen die Ausschnitte.",
+        },
+        {
+          q: "Braucht man ein Konto?",
+          a: "Nein. Die Statistik wird nur in deinem Browser gespeichert.",
+        },
+        {
+          q: "Kann man das auch zusammen spielen?",
+          a: "Song-Schnipsel ist für eine Person. Für mehrere gibt es Song erraten, Jahr schätzen und die Song-Zeitleiste.",
+        },
+        FREE.de,
+      ],
+    },
+    en: {
+      metaTitle: "Song Snippet: guess the song from 0.1 seconds | Cozynyte",
+      metaDescription:
+        "Music puzzle for one: name the song from 0.1 seconds. Every wrong guess or skip plays a little more. Free in your browser, no sign-up.",
+      ogTitle: "Song Snippet – guess the song from 0.1 seconds",
+      ogDescription: "One song, seven attempts, starting at 0.1 seconds. Free in your browser.",
+      name: "Song Snippet",
+      title: "Song Snippet: can you name the song?",
+      titleAccent: "Song Snippet",
+      intro:
+        "You hear just 0.1 seconds of a well-known song. Every wrong guess or skip makes the snippet longer. For one player, no room and no sign-up.",
+      facts: ["1 player", "7 attempts", "0.1 to 16 s", "Previews via iTunes"],
+      example: {
+        title: "Example round",
+        round: "Song 4",
+        rows: [
+          { label: "0.1 s", value: "Skipped" },
+          { label: "0.5 s", value: "Somebody Told Me – The Killers" },
+          { label: "1 s", value: "Mr. Brightside – The Killers" },
+        ],
+        note: "Yellow means right artist, different song.",
+      },
+      steps: [
+        {
+          title: "Listen",
+          text: "Play the snippet as often as you like. It starts at 0.1 seconds.",
+        },
+        {
+          title: "Guess or skip",
+          text: "Search for the song and pick it from the list. Wrong or skipped: the snippet gets longer.",
+        },
+        {
+          title: "The answer",
+          text: "After a correct guess or the seventh attempt you see the song and can play the full preview.",
+        },
+      ],
+      rules: [
+        {
+          title: "Stages",
+          text: "0.1 · 0.5 · 1 · 2 · 4 · 8 · 16 seconds. Every snippet starts at the same point.",
+        },
+        {
+          title: "Guessing",
+          text: "Only songs from the search. Other versions of the same song (remaster, album, single) count as correct.",
+        },
+        {
+          title: "Right artist",
+          text: "Yellow means right artist, different song. The attempt still counts.",
+        },
+        {
+          title: "Categories",
+          text: "Current, pop, rock, hip-hop, German, 80s, 90s, 2000s, electronic or mixed. Each has its own streak.",
+        },
+        {
+          title: "Keyboard",
+          text: "Space plays, Enter guesses and loads the next song, Tab in the empty search skips.",
+        },
+      ],
+      scoreTitle: "Points and streaks",
+      scores: [
+        { label: "Guessed at 0.1 s", value: "7" },
+        { label: "Each further stage", value: "−1" },
+        { label: "Guessed at 16 s", value: "1" },
+        { label: "Streak", value: "per category, with best" },
+      ],
+      faq: [
+        {
+          q: "Where do the songs come from?",
+          a: "Well-known songs by artists from the chosen category, played as previews via Apple's music search (iTunes).",
+        },
+        {
+          q: "Why doesn't the snippet start at the beginning of the song?",
+          a: "Apple provides 30-second previews, usually from the middle or the chorus. The snippets come from those.",
+        },
+        {
+          q: "Do I need an account?",
+          a: "No. Your stats are only stored in your browser.",
+        },
+        {
+          q: "Can we play it together?",
+          a: "Song Snippet is for one player. For groups there's Guess the Song, Guess the Year and Song Timeline.",
+        },
         FREE.en,
       ],
     },

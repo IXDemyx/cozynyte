@@ -88,6 +88,8 @@ export default defineConfig({
       "/socket.io": { target: "http://localhost:3001", ws: true },
       // Länder-Quiz: Flaggen und Umrisse kommen vom Server.
       "/quiz-img": { target: "http://localhost:3001" },
+      // Song-Schnipsel (Einzelspieler): HTTP statt Socket.
+      "/api": { target: "http://localhost:3001" },
     },
   },
 });

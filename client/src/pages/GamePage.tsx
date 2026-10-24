@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { IconType } from "react-icons";
 import { FiArrowRight, FiChevronDown } from "react-icons/fi";
 import {
+  LuAudioWaveform,
   LuCalendarDays,
   LuDice5,
   LuEarth,
@@ -12,9 +13,11 @@ import {
   LuShuffle,
 } from "react-icons/lu";
 import { Link } from "react-router-dom";
+import type { Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
 import LanguageHint from "../components/LanguageHint";
+import Snippet from "../games/snippet/Snippet";
 import { card, eyebrow, gameCard, input } from "../components/ui";
 import { useOpenRooms } from "../hooks/useOpenRooms";
 import { useStartRoom } from "../hooks/useStartRoom";
@@ -31,17 +34,52 @@ const ICONS: Record<GamePageId, IconType> = {
   kniffel: LuDice5,
   draw: LuPalette,
   geo: LuEarth,
+  snippet: LuAudioWaveform,
 };
+
+/** Name eingeben, dann Raum erstellen oder einem zufälligen öffentlichen Raum beitreten. */
+function RoomStart({ page }: { page: Game }) {
+  const { t } = useLanguage();
+  const [name, setName] = useState(getName);
+  const { create, joinRandom, busy, error } = useStartRoom(name);
+  const openCount = useOpenRooms()?.byGame[page] ?? 0;
+
+  return (
+    <div className={`${card} mt-6 p-5`}>
+      <label htmlFor="name" className="text-sm font-semibold">
+        {t.home.name}
+      </label>
+      <input
+        id="name"
+        className={`${input} mt-2`}
+        value={name}
+        maxLength={16}
+        autoComplete="nickname"
+        placeholder={t.home.namePlaceholder}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button onClick={() => create(page)} disabled={busy}>
+          {t.home.createGame(t.games[page])}
+        </Button>
+        <Button variant="secondary" onClick={() => joinRandom(page)} disabled={busy}>
+          <LuShuffle aria-hidden="true" /> {t.home.random}
+          {openCount > 0 && ` · ${t.home.openShort(openCount)}`}
+        </Button>
+      </div>
+      <ErrorText code={error} />
+    </div>
+  );
+}
 
 /**
  * Eigene Seite pro Spiel (für Suchmaschinen): Einstieg zum Sofort-Spielen, Regeln, Punkte und
  * FAQ. Texte aus src/lib/seo.ts – dieselben landen beim Build als Vorab-HTML in der Seite.
+ * Song-Schnipsel (Einzelspieler) läuft ohne Raum direkt hier: Überschrift oben, darunter das Spiel
+ * über die ganze Breite (statt der Beispielrunde daneben).
  */
 function GamePage({ page }: { page: GamePageId }) {
-  const { t, language, home } = useLanguage();
-  const [name, setName] = useState(getName);
-  const { create, joinRandom, busy, error } = useStartRoom(name);
-  const openCount = useOpenRooms()?.byGame[page] ?? 0;
+  const { language, home } = useLanguage();
   const s = GAME_SEO[page][language];
   const Icon = ICONS[page];
 
@@ -70,7 +108,7 @@ function GamePage({ page }: { page: GamePageId }) {
     <div className="animate-in space-y-12">
       <LanguageHint />
 
-      <section className="grid gap-8 lg:grid-cols-[1.15fr_1fr]">
+      <section className={`grid gap-8 ${page === "snippet" ? "" : "lg:grid-cols-[1.15fr_1fr]"}`}>
         <div>
           <nav className="flex items-center gap-2 text-sm text-(--text-secondary)">
             <Link to={home} className="transition hover:text-(--accent)">
@@ -82,7 +120,11 @@ function GamePage({ page }: { page: GamePageId }) {
           <h1 className="mt-3 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
             {title}
           </h1>
-          <p className="mt-4 max-w-xl text-(--text-secondary)">{s.intro}</p>
+          <p
+            className={`mt-4 text-(--text-secondary) ${page === "snippet" ? "max-w-2xl" : "max-w-xl"}`}
+          >
+            {s.intro}
+          </p>
           <ul className="mt-5 flex flex-wrap gap-2 text-xs text-(--text-secondary)">
             {s.facts.map((fact) => (
               <li
@@ -94,60 +136,43 @@ function GamePage({ page }: { page: GamePageId }) {
             ))}
           </ul>
 
-          <div className={`${card} mt-6 p-5`}>
-            <label htmlFor="name" className="text-sm font-semibold">
-              {t.home.name}
-            </label>
-            <input
-              id="name"
-              className={`${input} mt-2`}
-              value={name}
-              maxLength={16}
-              autoComplete="nickname"
-              placeholder={t.home.namePlaceholder}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <div className="mt-4 flex flex-wrap gap-3">
-              <Button onClick={() => create(page)} disabled={busy}>
-                {t.home.createGame(t.games[page])}
-              </Button>
-              <Button variant="secondary" onClick={() => joinRandom(page)} disabled={busy}>
-                <LuShuffle aria-hidden="true" /> {t.home.random}
-                {openCount > 0 && ` · ${t.home.openShort(openCount)}`}
-              </Button>
-            </div>
-            <ErrorText code={error} />
-          </div>
+          {page !== "snippet" && <RoomStart page={page} />}
         </div>
 
-        {/* Beispielrunde: zeigt auf einen Blick, wie das Spiel aussieht. */}
-        <figure className={`${gameCard} self-start p-5`}>
-          <div className="flex items-center justify-between gap-4">
-            <span
-              className={`flex h-14 min-w-14 items-center justify-center rounded-xl bg-(--accent) px-2 font-extrabold text-(--on-accent) ${s.example.badge && s.example.badge.length > 2 ? "text-xl" : "text-3xl"}`}
-            >
-              {s.example.badge ?? <Icon aria-hidden="true" />}
-            </span>
-            <span className="text-right text-xs text-(--text-secondary)">
-              <span className="block font-bold text-(--text-primary)">{s.example.title}</span>
-              {s.example.round}
-            </span>
-          </div>
-          <dl className="mt-4 divide-y divide-dashed divide-slate-200 text-sm dark:divide-white/10">
-            {s.example.rows.map((row, i) => (
-              <div key={i} className="grid grid-cols-[6.5rem_1fr_auto] gap-3 py-2">
-                <dt className="text-xs font-semibold text-(--text-secondary)">{row.label}</dt>
-                <dd className="font-semibold">{row.value}</dd>
-                <dd
-                  className={`font-mono text-xs ${row.points ? "text-(--success)" : "text-red-500"}`}
-                >
-                  {row.points === undefined ? "" : row.points > 0 ? `+${row.points}` : 0}
-                </dd>
-              </div>
-            ))}
-          </dl>
-          <figcaption className="mt-3 text-xs text-(--text-secondary)">{s.example.note}</figcaption>
-        </figure>
+        {page === "snippet" ? (
+          <Snippet />
+        ) : (
+          /* Beispielrunde: zeigt auf einen Blick, wie das Spiel aussieht. */
+          <figure className={`${gameCard} self-start p-5`}>
+            <div className="flex items-center justify-between gap-4">
+              <span
+                className={`flex h-14 min-w-14 items-center justify-center rounded-xl bg-(--accent) px-2 font-extrabold text-(--on-accent) ${s.example.badge && s.example.badge.length > 2 ? "text-xl" : "text-3xl"}`}
+              >
+                {s.example.badge ?? <Icon aria-hidden="true" />}
+              </span>
+              <span className="text-right text-xs text-(--text-secondary)">
+                <span className="block font-bold text-(--text-primary)">{s.example.title}</span>
+                {s.example.round}
+              </span>
+            </div>
+            <dl className="mt-4 divide-y divide-dashed divide-slate-200 text-sm dark:divide-white/10">
+              {s.example.rows.map((row, i) => (
+                <div key={i} className="grid grid-cols-[6.5rem_1fr_auto] gap-3 py-2">
+                  <dt className="text-xs font-semibold text-(--text-secondary)">{row.label}</dt>
+                  <dd className="font-semibold">{row.value}</dd>
+                  <dd
+                    className={`font-mono text-xs ${row.points ? "text-(--success)" : "text-red-500"}`}
+                  >
+                    {row.points === undefined ? "" : row.points > 0 ? `+${row.points}` : 0}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <figcaption className="mt-3 text-xs text-(--text-secondary)">
+              {s.example.note}
+            </figcaption>
+          </figure>
+        )}
       </section>
 
       <section>

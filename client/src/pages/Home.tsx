@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import type { IconType } from "react-icons";
 import { FiChevronDown } from "react-icons/fi";
 import {
+  LuAudioWaveform,
   LuCalendarDays,
   LuDice5,
   LuEarth,
@@ -13,7 +14,6 @@ import {
   LuShuffle,
 } from "react-icons/lu";
 import { Link, useNavigate } from "react-router-dom";
-import type { Game } from "../../../shared/types";
 import Button from "../components/Button";
 import ErrorText from "../components/ErrorText";
 import LanguageHint from "../components/LanguageHint";
@@ -21,7 +21,7 @@ import { card, eyebrow, gameCard, input } from "../components/ui";
 import { useLanguage } from "../lib/i18n";
 import { useOpenRooms } from "../hooks/useOpenRooms";
 import { useStartRoom } from "../hooks/useStartRoom";
-import { GAME_PATH, SEO } from "../lib/seo";
+import { GAME_PATH, SEO, type GamePageId } from "../lib/seo";
 import { confirmRoom, getName, saveName } from "../lib/socket";
 
 function Home() {
@@ -32,7 +32,7 @@ function Home() {
   const { joinRandom, busy, error, setError, validName } = useStartRoom(name);
   const open = useOpenRooms();
 
-  type Entry = { id: Game; icon: IconType; meta: string; text: string };
+  type Entry = { id: GamePageId; icon: IconType; meta: string; text: string };
   const sections: { title: string; text: string; games: Entry[] }[] = [
     {
       title: t.home.music,
@@ -56,6 +56,18 @@ function Home() {
       title: t.home.quiz,
       text: t.home.quizText,
       games: [{ id: "geo", icon: LuEarth, meta: t.home.meta, text: t.home.geoText }],
+    },
+    {
+      title: t.home.solo,
+      text: t.home.soloText,
+      games: [
+        {
+          id: "snippet",
+          icon: LuAudioWaveform,
+          meta: t.home.soloMeta,
+          text: t.home.snippetText,
+        },
+      ],
     },
   ];
   const join = (event: FormEvent) => {
@@ -163,7 +175,8 @@ function Home() {
           </div>
           <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {section.games.map(({ id, icon: Icon, meta, text }) => {
-              const openCount = open?.byGame[id] ?? 0;
+              // Song-Schnipsel hat keine Räume.
+              const openCount = id === "snippet" ? 0 : (open?.byGame[id] ?? 0);
               return (
                 <Link
                   key={id}

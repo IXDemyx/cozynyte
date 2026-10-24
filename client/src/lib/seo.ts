@@ -122,6 +122,11 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         page: "geo",
         text: "Flaggen, Landesumrisse und Hauptstädte aller Länder der Welt erraten – getippt oder per Auswahl, nach Kontinent filterbar.",
       },
+      {
+        name: "Song-Schnipsel",
+        page: "snippet",
+        text: "Für eine Person: Erkenne den Song an 0,1 Sekunden. Nach jedem Fehlversuch hörst du mehr.",
+      },
     ],
     faqTitle: "Häufige Fragen",
     faq: [
@@ -135,7 +140,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       },
       {
         q: "Wie viele können mitspielen?",
-        a: "Bis zu 16 Spieler pro Raum. Die meisten Spiele brauchen mindestens zwei, Kniffel geht auch allein.",
+        a: "Bis zu 16 Spieler pro Raum. Die meisten Spiele brauchen mindestens zwei, Kniffel geht auch allein und Song-Schnipsel ist für eine Person.",
       },
       {
         q: "Können wir auch über Discord oder Zoom spielen?",
@@ -207,6 +212,11 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         page: "geo",
         text: "Guess flags, country shapes and capitals of every country in the world – type or multiple choice, filter by continent.",
       },
+      {
+        name: "Song Snippet",
+        page: "snippet",
+        text: "For one player: name the song from 0.1 seconds. Every wrong guess plays a little more.",
+      },
     ],
     faqTitle: "FAQ",
     faq: [
@@ -217,7 +227,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       },
       {
         q: "How many people can play?",
-        a: "Up to 16 players per room. Most games need at least two, Yahtzee also works solo.",
+        a: "Up to 16 players per room. Most games need at least two, Yahtzee also works solo and Song Snippet is for one player.",
       },
       {
         q: "Can we play over Discord or Zoom?",

@@ -1,9 +1,11 @@
 /**
- * Einfache Rate-Limits gegen Scripts: Raumcodes durchprobieren und massenhaft Räume erstellen.
+ * Einfache Rate-Limits gegen Scripts: Raumcodes durchprobieren, massenhaft Räume erstellen und
+ * Song-Schnipsel (ohne Raum, daher nur pro IP) mit Anfragen fluten.
  * Gezählt wird pro IP-Adresse – hinter dem Cloudflare Tunnel steht die echte Adresse im Header
  * cf-connecting-ip, sonst gilt die Adresse der Verbindung.
  */
 
+import type { Request } from "express";
 import type { Socket } from "socket.io";
 
 const LIMITS = {
@@ -11,22 +13,35 @@ const LIMITS = {
   join: { max: 10, windowMs: 60_000 },
   /** Neue Räume erstellen. */
   create: { max: 10, windowMs: 10 * 60_000 },
+  /** Song-Schnipsel: neuer Song, Songsuche, Tipp oder Überspringen. */
+  snippetNew: { max: 40, windowMs: 10 * 60_000 },
+  snippetSearch: { max: 20, windowMs: 30_000 },
+  snippetGuess: { max: 60, windowMs: 60_000 },
 } as const;
 
 type Kind = keyof typeof LIMITS;
 
 const attempts = new Map<string, number[]>();
 
-function clientIp(socket: Socket): string {
-  const forwarded = socket.handshake.headers["cf-connecting-ip"];
+function clientIp(headers: Record<string, string | string[] | undefined>, address: string): string {
+  const forwarded = headers["cf-connecting-ip"];
   const ip = Array.isArray(forwarded) ? forwarded[0] : forwarded;
-  return ip || socket.handshake.address;
+  return ip || address;
 }
 
 /** Zählt einen Versuch mit; false = zu viele in kurzer Zeit. */
 export function allowAttempt(kind: Kind, socket: Socket): boolean {
+  return allowIp(kind, clientIp(socket.handshake.headers, socket.handshake.address));
+}
+
+/** Dasselbe für HTTP-Anfragen (Song-Schnipsel). */
+export function allowRequest(kind: Kind, req: Request): boolean {
+  return allowIp(kind, clientIp(req.headers, req.socket.remoteAddress ?? ""));
+}
+
+function allowIp(kind: Kind, ip: string): boolean {
   const { max, windowMs } = LIMITS[kind];
-  const key = `${kind}:${clientIp(socket)}`;
+  const key = `${kind}:${ip}`;
   const now = Date.now();
   const recent = (attempts.get(key) ?? []).filter((at) => now - at < windowMs);
   if (recent.length >= max) {

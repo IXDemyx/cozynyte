@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Server } from "socket.io";
 import { geoImage } from "./games/geo";
+import { snippetRouter } from "./handlers/snippet";
 import { rooms } from "./state";
 
 const app = express();
@@ -17,6 +18,10 @@ export const io = new Server(http, { cors: { origin: true } });
 app.get("/health", (_req, res) => {
   res.json({ ok: true, rooms: rooms.size });
 });
+
+/* ---------- Song-Schnipsel (Einzelspieler, ohne Raum) ---------- */
+
+app.use("/api/snippet", snippetRouter);
 
 /* ---------- Länder-Quiz: Flaggen und Umrisse ---------- */
 

@@ -15,15 +15,17 @@ same table or over a video call. Live at <https://cozynyte.com>.
 | **Yahtzee** (Kniffel)                             | A shared score sheet – roll real dice at the table or roll digitally.                     |
 | **Draw & Guess** (Montagsmaler)                   | One player picks one of three words and draws it; everyone else guesses in the chat.      |
 | **Country Quiz** (Länder-Quiz)                    | Guess the country from its flag or shape, or name its capital – typed or multiple choice. |
+| **Song Snippet** (Song-Schnipsel)                 | Single player: name a song from 0.1 seconds; every wrong guess or skip plays a bit more.  |
 
-The start page groups them into **Music**, **Classics** and **Quiz**.
+The start page groups them into **Music**, **Classics**, **Quiz** and **Play alone**.
 
 The three music games share the same flow: lobby → everyone picks their own songs → rounds →
 reveal → final scores (podium with confetti). The host can switch between them in the lobby,
 so a room can be reused without anyone leaving.
 
 Stadt Land Fluss, Draw & Guess and the Country Quiz have their own lobbies (see [Scoring and rules](#scoring-and-rules)).
-Yahtzee works differently: there are no rounds, just one shared sheet. Everyone who joins gets
+Song Snippet has no room at all: it runs directly on its game page and talks to the server over
+plain HTTP (`/api/snippet`). Yahtzee works differently: there are no rounds, just one shared sheet. Everyone who joins gets
 their own column, players without a phone can be added by name, and every change shows up for
 everyone right away.
 
@@ -118,6 +120,7 @@ client/src/
   games/draw/     Draw & Guess (lobby, word collection, canvas, toolbar, renderer)
   games/geo/      Country Quiz (lobby, question with picture, answers, reveal)
   games/kniffel/  Yahtzee score sheet (dice panel, sheet with direct entry)
+  games/snippet/  Song Snippet (single player: Web Audio clips, search, stats in the browser)
   hooks/          room connection, server clock, theme and design, volume, sound effects, two-click confirm
   lib/            socket connection and player IDs, sounds, translations (lib/i18n/de.ts, en.ts),
                   search-engine texts (seo.ts), privacy text, donate link
@@ -128,8 +131,10 @@ server/src/
   state.ts        room and player state
   view.ts         per-player view of a room (hides answers) and broadcasting
   connection.ts   joining, leaving and host hand-over
-  handlers/       socket events per area (room, chat, music, slf, draw, geo, kniffel, dev)
-  games/          game logic (music, Stadt Land Fluss, Draw & Guess, Country Quiz, Yahtzee)
+  handlers/       socket events per area (room, chat, music, slf, draw, geo, kniffel, dev),
+                  plus the HTTP routes of Song Snippet (snippet.ts)
+  games/          game logic (music, Stadt Land Fluss, Draw & Guess, Country Quiz, Yahtzee,
+                  Song Snippet)
   draw/           word lists for Draw & Guess (German and English)
   music/          iTunes search, answer matching, song suggestions
   dev/            test bots for test mode
@@ -271,6 +276,28 @@ expects to live at the root of its address (e.g. its own subdomain), not under a
 - The picture is served by the server under a random ID per question, so the network tab does
   not give the country away (and a shape question does not reveal the flag).
 
+**Song Snippet (Song-Schnipsel)**
+
+- Single player, endless: a random well-known song from a category (the same artist lists as
+  the song suggestions), seven attempts with snippets of 0.1, 0.5, 1, 2, 4, 8 and 16 seconds
+  (`shared/snippet.ts`). Skipping or a wrong guess unlocks the next length.
+- Guesses are picked from the search. A guess counts as correct if title (without brackets,
+  "feat." and "- Remastered") and artist match, so other versions of the same song count.
+  Right artist but another song shows in yellow and still uses up the attempt.
+- The answer stays on the server until the round is over. The preview is passed through the
+  server (`/api/snippet/:id/audio`, not stored), so the browser can cut it exactly with Web
+  Audio and the address does not give the song away. Each snippet starts where the preview
+  becomes audible (Apple previews often fade in) and has a 5 ms fade against clicks.
+- Points: 7 at 0.1 s down to 1 at 16 s.
+- Streaks per category: songs guessed in a row and the points scored in them, each with a best.
+  The result shows a new best or the streak that just ended; the share text includes the streak.
+- After a skip or wrong guess the longer snippet plays straight away. Keyboard: Space plays
+  (also in the empty search), Enter guesses or loads the next song, Tab in the empty search skips.
+- Stats (played, guessed, streaks, distribution), the chosen category and the last 50 songs (not
+  repeated) are stored in the browser. Rounds expire on the server after an hour.
+- Rate limits per IP: 40 new songs per 10 minutes, 20 searches per 30 seconds, 60 guesses per
+  minute.
+
 **Yahtzee (Kniffel)**
 
 - Standard sheet: ones to sixes, bonus of 35 from 63 points in the upper section, three and
@@ -301,7 +328,8 @@ expects to live at the root of its address (e.g. its own subdomain), not under a
 ## Limitations
 
 - Rooms live in memory only; restarting the server ends running games.
-- Clips are limited to the 30-second previews iTunes provides.
+- Clips are limited to the 30-second previews iTunes provides. They usually start in the middle
+  of the song, so Song Snippet is not an intro quiz.
 - Release years come from iTunes and can be those of a re-release or compilation. If the same
   song appears several times in the search results, the earliest year is used, and the year
   is shown during song selection so obviously wrong ones can be avoided.
