@@ -1,6 +1,13 @@
-/** Song-Schnipsel: Statistik, Serien und zuletzt gespielte Songs – nur im Browser (localStorage). */
+/**
+ * Song-Schnipsel: Statistik, Serien und zuletzt gespielte Songs, dazu Stand und Statistik des
+ * Songs des Tages – nur im Browser (localStorage).
+ */
 
-import { SNIPPET_STAGES } from "../../../../shared/snippet";
+import {
+  SNIPPET_STAGES,
+  type SnippetAttempt,
+  type SnippetSolution,
+} from "../../../../shared/snippet";
 
 /** Serie einer Kategorie: erratene Songs am Stück und die Punkte dabei, jeweils mit Rekord. */
 export interface SnippetRun {
@@ -135,4 +142,121 @@ export function recordResult(
       newBestPoints: after.bestPoints > before.bestPoints,
     },
   };
+}
+
+/** Song des Tages: Stand eines Tages (heute oder aus dem Archiv), damit Neuladen nichts verliert. */
+export interface DailyProgress {
+  date: string;
+  number: number;
+  attempts: SnippetAttempt[];
+  solution: SnippetSolution | null;
+}
+
+/** Song des Tages: eigene Statistik, Serie in Tagen (erraten an aufeinanderfolgenden Tagen). */
+export interface DailyStats {
+  played: number;
+  won: number;
+  streak: number;
+  best: number;
+  byStage: number[];
+  /** Zuletzt gespielter bzw. erratener Tag („JJJJ-MM-TT“). */
+  lastPlayed: string;
+  lastWon: string;
+}
+
+const DAYS_KEY = "snippetDailyDays";
+const DAILY_STATS_KEY = "snippetDailyStats";
+
+/** Alle gespielten Tage nach Datum. */
+export function loadDays(): Record<string, DailyProgress> {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(DAYS_KEY) ?? "null");
+    if (!saved || typeof saved !== "object") return {};
+    const days: Record<string, DailyProgress> = {};
+    for (const [date, day] of Object.entries(saved as Record<string, Partial<DailyProgress>>)) {
+      if (!day || !Array.isArray(day.attempts)) continue;
+      days[date] = {
+        date,
+        number: count(day.number),
+        attempts: day.attempts.slice(0, SNIPPET_STAGES.length),
+        solution: day.solution ?? null,
+      };
+    }
+    return days;
+  } catch {
+    return {};
+  }
+}
+
+export function saveDay(progress: DailyProgress) {
+  try {
+    localStorage.setItem(DAYS_KEY, JSON.stringify({ ...loadDays(), [progress.date]: progress }));
+  } catch {
+    // Ohne Speicher beginnt der Tag beim Neuladen eben von vorn.
+  }
+}
+
+const emptyDaily = (): DailyStats => ({
+  played: 0,
+  won: 0,
+  streak: 0,
+  best: 0,
+  byStage: SNIPPET_STAGES.map(() => 0),
+  lastPlayed: "",
+  lastWon: "",
+});
+
+export function loadDailyStats(): DailyStats {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem(DAILY_STATS_KEY) ?? "null");
+    if (!saved || typeof saved !== "object") return emptyDaily();
+    const s = saved as Partial<Record<keyof DailyStats, unknown>>;
+    const byStage = Array.isArray(s.byStage) ? s.byStage : [];
+    return {
+      played: count(s.played),
+      won: count(s.won),
+      streak: count(s.streak),
+      best: count(s.best),
+      byStage: SNIPPET_STAGES.map((_, i) => count(byStage[i])),
+      lastPlayed: typeof s.lastPlayed === "string" ? s.lastPlayed : "",
+      lastWon: typeof s.lastWon === "string" ? s.lastWon : "",
+    };
+  } catch {
+    return emptyDaily();
+  }
+}
+
+/** Der Tag davor („JJJJ-MM-TT“), leer bei ungültigem Datum. */
+function dayBefore(date: string): string {
+  const at = Date.parse(date);
+  return Number.isNaN(at) ? "" : new Date(at - 24 * 60 * 60_000).toISOString().slice(0, 10);
+}
+
+/** Aktuelle Tagesserie – gerissen, wenn gestern und heute nichts erraten wurde. */
+export function dailyStreak(stats: DailyStats, today: string): number {
+  if (!stats.lastWon) return 0;
+  return stats.lastWon === today || stats.lastWon === dayBefore(today) ? stats.streak : 0;
+}
+
+/** Ergebnis des Tages eintragen (nur einmal pro Tag). `stage`: erraten bei, null = nicht. */
+export function recordDaily(date: string, stage: number | null): DailyStats {
+  const s = loadDailyStats();
+  if (s.lastPlayed === date) return s;
+  const won = stage !== null;
+  const streak = won ? (s.lastWon === dayBefore(date) ? s.streak + 1 : 1) : 0;
+  const next: DailyStats = {
+    played: s.played + 1,
+    won: s.won + (won ? 1 : 0),
+    streak,
+    best: Math.max(s.best, streak),
+    byStage: s.byStage.map((n, i) => (i === stage ? n + 1 : n)),
+    lastPlayed: date,
+    lastWon: won ? date : s.lastWon,
+  };
+  try {
+    localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(next));
+  } catch {
+    // Ohne Speicher gilt die Statistik eben nur bis zum Neuladen.
+  }
+  return next;
 }

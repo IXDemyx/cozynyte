@@ -1,6 +1,6 @@
 /** Song-Schnipsel: Anfragen an den Server (HTTP unter /api/snippet, ohne Raum). */
 
-import type { SnippetTrack, SnippetTurn } from "../../../../shared/snippet";
+import type { SnippetDaily, SnippetTrack, SnippetTurn } from "../../../../shared/snippet";
 
 type Reply<T> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -20,6 +20,13 @@ async function request<T>(path: string, body?: unknown): Promise<Reply<T>> {
 /** Neue Runde. `recent`: zuletzt gespielte Songs, die nicht gleich wiederkommen sollen. */
 export const newSnippet = (category: string, recent: number[]) =>
   request<{ id: string }>("/new", { category, recent });
+
+/**
+ * Song des Tages – heute oder (`number`) ein früherer Tag aus dem Archiv. `date`, `used`, `done`:
+ * bisheriger Stand im Browser für diesen Tag, damit Neuladen nichts verliert.
+ */
+export const dailySnippet = (number: number | null, date: string, used: number, done: boolean) =>
+  request<SnippetDaily>("/daily", { number, date, used, done });
 
 export const searchSnippet = (term: string) =>
   request<{ tracks: SnippetTrack[] }>(`/search?q=${encodeURIComponent(term)}`);

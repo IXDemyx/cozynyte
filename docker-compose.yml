@@ -7,3 +7,12 @@ services:
     restart: unless-stopped
     ports:
       - "1337:3001"
+    environment:
+      # Song des Tages: anonyme Zähler für den Vergleich mit allen – im Volume, damit ein
+      # Neustart oder Deploy sie nicht löscht.
+      - DATA_DIR=/app/data
+    volumes:
+      - cozynyte-data:/app/data
+
+volumes:
+  cozynyte-data:

@@ -6,16 +6,16 @@ same table or over a video call. Live at <https://cozynyte.com>.
 
 ## Games
 
-| Game                                              | What you do                                                                               |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Guess the Song** (Song erraten)                 | A preview plays; everyone types title and artist into the chat as fast as possible.       |
-| **Guess the Year** (Jahr schätzen)                | A preview plays; everyone guesses the release year.                                       |
-| **Song Timeline** (Zeitleiste)                    | Place each song in your own timeline; the first with enough correct cards wins.           |
-| **Name, Place, Animal, Thing** (Stadt Land Fluss) | A letter is drawn; fill in a word for every category before someone calls stop.           |
-| **Yahtzee** (Kniffel)                             | A shared score sheet – roll real dice at the table or roll digitally.                     |
-| **Draw & Guess** (Montagsmaler)                   | One player picks one of three words and draws it; everyone else guesses in the chat.      |
-| **Country Quiz** (Länder-Quiz)                    | Guess the country from its flag or shape, or name its capital – typed or multiple choice. |
-| **Song Snippet** (Song-Schnipsel)                 | Single player: name a song from 0.1 seconds; every wrong guess or skip plays a bit more.  |
+| Game                                              | What you do                                                                                    |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **Guess the Song** (Song erraten)                 | A preview plays; everyone types title and artist into the chat as fast as possible.            |
+| **Guess the Year** (Jahr schätzen)                | A preview plays; everyone guesses the release year.                                            |
+| **Song Timeline** (Zeitleiste)                    | Place each song in your own timeline; the first with enough correct cards wins.                |
+| **Name, Place, Animal, Thing** (Stadt Land Fluss) | A letter is drawn; fill in a word for every category before someone calls stop.                |
+| **Yahtzee** (Kniffel)                             | A shared score sheet – roll real dice at the table or roll digitally.                          |
+| **Draw & Guess** (Montagsmaler)                   | One player picks one of three words and draws it; everyone else guesses in the chat.           |
+| **Country Quiz** (Länder-Quiz)                    | Guess the country from its flag or shape, or name its capital – typed or multiple choice.      |
+| **Song Snippet** (Song-Schnipsel)                 | Single player: name a song from 0.1 seconds; every wrong guess or skip plays more. Daily song. |
 
 The start page groups them into **Music**, **Classics**, **Quiz** and **Play alone**.
 
@@ -278,9 +278,14 @@ expects to live at the root of its address (e.g. its own subdomain), not under a
 
 **Song Snippet (Song-Schnipsel)**
 
-- Single player, endless: a random well-known song from a category (the same artist lists as
-  the song suggestions), seven attempts with snippets of 0.1, 0.5, 1, 2, 4, 8 and 16 seconds
-  (`shared/snippet.ts`). Skipping or a wrong guess unlocks the next length.
+- Single player, two modes; endless is hidden for now (`ENDLESS` in
+  `client/src/games/snippet/Snippet.tsx`), so only the song of the day shows. Song of the day: the
+  same well-known song for everyone, from a fixed list (`server/src/music/dailySongs.ts`, day 1 =
+  2026-10-24, one entry per day, new songs only appended; if a song isn't found, the next entry is
+  used). It changes at midnight Berlin time. Endless: a random well-known song from a category
+  (the same artist lists as the song suggestions). Both have seven attempts with snippets of 0.1,
+  0.5, 1, 2, 4, 7 and 12 seconds (`shared/snippet.ts`). Skipping or a wrong guess unlocks the
+  next length.
 - Guesses are picked from the search. A guess counts as correct if title (without brackets,
   "feat." and "- Remastered") and artist match, so other versions of the same song count.
   Right artist but another song shows in yellow and still uses up the attempt.
@@ -288,13 +293,22 @@ expects to live at the root of its address (e.g. its own subdomain), not under a
   server (`/api/snippet/:id/audio`, not stored), so the browser can cut it exactly with Web
   Audio and the address does not give the song away. Each snippet starts where the preview
   becomes audible (Apple previews often fade in) and has a 5 ms fade against clicks.
-- Points: 7 at 0.1 s down to 1 at 16 s.
+- Points: 7 at 0.1 s down to 1 at 12 s.
 - Streaks per category: songs guessed in a row and the points scored in them, each with a best.
   The result shows a new best or the streak that just ended; the share text includes the streak.
 - After a skip or wrong guess the longer snippet plays straight away. Keyboard: Space plays
   (also in the empty search), Enter guesses or loads the next song, Tab in the empty search skips.
 - Stats (played, guessed, streaks, distribution), the chosen category and the last 50 songs (not
-  repeated) are stored in the browser. Rounds expire on the server after an hour.
+  repeated) are stored in the browser. The song of the day keeps its own stats (daily streak =
+  days in a row guessed) and the attempts per day in the browser; after a reload
+  `POST /api/snippet/daily` gets the number of attempts used, so the round continues where it
+  was. Rounds expire on the server after an hour.
+- Archive: earlier days can be replayed (`number` in `POST /api/snippet/daily`); they don't count
+  for the daily streak or the comparison.
+- Comparison with everyone: when a song of the day is finished on its day, the server counts the
+  result (stage or not guessed) per day, at most 3 per IP and day (IPs only hashed, in memory).
+  The counts are saved to `$DATA_DIR/snippet-daily.json` (default `data/`, in Docker a volume, see
+  `docker-compose.yml`) a few seconds after a change and on shutdown.
 - Rate limits per IP: 40 new songs per 10 minutes, 20 searches per 30 seconds, 60 guesses per
   minute.
 

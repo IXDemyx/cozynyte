@@ -125,7 +125,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       {
         name: "Song-Schnipsel",
         page: "snippet",
-        text: "Für eine Person: Erkenne den Song an 0,1 Sekunden. Nach jedem Fehlversuch hörst du mehr.",
+        text: "Für eine Person: Erkenne den Song an 0,1 Sekunden. Nach jedem Fehlversuch hörst du mehr. Jeden Tag ein Song des Tages.",
       },
     ],
     faqTitle: "Häufige Fragen",
@@ -215,7 +215,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       {
         name: "Song Snippet",
         page: "snippet",
-        text: "For one player: name the song from 0.1 seconds. Every wrong guess plays a little more.",
+        text: "For one player: name the song from 0.1 seconds. Every wrong guess plays a little more. A new song of the day, every day.",
       },
     ],
     faqTitle: "FAQ",

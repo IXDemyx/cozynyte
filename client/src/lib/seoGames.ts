@@ -1242,8 +1242,14 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       title: "Song-Schnipsel: Erkennst du den Song?",
       titleAccent: "Song-Schnipsel",
       intro:
-        "Du hörst zuerst 0,1 Sekunden eines bekannten Songs. Nach jedem Fehlversuch oder Überspringen wird der Ausschnitt länger. Für eine Person, ohne Raum und ohne Anmeldung.",
-      facts: ["1 Spieler", "7 Versuche", "0,1 bis 16 Sek.", "Hörproben über iTunes"],
+        "Du hörst zuerst 0,1 Sekunden eines bekannten Songs. Nach jedem Fehlversuch oder Überspringen wird der Ausschnitt länger. Jeden Tag ein neuer Song, für alle derselbe. Für eine Person, ohne Anmeldung.",
+      facts: [
+        "1 Spieler",
+        "7 Versuche",
+        "0,1 bis 12 Sek.",
+        "Song des Tages",
+        "Hörproben über iTunes",
+      ],
       example: {
         title: "Beispielrunde",
         round: "Song 4",
@@ -1271,7 +1277,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       rules: [
         {
           title: "Stufen",
-          text: "0,1 · 0,5 · 1 · 2 · 4 · 8 · 16 Sekunden. Jeder Ausschnitt beginnt an derselben Stelle.",
+          text: "0,1 · 0,5 · 1 · 2 · 4 · 7 · 12 Sekunden. Jeder Ausschnitt beginnt an derselben Stelle.",
         },
         {
           title: "Raten",
@@ -1282,25 +1288,34 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           text: "Gelb heißt: richtiger Interpret, anderer Song. Der Versuch ist trotzdem verbraucht.",
         },
         {
-          title: "Kategorien",
-          text: "Aktuell, Pop, Rock, Hip-Hop, Deutsch, 80er, 90er, 2000er, Elektro oder gemischt. Jede hat ihre eigene Serie.",
+          title: "Song des Tages",
+          text: "Jeden Tag ein bekannter Song, für alle derselbe, ein Versuch pro Tag. Neuer Song um 0 Uhr MEZ (im Sommer MESZ). Die Tagesserie zählt Tage am Stück, an denen du ihn erraten hast.",
+        },
+        {
+          title: "Archiv und Vergleich",
+          text: "Frühere Songs des Tages kannst du im Archiv nachspielen (zählt nicht für die Tagesserie). Nach der Auflösung siehst du, bei welcher Stufe alle anderen den Song erkannt haben.",
         },
         {
           title: "Tastatur",
-          text: "Leertaste spielt ab, Enter rät und holt den nächsten Song, Tab im leeren Suchfeld überspringt.",
+          text: "Leertaste spielt ab, Enter rät, Tab im leeren Suchfeld überspringt.",
         },
       ],
-      scoreTitle: "Punkte und Serie",
+      scoreTitle: "Ergebnis und Serie",
       scores: [
-        { label: "Erraten bei 0,1 s", value: "7" },
-        { label: "Jede weitere Stufe", value: "−1" },
-        { label: "Erraten bei 16 s", value: "1" },
-        { label: "Serie", value: "pro Kategorie, mit Rekord" },
+        { label: "Ergebnis", value: "Versuche, z. B. 3/7" },
+        { label: "Nicht erraten", value: "X/7" },
+        { label: "Tagesserie", value: "Tage am Stück erraten" },
+        { label: "Vergleich", value: "Anteil aller Spieler je Stufe" },
+        { label: "Archiv", value: "zählt nicht für die Serie" },
       ],
       faq: [
         {
           q: "Woher kommen die Songs?",
-          a: "Bekannte Songs von Interpreten aus der gewählten Kategorie, abgespielt als Hörprobe über die Musiksuche von Apple (iTunes).",
+          a: "Aus einer festen Liste bekannter Hits aus mehreren Jahrzehnten, international und deutsch. Abgespielt werden Hörproben über die Musiksuche von Apple (iTunes).",
+        },
+        {
+          q: "Wann gibt es den nächsten Song des Tages?",
+          a: "Um 0 Uhr MEZ, im Sommer MESZ. Bis dahin kannst du im Archiv frühere Tage nachspielen.",
         },
         {
           q: "Warum beginnt der Ausschnitt nicht am Anfang des Songs?",
@@ -1327,8 +1342,8 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       title: "Song Snippet: can you name the song?",
       titleAccent: "Song Snippet",
       intro:
-        "You hear just 0.1 seconds of a well-known song. Every wrong guess or skip makes the snippet longer. For one player, no room and no sign-up.",
-      facts: ["1 player", "7 attempts", "0.1 to 16 s", "Previews via iTunes"],
+        "You hear just 0.1 seconds of a well-known song. Every wrong guess or skip makes the snippet longer. A new song every day, the same for everyone. For one player, no sign-up.",
+      facts: ["1 player", "7 attempts", "0.1 to 12 s", "Song of the day", "Previews via iTunes"],
       example: {
         title: "Example round",
         round: "Song 4",
@@ -1356,7 +1371,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
       rules: [
         {
           title: "Stages",
-          text: "0.1 · 0.5 · 1 · 2 · 4 · 8 · 16 seconds. Every snippet starts at the same point.",
+          text: "0.1 · 0.5 · 1 · 2 · 4 · 7 · 12 seconds. Every snippet starts at the same point.",
         },
         {
           title: "Guessing",
@@ -1367,25 +1382,34 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           text: "Yellow means right artist, different song. The attempt still counts.",
         },
         {
-          title: "Categories",
-          text: "Current, pop, rock, hip-hop, German, 80s, 90s, 2000s, electronic or mixed. Each has its own streak.",
+          title: "Song of the day",
+          text: "A well-known song every day, the same for everyone, one go per day. A new song at midnight CET (CEST in summer). The daily streak counts the days in a row you got it.",
+        },
+        {
+          title: "Archive and comparison",
+          text: "Replay earlier songs of the day in the archive (doesn't count towards your daily streak). After the answer you see at which stage everyone else recognised the song.",
         },
         {
           title: "Keyboard",
-          text: "Space plays, Enter guesses and loads the next song, Tab in the empty search skips.",
+          text: "Space plays, Enter guesses, Tab in the empty search skips.",
         },
       ],
-      scoreTitle: "Points and streaks",
+      scoreTitle: "Result and streak",
       scores: [
-        { label: "Guessed at 0.1 s", value: "7" },
-        { label: "Each further stage", value: "−1" },
-        { label: "Guessed at 16 s", value: "1" },
-        { label: "Streak", value: "per category, with best" },
+        { label: "Result", value: "attempts, e.g. 3/7" },
+        { label: "Not guessed", value: "X/7" },
+        { label: "Daily streak", value: "days in a row guessed" },
+        { label: "Comparison", value: "share of all players per stage" },
+        { label: "Archive", value: "doesn't count for the streak" },
       ],
       faq: [
         {
           q: "Where do the songs come from?",
-          a: "Well-known songs by artists from the chosen category, played as previews via Apple's music search (iTunes).",
+          a: "From a fixed list of well-known hits from several decades, international and German. They play as previews via Apple's music search (iTunes).",
+        },
+        {
+          q: "When is the next song of the day?",
+          a: "At midnight CET, CEST in summer (11 pm UK time). Until then you can replay earlier days in the archive.",
         },
         {
           q: "Why doesn't the snippet start at the beginning of the song?",

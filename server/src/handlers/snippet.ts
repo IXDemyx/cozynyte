@@ -2,6 +2,8 @@
  * Song-Schnipsel über HTTP (unter /api/snippet) – ohne Raum und ohne Socket. Limits pro IP.
  *
  * - POST /new            { category, recent }  → { id }
+ * - POST /daily          { number?, date, used, done } → SnippetDaily (Song des Tages, mit `number`
+ *                        ein früherer Tag aus dem Archiv)
  * - GET  /:id/audio      Hörprobe der Runde, vom Server durchgereicht (verrät keinen Titel)
  * - GET  /search?q=…     → { tracks }
  * - POST /:id/guess      { trackId } → SnippetTurn
@@ -9,8 +11,8 @@
  */
 
 import express, { type Response } from "express";
-import { hasGame, newGame, play, previewOf, toSnippetTrack } from "../games/snippet";
-import { allowRequest } from "../limits";
+import { hasGame, newDaily, newGame, play, previewOf, toSnippetTrack } from "../games/snippet";
+import { allowRequest, requestIp } from "../limits";
 import { getCachedTrack, searchTracks } from "../music/itunes";
 
 export const snippetRouter = express.Router();
@@ -27,6 +29,23 @@ snippetRouter.post("/new", async (req, res) => {
     : [];
   try {
     res.json({ ok: true, id: await newGame(category, recent) });
+  } catch {
+    fail(res, "search_unavailable", 503);
+  }
+});
+
+// Song des Tages. `date`, `used` und `done`: bisheriger Stand im Browser (für das Neuladen).
+snippetRouter.post("/daily", async (req, res) => {
+  if (!allowRequest("snippetNew", req)) return fail(res, "too_many_attempts", 429);
+  const used = Number(req.body?.used);
+  const number = Number(req.body?.number);
+  try {
+    const daily = await newDaily(Number.isInteger(number) ? number : null, {
+      date: String(req.body?.date ?? "").slice(0, 10),
+      used: Number.isInteger(used) ? used : 0,
+      done: req.body?.done === true,
+    });
+    res.json({ ok: true, ...daily });
   } catch {
     fail(res, "search_unavailable", 503);
   }
@@ -82,14 +101,14 @@ snippetRouter.post("/:id/guess", (req, res) => {
   // Geraten wird nur aus der Suche – der Song liegt dann im Zwischenspeicher.
   const track = getCachedTrack(Number(req.body?.trackId));
   if (!track) return fail(res, "track_not_found");
-  const turn = play(id, track);
+  const turn = play(id, track, requestIp(req));
   if (!turn) return fail(res, "snippet_expired", 404);
   res.json({ ok: true, ...turn });
 });
 
 snippetRouter.post("/:id/skip", (req, res) => {
   if (!allowRequest("snippetGuess", req)) return fail(res, "too_many_attempts", 429);
-  const turn = play(String(req.params.id));
+  const turn = play(String(req.params.id), undefined, requestIp(req));
   if (!turn) return fail(res, "snippet_expired", 404);
   res.json({ ok: true, ...turn });
 });

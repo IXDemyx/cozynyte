@@ -34,9 +34,14 @@ export function allowAttempt(kind: Kind, socket: Socket): boolean {
   return allowIp(kind, clientIp(socket.handshake.headers, socket.handshake.address));
 }
 
+/** IP-Adresse einer HTTP-Anfrage (hinter dem Tunnel aus cf-connecting-ip). */
+export function requestIp(req: Request): string {
+  return clientIp(req.headers, req.socket.remoteAddress ?? "");
+}
+
 /** Dasselbe für HTTP-Anfragen (Song-Schnipsel). */
 export function allowRequest(kind: Kind, req: Request): boolean {
-  return allowIp(kind, clientIp(req.headers, req.socket.remoteAddress ?? ""));
+  return allowIp(kind, requestIp(req));
 }
 
 function allowIp(kind: Kind, ip: string): boolean {
