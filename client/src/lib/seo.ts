@@ -1,8 +1,9 @@
 /**
  * Texte für Suchmaschinen und die Startseite: Überschrift, „So funktioniert's“ und FAQ.
- * Eine Quelle für beides – die Startseite zeigt sie an, und beim Build landen sie (deutsch) als
- * fertiges HTML und strukturierte Daten in der index.html (siehe vite.config.ts).
- * Bewusst ohne Imports, damit auch die Vite-Konfiguration die Datei laden kann.
+ * Eine Quelle für beides – die Startseite zeigt sie an, und beim Build landen sie als
+ * fertiges HTML und strukturierte Daten in den index.html-Dateien (siehe vite.config.ts): Englisch
+ * ist die Hauptsprache unter `/`, Deutsch die Zusatzsprache unter `/de`.
+ * Die Vite-Konfiguration lädt die Datei auch: daher nur Imports aus src/lib und mit Endung „.ts“.
  */
 
 export const SITE_URL = "https://cozynyte.com/";
@@ -15,7 +16,7 @@ export type SeoLanguage = "de" | "en";
  */
 export const HOME_PATH: Record<SeoLanguage, string> = { en: "/", de: "/de" };
 
-import { GAME_PATH, GAME_SEO, type GamePageId } from "./seoGames";
+import { GAME_PATH, GAME_SEO, type GamePageId } from "./seoGames.ts";
 
 export { GAME_PATH, GAME_SEO, type GamePageId };
 
@@ -68,10 +69,9 @@ interface SeoText {
 
 export const SEO: Record<SeoLanguage, SeoText> = {
   de: {
-    metaTitle:
-      "Partyspiele online mit Freunden – Stadt Land Fluss, Montagsmaler, Musikquiz | Cozynyte",
+    metaTitle: "Partyspiele online mit Freunden: Stadt Land Fluss & mehr | Cozynyte",
     metaDescription:
-      "Kostenlose Partyspiele im Browser: Stadt Land Fluss, Montagsmaler, Song erraten, Musikquiz, Flaggen-Quiz und Kniffel. Raum erstellen, Link teilen, losspielen – ohne Anmeldung, auch per Videocall.",
+      "Kostenlose Partyspiele im Browser: Montagsmaler, Musikquiz, Stadt Land Fluss, Kniffel, dazu Song, Flagge und Umriss des Tages. Ohne Anmeldung.",
     ogTitle: "Partyspiele im Browser – Cozynyte",
     ogDescription:
       "Stadt Land Fluss, Montagsmaler, Song erraten, Kniffel und mehr – Raum erstellen, Link teilen, losspielen.",
@@ -150,7 +150,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       },
       {
         q: "Wie viele können mitspielen?",
-        a: "Bis zu 16 Spieler pro Raum. Die meisten Spiele brauchen mindestens zwei, Kniffel geht auch allein, Song-Schnipsel, Flagge und Umriss des Tages sind für eine Person.",
+        a: "Bis zu 16 Spieler pro Raum. Die meisten Spiele brauchen mindestens zwei, Kniffel geht auch allein. Song-Schnipsel, Flagge und Umriss des Tages sind für eine Person.",
       },
       {
         q: "Können wir auch über Discord oder Zoom spielen?",
@@ -168,10 +168,9 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     noscript: "Für die Spiele wird JavaScript benötigt.",
   },
   en: {
-    metaTitle:
-      "Party games online with friends – Draw & Guess, music quiz, Name Place Animal | Cozynyte",
+    metaTitle: "Party games online with friends: Draw & Guess & more | Cozynyte",
     metaDescription:
-      "Free multiplayer party games in your browser: Draw & Guess, Guess the Song, music quiz, flag quiz, Name Place Animal Thing and Yahtzee. Create a room, share the link, play – no sign-up, works over video calls.",
+      "Free party games in your browser: Draw & Guess, music quiz, Name Place Animal, Yahtzee, plus a song, flag and shape of the day. No sign-up.",
     ogTitle: "Party games in your browser – Cozynyte",
     ogDescription:
       "Draw & Guess, Guess the Song, Yahtzee and more – create a room, share the link, play.",
@@ -247,7 +246,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       },
       {
         q: "How many people can play?",
-        a: "Up to 16 players per room. Most games need at least two, Yahtzee also works solo, Song Snippet, Flag of the Day and Shape of the Day are for one player.",
+        a: "Up to 16 players per room. Most games need at least two, Yahtzee also works solo. Song Snippet, Flag of the Day and Shape of the Day are for one player.",
       },
       {
         q: "Can we play over Discord or Zoom?",
@@ -328,11 +327,21 @@ export function staticGameHtml(lang: SeoLanguage, page: GamePageId): string {
   ].join("");
 }
 
+/** Spielseiten mit eigenem Vorschaubild (client/public/og-<seite>-<sprache>.png). */
+const OWN_IMAGE: GamePageId[] = ["snippet", "flag", "outline"];
+
 /** Titel, Beschreibung, Sprachversionen (hreflang) und Link-Vorschau für den <head>. */
 export function headHtml(lang: SeoLanguage, page: SeoPage = "home"): string {
   const s = page === "home" ? SEO[lang] : GAME_SEO[page][lang];
-  // Vorschaubild für geteilte Links – je Sprache eigenes Bild mit übersetztem Text.
-  const image = new URL(lang === "en" ? "og-image-en.png" : "og-image.png", SITE_URL).href;
+  // Vorschaubild für geteilte Links – je Sprache eigenes Bild mit übersetztem Text, die
+  // Tagesrätsel mit eigenem (scripts/og-images.mjs).
+  const file =
+    page !== "home" && OWN_IMAGE.includes(page)
+      ? `og-${page}-${lang}.png`
+      : lang === "en"
+        ? "og-image-en.png"
+        : "og-image.png";
+  const image = new URL(file, SITE_URL).href;
   return [
     `<title>${escape(s.metaTitle)}</title>`,
     `<meta name="description" content="${escape(s.metaDescription)}" />`,

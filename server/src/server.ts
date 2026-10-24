@@ -64,6 +64,13 @@ if (existsSync(dist)) {
   app.get("/de", (_req, res) => res.sendFile(path.join(dist, "de", "index.html")));
   // Früher lag Englisch unter /en: dauerhaft auf die Hauptseite umleiten (alte Links, Google).
   app.get("/en", (_req, res) => res.redirect(301, "/"));
+  // Song-Schnipsel heißt jetzt wie Flagge und Umriss „… des Tages“: alte Adressen umleiten.
+  for (const [old, now] of [
+    ["/song-snippet", "/song-of-the-day"],
+    ["/de/song-schnipsel", "/de/song-des-tages"],
+  ]) {
+    app.get([old, `${old}/`], (_req, res) => res.redirect(301, now));
+  }
   // Datenschutz: nicht in die Suchergebnisse. Die Adresse liefert (wie jede Unterseite) erst das
   // HTML der Startseite aus – Google hielt sie sonst für die Startseite und zeigte sie bei der
   // Suche nach „Cozynyte“ an. Links von dort zählen weiter (follow).

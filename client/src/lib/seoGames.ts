@@ -3,7 +3,7 @@
  * nur wegen der Textmenge ausgelagert – ebenfalls ohne Imports zur Laufzeit.
  */
 
-import type { SeoLanguage } from "./seo";
+import type { SeoLanguage } from "./seo.ts";
 
 /**
  * Spielseiten: je Spiel eine eigene Seite pro Sprache, damit Google sie für die Suche nach dem
@@ -30,7 +30,7 @@ export const GAME_PATH: Record<GamePageId, Record<SeoLanguage, string>> = {
   kniffel: { en: "/yahtzee", de: "/de/kniffel" },
   draw: { en: "/draw-and-guess", de: "/de/montagsmaler" },
   geo: { en: "/country-quiz", de: "/de/laender-quiz" },
-  snippet: { en: "/song-snippet", de: "/de/song-schnipsel" },
+  snippet: { en: "/song-of-the-day", de: "/de/song-des-tages" },
   flag: { en: "/flag-of-the-day", de: "/de/flagge-des-tages" },
   outline: { en: "/shape-of-the-day", de: "/de/umriss-des-tages" },
 };
@@ -1442,7 +1442,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
     de: {
       metaTitle: "Flagge des Tages: Flaggenrätsel mit Farben | Cozynyte",
       metaDescription:
-        "Tägliches Flaggenrätsel für eine Person: Jeder Tipp deckt auf, wo die Farben passen. Dazu Entfernung und Richtung zum gesuchten Land. Kostenlos im Browser, ohne Anmeldung.",
+        "Tägliches Flaggenrätsel: Jeder Tipp deckt auf, wo die Farben passen, dazu Entfernung und Richtung zum Land. Kostenlos im Browser, ohne Anmeldung.",
       ogTitle: "Flagge des Tages – das tägliche Flaggenrätsel",
       ogDescription: "Eine verdeckte Flagge, sieben Tipps. Kostenlos im Browser.",
       name: "Flagge des Tages",
