@@ -3,7 +3,9 @@ import { FiArrowUp, FiCalendar, FiCheck, FiCopy, FiFlag, FiSearch } from "react-
 import { COUNTRIES, COUNTRY_BY_CODE } from "../../../../shared/countries";
 import {
   FLAG_GRID,
+  FLAG_PALETTE,
   FLAG_TRIES,
+  decodeGrid,
   decodeMask,
   flagDateOf,
   type DailyKind,
@@ -22,7 +24,7 @@ import { useConfirm } from "../../hooks/useConfirm";
 import { useLanguage, type Language } from "../../lib/i18n";
 import { GAME_PATH } from "../../lib/seo";
 import { playEffect } from "../../lib/sounds";
-import { flagImage, outlineImage, playFlag } from "./api";
+import { flagGrid, flagImage, outlineImage, playFlag } from "./api";
 import {
   flagStreak,
   loadFlagDays,
@@ -79,27 +81,30 @@ function searchCountries(term: string, language: Language, skip: Set<string>): s
     .map((item) => item.code);
 }
 
-/** Bild einer Flagge laden (einmal pro Land). */
-const images = new Map<string, Promise<HTMLImageElement>>();
-function loadImage(code: string): Promise<HTMLImageElement> {
-  let image = images.get(code);
-  if (!image) {
-    image = new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = flagImage(code);
-    });
-    image.catch(() => images.delete(code));
-    images.set(code, image);
+/** Größe einer Rasterzelle auf der Zeichenfläche. */
+const CELL = { w: CANVAS.w / FLAG_GRID.w, h: CANVAS.h / FLAG_GRID.h };
+
+/** Farben der Palette für die aufgedeckten Zellen. */
+const TONES = FLAG_PALETTE.map(([r, g, b]) => `rgb(${r} ${g} ${b})`);
+
+/** Farbraster einer Flagge laden (einmal pro Land) – dasselbe, mit dem der Server vergleicht. */
+const grids = new Map<string, Promise<Uint8Array>>();
+function loadGrid(code: string): Promise<Uint8Array> {
+  let grid = grids.get(code);
+  if (!grid) {
+    grid = fetch(flagGrid(code))
+      .then((res) => res.json() as Promise<{ runs: string }>)
+      .then(({ runs }) => decodeGrid(runs));
+    grid.catch(() => grids.delete(code));
+    grids.set(code, grid);
   }
-  return image;
+  return grid;
 }
 
 /**
- * Die gesuchte Flagge, soweit aufgedeckt: Jede getippte Flagge wird dort gezeichnet, wo sie
- * farblich passt (Maske vom Server). Die gesuchte Flagge selbst kennt der Browser erst nach der
- * Auflösung.
+ * Die gesuchte Flagge, soweit aufgedeckt: Jede Zelle, an der eine getippte Flagge farblich passt
+ * (Maske vom Server), wird flach in dieser Farbe gefüllt. Die gesuchte Flagge selbst kennt der
+ * Browser erst nach der Auflösung.
  */
 function HiddenFlag({ attempts, solution }: { attempts: FlagAttempt[]; solution: string | null }) {
   const { t, language } = useLanguage();
@@ -116,30 +121,23 @@ function HiddenFlag({ attempts, solution }: { attempts: FlagAttempt[]; solution:
     const target = canvas.current?.getContext("2d");
     if (!target || solution) return;
     let cancelled = false;
-    void Promise.all(attempts.map((a) => loadImage(a.code).catch(() => null))).then((imgs) => {
+    void Promise.all(attempts.map((a) => loadGrid(a.code).catch(() => null))).then((cells) => {
       if (cancelled) return;
       target.clearRect(0, 0, CANVAS.w, CANVAS.h);
-      const layer = document.createElement("canvas");
-      layer.width = CANVAS.w;
-      layer.height = CANVAS.h;
-      const draw = layer.getContext("2d")!;
-      const stencil = document.createElement("canvas");
-      stencil.width = FLAG_GRID.w;
-      stencil.height = FLAG_GRID.h;
-      const cut = stencil.getContext("2d")!;
-      imgs.forEach((img, n) => {
-        if (!img) return;
-        // Maske als Schablone: deckende Zellen, wo die Farbe stimmt.
-        const cells = cut.createImageData(FLAG_GRID.w, FLAG_GRID.h);
-        masks[n].forEach((on, i) => (cells.data[i * 4 + 3] = on ? 255 : 0));
-        cut.putImageData(cells, 0, 0);
-        draw.globalCompositeOperation = "source-over";
-        draw.clearRect(0, 0, CANVAS.w, CANVAS.h);
-        draw.drawImage(img, 0, 0, CANVAS.w, CANVAS.h);
-        draw.globalCompositeOperation = "destination-in";
-        draw.imageSmoothingEnabled = false;
-        draw.drawImage(stencil, 0, 0, CANVAS.w, CANVAS.h);
-        target.drawImage(layer, 0, 0);
+      cells.forEach((grid, n) => {
+        if (!grid) return;
+        // Passende Zellen flach in ihrer Palettenfarbe füllen – Muster der getippten Flagge
+        // (Sterne, Wappen) gehören nicht zur gesuchten und würden sonst mitgezeichnet.
+        masks[n].forEach((on, i) => {
+          if (!on) return;
+          target.fillStyle = TONES[grid[i]];
+          target.fillRect(
+            (i % FLAG_GRID.w) * CELL.w,
+            Math.floor(i / FLAG_GRID.w) * CELL.h,
+            CELL.w,
+            CELL.h,
+          );
+        });
       });
     });
     return () => {

@@ -18,6 +18,23 @@ export const FLAG_TRIES = 7;
 /** Raster für den Farbvergleich (Flaggen sind 4:3). */
 export const FLAG_GRID = { w: 64, h: 48 };
 
+/**
+ * Palette des Farbvergleichs (wie in scripts/flag-grids.mjs): Rot, Weiß, Schwarz, Gelb, Grün,
+ * Dunkelblau, Blau, Hellblau, Orange, Weinrot. Jede Farbe zählt als die nächste aus dieser Liste.
+ */
+export const FLAG_PALETTE: [number, number, number][] = [
+  [206, 17, 38],
+  [255, 255, 255],
+  [0, 0, 0],
+  [252, 209, 22],
+  [0, 135, 60],
+  [0, 40, 120],
+  [0, 90, 190],
+  [110, 180, 230],
+  [255, 130, 0],
+  [130, 20, 40],
+];
+
 /** Tag 1 (für Flagge und Umriss des Tages). Der Tag wechselt wie beim Song des Tages um Mitternacht in Berlin. */
 export const FLAG_START = "2026-10-24";
 const DAY_MS = 24 * 60 * 60_000;
@@ -71,6 +88,21 @@ export interface FlagTurn {
   /** Lösung (ISO-Code), sobald die Runde vorbei ist. */
   solution?: string;
   global?: FlagGlobal;
+}
+
+/**
+ * Raster einer Flagge aus Lauflängen „<Farbe><Anzahl zur Basis 36>“, durch Kommas getrennt (so in
+ * assets/flag-grids.json und in GET /api/flag/grid): je Zelle der Index in FLAG_PALETTE.
+ */
+export function decodeGrid(runs: string): Uint8Array {
+  const cells = new Uint8Array(FLAG_GRID.w * FLAG_GRID.h);
+  let at = 0;
+  for (const run of runs.split(",")) {
+    const length = parseInt(run.slice(1), 36);
+    cells.fill(Number(run[0]), at, at + length);
+    at += length;
+  }
+  return cells;
 }
 
 /** Maske (Base64) in eine Liste von 0/1 je Zelle umwandeln. */

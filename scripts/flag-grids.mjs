@@ -19,7 +19,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dir = path.join(root, "server/assets/flags");
 const W = 64;
 const H = 48;
-/** Rot, Weiß, Schwarz, Gelb, Grün, Dunkelblau, Blau, Hellblau, Orange, Weinrot. */
+/** Rot, Weiß, Schwarz, Gelb, Grün, Dunkelblau, Blau, Hellblau, Orange, Weinrot – wie FLAG_PALETTE in shared/flag.ts. */
 const PALETTE = [
   [206, 17, 38],
   [255, 255, 255],

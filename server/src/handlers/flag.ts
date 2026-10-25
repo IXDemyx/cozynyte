@@ -5,6 +5,7 @@
  * - POST /play             { kind?, number?, date, guesses, giveUp, count } → FlagTurn (alle Tipps
  *                          des Tages ausgewertet; mit `number` ein früherer Tag aus dem Archiv)
  * - GET  /img/:code        Flagge eines Landes als SVG (für die getippten Länder und die Auflösung)
+ * - GET  /grid/:code       Farbraster einer Flagge ({ runs }, siehe decodeGrid)
  * - GET  /outline/:number  Umriss des Tages Nr. `number` als SVG (nur bis heute)
  */
 
@@ -13,7 +14,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { FLAG_TRIES } from "../../../shared/flag";
-import { isFlagCountry, outlineOf, playFlag } from "../games/flag";
+import { flagGrid, isFlagCountry, outlineOf, playFlag } from "../games/flag";
 import { allowRequest, requestIp } from "../limits";
 import { outlineSvg } from "../outlines";
 
@@ -55,6 +56,14 @@ flagRouter.get("/img/:code", (req, res) => {
   res.setHeader("Cache-Control", "public, max-age=86400");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.send(readFileSync(path.join(flags, `${code}.svg`)));
+});
+
+// Raster jeder Flagge (wie das Bild öffentlich): Damit färbt der Browser aufgedeckte Zellen ein.
+flagRouter.get("/grid/:code", (req, res) => {
+  const code = String(req.params.code);
+  if (!isFlagCountry(code)) return res.status(404).end();
+  res.setHeader("Cache-Control", "public, max-age=86400");
+  res.json({ runs: flagGrid(code) });
 });
 
 // Umriss über die Tag-Nummer: Die Adresse verrät das Land nicht, künftige Tage gibt es nicht.

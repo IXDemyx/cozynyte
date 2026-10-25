@@ -31,5 +31,7 @@ export async function playFlag(body: {
 
 export const flagImage = (code: string) => `/api/flag/img/${code}.svg`;
 
+export const flagGrid = (code: string) => `/api/flag/grid/${code}`;
+
 /** Umriss des Tages Nr. `number` (das Land steht nicht in der Adresse). */
 export const outlineImage = (number: number) => `/api/flag/outline/${number}.svg`;

@@ -17,8 +17,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { COUNTRY_BY_CODE } from "../../../shared/countries";
 import {
-  FLAG_GRID,
   FLAG_TRIES,
+  decodeGrid,
   flagDateOf,
   flagNumber,
   type DailyKind,
@@ -39,25 +39,18 @@ const counters = {
 };
 const lists: Record<DailyKind, string[]> = { flag: DAILY_FLAGS, outline: DAILY_OUTLINES };
 
-/** Raster je Land: Lauflängen „<Farbe><Anzahl zur Basis 36>“, durch Kommas getrennt. */
+/** Raster je Land als Lauflängen (siehe decodeGrid) und entpackt. */
+const gridRuns = (
+  JSON.parse(readFileSync(path.join(assets, "flag-grids.json"), "utf8")) as {
+    grids: Record<string, string>;
+  }
+).grids;
 const grids = new Map<string, Uint8Array>(
-  Object.entries(
-    (
-      JSON.parse(readFileSync(path.join(assets, "flag-grids.json"), "utf8")) as {
-        grids: Record<string, string>;
-      }
-    ).grids,
-  ).map(([code, runs]) => {
-    const cells = new Uint8Array(FLAG_GRID.w * FLAG_GRID.h);
-    let at = 0;
-    for (const run of runs.split(",")) {
-      const length = parseInt(run.slice(1), 36);
-      cells.fill(Number(run[0]), at, at + length);
-      at += length;
-    }
-    return [code, cells];
-  }),
+  Object.entries(gridRuns).map(([code, runs]) => [code, decodeGrid(runs)]),
 );
+
+/** Raster einer Flagge als Lauflängen – damit der Browser aufgedeckte Zellen genauso einfärbt. */
+export const flagGrid = (code: string) => gridRuns[code];
 
 /** Mittelpunkt je Land als [Breite, Länge]. */
 const centers = JSON.parse(readFileSync(path.join(assets, "flag-centers.json"), "utf8")) as Record<
