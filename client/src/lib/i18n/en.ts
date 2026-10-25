@@ -40,7 +40,7 @@ export const en: Dictionary = {
   home: {
     meta: "2–16 players",
     tagline: "Game night",
-    heroLead: "Cozy party games",
+    heroLead: "Party games",
     heroAccent: "with friends",
     perks: ["Free", "No sign-up", "Up to 16 players", "Works over video calls"],
     joinCardTitle: "Already invited? Come on in.",

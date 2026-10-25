@@ -38,7 +38,7 @@ export const de = {
   home: {
     meta: "2–16 Spieler",
     tagline: "Spieleabend",
-    heroLead: "Gemütliche Partyspiele",
+    heroLead: "Partyspiele",
     heroAccent: "mit Freunden",
     perks: ["Kostenlos", "Ohne Anmeldung", "Bis zu 16 Spieler", "Auch per Videocall"],
     joinCardTitle: "Schon eingeladen? Komm rein.",
