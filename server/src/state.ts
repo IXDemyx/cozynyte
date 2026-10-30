@@ -14,6 +14,7 @@ import type {
 import type { QuizKind } from "../../shared/countries";
 import type { Category, DigitalRoll, KniffelState } from "../../shared/kniffel";
 import { DEFAULT_CATEGORIES } from "../../shared/slf";
+import type { EstimateQuestion } from "./estimate/questions";
 
 export interface Player {
   /** Öffentliche ID – alle im Raum sehen sie (Spielerliste, Host, Chat). */
@@ -189,6 +190,21 @@ export interface GeoGame {
   hintTimers: NodeJS.Timeout[];
 }
 
+/** Schätzfragen: Zustand der Partie und der laufenden Frage. */
+export interface EstimateGame {
+  questions: { qid: string; question: EstimateQuestion }[];
+  /** Laufende Frage (0-basiert). */
+  index: number;
+  stage: "countdown" | "question" | "reveal";
+  startedAt: number;
+  endsAt: number;
+  /** Tipps der laufenden Frage je Spieler. */
+  guesses: Map<string, number>;
+  gains: Map<string, number>;
+  feed: FeedItem[];
+  timer?: NodeJS.Timeout;
+}
+
 export interface Room {
   code: string;
   game: Game;
@@ -231,6 +247,10 @@ export interface Room {
 
   // Länder-Quiz
   geo?: GeoGame;
+
+  // Schätzfragen – und welche Fragen (Index im Katalog) hier schon dran waren.
+  estimate?: EstimateGame;
+  estimateUsed: Set<number>;
 
   /** Hinweis in der Lobby, z. B. nach einem Abbruch durch den Host. */
   notice?: LobbyNotice;
@@ -283,6 +303,9 @@ export function createRoom(
       geoSeconds: 15,
       geoHints: true,
       geoJokers: 2,
+      estTopic: "all",
+      estQuestions: 10,
+      estSeconds: 30,
     },
     players: new Map(),
     banned: new Set(),
@@ -299,6 +322,7 @@ export function createRoom(
         : undefined,
     nextColumn: 0,
     kniffelHistory: [],
+    estimateUsed: new Set(),
   };
 }
 

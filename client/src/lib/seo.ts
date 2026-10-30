@@ -79,7 +79,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     otherLanguage: "Auch auf Deutsch verfügbar",
     title: "Partyspiele online mit Freunden",
     intro:
-      "Kostenlos im Browser, ohne Anmeldung und ohne App: Raum erstellen, Link teilen und gemeinsam spielen – am selben Tisch oder per Videocall.",
+      "Kostenlos im Browser, ohne Anmeldung und ohne App: Raum erstellen, Link teilen und gemeinsam spielen, jeder am eigenen Gerät.",
     howTitle: "So funktioniert's",
     steps: [
       "Spiel auswählen und auf seiner Seite einen Raum erstellen.",
@@ -123,6 +123,11 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         text: "Flaggen, Landesumrisse und Hauptstädte aller Länder der Welt erraten – getippt oder per Auswahl, nach Kontinent filterbar.",
       },
       {
+        name: "Schätzfragen",
+        page: "estimate",
+        text: "Wie hoch ist der Eiffelturm? Alle tippen eine Zahl, wer am nächsten dran ist, bekommt die meisten Punkte.",
+      },
+      {
         name: "Song-Schnipsel",
         page: "snippet",
         text: "Für eine Person: Erkenne den Song an 0,1 Sekunden. Nach jedem Fehlversuch hörst du mehr. Jeden Tag ein Song des Tages.",
@@ -153,10 +158,6 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         a: "Bis zu 16 Spieler pro Raum. Die meisten Spiele brauchen mindestens zwei, Kniffel geht auch allein. Song-Schnipsel, Flagge und Umriss des Tages sind für eine Person.",
       },
       {
-        q: "Können wir auch über Discord oder Zoom spielen?",
-        a: "Ja. Jeder spielt am eigenen Gerät, egal ob ihr zusammen am Tisch sitzt oder euch per Videocall trefft.",
-      },
-      {
         q: "Woher kommen die Songs bei den Musikspielen?",
         a: "Jeder sucht sich selbst Songs aus. Abgespielt werden kurze Hörproben über die Musiksuche von Apple (iTunes).",
       },
@@ -178,7 +179,7 @@ export const SEO: Record<SeoLanguage, SeoText> = {
     otherLanguage: "Also available in English",
     title: "Party games online with friends",
     intro:
-      "Free in your browser, no sign-up and no app: create a room, share the link and play together – at the same table or over a video call.",
+      "Free in your browser, no sign-up and no app: create a room, share the link and play together, everyone on their own device.",
     howTitle: "How it works",
     steps: [
       "Pick a game and create a room on its page.",
@@ -222,6 +223,11 @@ export const SEO: Record<SeoLanguage, SeoText> = {
         text: "Guess flags, country shapes and capitals of every country in the world – type or multiple choice, filter by continent.",
       },
       {
+        name: "Estimation Quiz",
+        page: "estimate",
+        text: "How tall is the Eiffel Tower? Everyone types a number, whoever is closest scores the most.",
+      },
+      {
         name: "Song Snippet",
         page: "snippet",
         text: "For one player: name the song from 0.1 seconds. Every wrong guess plays a little more. A new song of the day, every day.",
@@ -247,10 +253,6 @@ export const SEO: Record<SeoLanguage, SeoText> = {
       {
         q: "How many people can play?",
         a: "Up to 16 players per room. Most games need at least two, Yahtzee also works solo. Song Snippet, Flag of the Day and Shape of the Day are for one player.",
-      },
-      {
-        q: "Can we play over Discord or Zoom?",
-        a: "Yes. Everyone plays on their own device, whether you're at the same table or on a video call.",
       },
       {
         q: "Where do the songs in the music games come from?",

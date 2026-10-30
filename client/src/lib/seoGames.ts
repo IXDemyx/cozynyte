@@ -18,6 +18,7 @@ export type GamePageId =
   | "kniffel"
   | "draw"
   | "geo"
+  | "estimate"
   | "snippet"
   | "flag"
   | "outline";
@@ -30,6 +31,7 @@ export const GAME_PATH: Record<GamePageId, Record<SeoLanguage, string>> = {
   kniffel: { en: "/yahtzee", de: "/de/kniffel" },
   draw: { en: "/draw-and-guess", de: "/de/montagsmaler" },
   geo: { en: "/country-quiz", de: "/de/laender-quiz" },
+  estimate: { en: "/estimation-quiz", de: "/de/schaetzfragen" },
   snippet: { en: "/song-of-the-day", de: "/de/song-des-tages" },
   flag: { en: "/flag-of-the-day", de: "/de/flagge-des-tages" },
   outline: { en: "/shape-of-the-day", de: "/de/umriss-des-tages" },
@@ -101,18 +103,6 @@ const INVITE: Record<SeoLanguage, { title: string; text: string }> = {
   },
 };
 
-/** Frage zum Videocall – passt zu jedem Spiel. */
-const VIDEO_CALL: Record<SeoLanguage, { q: string; a: string }> = {
-  de: {
-    q: "Geht das auch per Videocall?",
-    a: "Ja. Jeder spielt am eigenen Gerät, egal ob ihr am selben Tisch sitzt oder über Discord oder Zoom verbunden seid.",
-  },
-  en: {
-    q: "Does it work over a video call?",
-    a: "Yes. Everyone plays on their own device, whether you're at the same table or on Discord or Zoom.",
-  },
-};
-
 const FREE: Record<SeoLanguage, { q: string; a: string }> = {
   de: {
     q: "Kostet das etwas?",
@@ -132,7 +122,7 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
     de: {
       metaTitle: "Song erraten: Musikquiz online mit Freunden | Cozynyte",
       metaDescription:
-        "Musikquiz im Browser: Jeder wählt Songs aus, alle raten Titel und Interpret der Hörprobe. Kostenlos, ohne Anmeldung, auch per Videocall.",
+        "Musikquiz im Browser: Jeder wählt Songs aus, alle raten Titel und Interpret der Hörprobe. Kostenlos und ohne Anmeldung.",
       ogTitle: "Song erraten – Musikquiz online",
       ogDescription: "Jeder wählt Songs aus, alle raten Titel und Interpret. Kostenlos im Browser.",
       name: "Song erraten",
@@ -204,14 +194,13 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           a: "Nein. Die Hörproben sind frei verfügbar, es braucht weder Konto noch App.",
         },
         { q: "Wie viele Spieler können mitmachen?", a: "Zwei bis 16 Spieler pro Raum." },
-        VIDEO_CALL.de,
         FREE.de,
       ],
     },
     en: {
       metaTitle: "Guess the Song: music quiz with friends | Cozynyte",
       metaDescription:
-        "Music quiz in your browser: everyone picks songs, everyone guesses title and artist from a short preview. Free, no sign-up, works over video calls.",
+        "Music quiz in your browser: everyone picks songs, everyone guesses title and artist from a short preview. Free, no sign-up.",
       ogTitle: "Guess the Song – online music quiz",
       ogDescription:
         "Everyone picks songs, everyone guesses title and artist. Free in your browser.",
@@ -284,7 +273,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           a: "No. The previews are freely available, no account or app needed.",
         },
         { q: "How many people can play?", a: "Two to 16 players per room." },
-        VIDEO_CALL.en,
         FREE.en,
       ],
     },
@@ -367,7 +355,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           a: "Hier geht es nur um das Erscheinungsjahr. Titel und Interpret müsst ihr nicht kennen.",
         },
         { q: "Wie viele Spieler können mitmachen?", a: "Zwei bis 16 Spieler pro Raum." },
-        VIDEO_CALL.de,
         FREE.de,
       ],
     },
@@ -447,7 +434,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           a: "Here it's only about the release year. You don't need to know title or artist.",
         },
         { q: "How many people can play?", a: "Two to 16 players per room." },
-        VIDEO_CALL.en,
         FREE.en,
       ],
     },
@@ -526,7 +512,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           a: "Nein. Die Zeitleiste liegt auf dem Handy, alles läuft im Browser.",
         },
         { q: "Wie viele Spieler können mitmachen?", a: "Zwei bis 16 Spieler pro Raum." },
-        VIDEO_CALL.de,
         FREE.de,
       ],
     },
@@ -603,7 +588,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           a: "No. Your timeline is on your phone, everything runs in the browser.",
         },
         { q: "How many people can play?", a: "Two to 16 players per room." },
-        VIDEO_CALL.en,
         FREE.en,
       ],
     },
@@ -682,7 +666,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Kann man eigene Kategorien verwenden?",
           a: "Ja. Drei bis zehn Kategorien pro Spiel, eigene mit bis zu 24 Zeichen.",
         },
-        VIDEO_CALL.de,
         FREE.de,
       ],
     },
@@ -758,7 +741,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Can we use our own categories?",
           a: "Yes. Three to ten categories per game, custom ones up to 24 characters.",
         },
-        VIDEO_CALL.en,
         FREE.en,
       ],
     },
@@ -844,7 +826,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Muss jeder ein Handy haben?",
           a: "Nein. Spieler ohne Handy bekommen eine Spalte, in die ein anderer für sie einträgt.",
         },
-        VIDEO_CALL.de,
         FREE.de,
       ],
     },
@@ -928,7 +909,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Does everyone need a phone?",
           a: "No. Players without a phone get a column that someone else fills in for them.",
         },
-        VIDEO_CALL.en,
         FREE.en,
       ],
     },
@@ -1011,7 +991,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Kann man am Handy zeichnen?",
           a: "Ja. Gezeichnet wird mit dem Finger oder der Maus, die Fläche passt sich dem Gerät an.",
         },
-        VIDEO_CALL.de,
         FREE.de,
       ],
     },
@@ -1087,7 +1066,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Can I draw on my phone?",
           a: "Yes. Draw with your finger or a mouse, the canvas adapts to your device.",
         },
-        VIDEO_CALL.en,
         FREE.en,
       ],
     },
@@ -1163,7 +1141,6 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Muss ich die Namen auf Deutsch eintippen?",
           a: "Nein. Deutsch und Englisch werden erkannt, kleine Tippfehler sind okay.",
         },
-        VIDEO_CALL.de,
         FREE.de,
       ],
     },
@@ -1237,7 +1214,160 @@ const TEXTS: Record<GamePageId, Record<SeoLanguage, PageText>> = {
           q: "Do I have to type names in English?",
           a: "No. English and German are both recognised, small typos are fine.",
         },
-        VIDEO_CALL.en,
+        FREE.en,
+      ],
+    },
+  },
+  estimate: {
+    de: {
+      metaTitle: "Schätzfragen online: Zahlen schätzen mit Freunden | Cozynyte",
+      metaDescription:
+        "Schätzspiel online: Wie hoch ist der Eiffelturm? Alle tippen eine Zahl, wer am nächsten dran ist, gewinnt. Über 150 Fragen, kostenlos im Browser.",
+      ogTitle: "Schätzfragen – wer am nächsten dran ist, gewinnt",
+      ogDescription:
+        "Wie hoch ist der Eiffelturm? Alle schätzen, am nächsten gewinnt. Kostenlos im Browser.",
+      name: "Schätzfragen",
+      title: "Schätzfragen: Wer liegt am nächsten?",
+      titleAccent: "Schätzfragen",
+      intro:
+        "Wie hoch ist der Eiffelturm? In welchem Jahr sank die Titanic? Alle tippen gleichzeitig eine Zahl, wer am nächsten dran ist, bekommt die meisten Punkte. Fragen zu Welt, Geschichte, Wissenschaft, Kultur, Gaming und Sport.",
+      facts: ["2–16 Spieler", "Über 150 Fragen", "5–20 Fragen", "20, 30 oder 45 Sek. pro Frage"],
+      example: {
+        title: "Wie hoch ist der Eiffelturm mit Antennen?",
+        round: "Frage 3 von 10",
+        rows: [
+          { label: "Lea", value: "324 m", points: 100 },
+          { label: "Ben", value: "300 m", points: 60 },
+          { label: "Mia", value: "250 m", points: 40 },
+        ],
+        note: "Lösung: 330 m. Am nächsten dran gewinnt, genau getroffen gibt 50 extra.",
+      },
+      steps: [
+        {
+          title: "Raum erstellen",
+          text: "Namen eingeben und Raum erstellen. Thema, Anzahl Fragen und Zeit stellt der Host ein.",
+        },
+        INVITE.de,
+        {
+          title: "Schätzen",
+          text: "Alle sehen dieselbe Frage und tippen eine Zahl. Die Auflösung zeigt alle Tipps neben der Lösung.",
+        },
+      ],
+      rules: [
+        {
+          title: "Themen",
+          text: "Alle gemischt oder nur Welt, Geschichte, Wissenschaft, Kultur, Gaming oder Sport.",
+        },
+        {
+          title: "Ein Tipp",
+          text: "Nur ganze Zahlen, ein Tipp pro Frage, ändern geht nicht. Die Frage endet, wenn alle getippt haben oder die Zeit um ist.",
+        },
+        {
+          title: "Einheiten",
+          text: "Neben dem Eingabefeld steht die Einheit, z. B. Meter, Jahre oder Kilometer. Jahreszahlen tippt man als Jahr.",
+        },
+        {
+          title: "Keine Wiederholungen",
+          text: "Fragen, die im Raum schon dran waren, kommen erst wieder, wenn das Thema durch ist.",
+        },
+      ],
+      scoreTitle: "Punkte",
+      scores: [
+        { label: "Am nächsten dran", value: "100" },
+        { label: "Zweiter / Dritter", value: "60 / 40" },
+        { label: "Alle anderen mit Tipp", value: "20" },
+        { label: "Genau getroffen", value: "+50" },
+        { label: "Kein Tipp", value: "0" },
+      ],
+      faq: [
+        {
+          q: "Wie viele Fragen gibt es?",
+          a: "Über 150, auf Deutsch und Englisch. Jede Partie wählt zufällig, im selben Raum ohne Wiederholungen.",
+        },
+        {
+          q: "Zählt die Geschwindigkeit?",
+          a: "Nein. Es zählt nur, wie nah man dran ist. Wer gleich weit weg liegt, bekommt gleich viele Punkte.",
+        },
+        {
+          q: "Muss ich die genaue Antwort wissen?",
+          a: "Nein. Es reicht, näher dran zu sein als die anderen. Wer genau trifft, bekommt 50 Punkte extra.",
+        },
+        FREE.de,
+      ],
+    },
+    en: {
+      metaTitle: "Estimation quiz: guess the number with friends | Cozynyte",
+      metaDescription:
+        "Online estimation game: how tall is the Eiffel Tower? Everyone guesses a number, closest wins. 150+ questions, free in your browser, no sign-up.",
+      ogTitle: "Estimation Quiz – guess the number, closest wins",
+      ogDescription:
+        "How tall is the Eiffel Tower? Everyone guesses, closest wins. Free in your browser.",
+      name: "Estimation Quiz",
+      title: "Estimation Quiz: guess the number, closest wins",
+      titleAccent: "Estimation Quiz",
+      intro:
+        "How tall is the Eiffel Tower? In which year did the Titanic sink? Everyone types a number at the same time, whoever is closest scores the most. Questions about the world, history, science, culture, gaming and sport.",
+      facts: ["2–16 players", "150+ questions", "5–20 questions", "20, 30 or 45 s per question"],
+      example: {
+        title: "How tall is the Eiffel Tower, including its antennas?",
+        round: "Question 3 of 10",
+        rows: [
+          { label: "Lea", value: "324 m", points: 100 },
+          { label: "Ben", value: "300 m", points: 60 },
+          { label: "Mia", value: "250 m", points: 40 },
+        ],
+        note: "Answer: 330 m. Closest wins, spot on scores 50 extra.",
+      },
+      steps: [
+        {
+          title: "Create a room",
+          text: "Enter your name and create a room. The host picks the topic, number of questions and time.",
+        },
+        INVITE.en,
+        {
+          title: "Guess",
+          text: "Everyone sees the same question and types a number. The reveal shows all guesses next to the answer.",
+        },
+      ],
+      rules: [
+        {
+          title: "Topics",
+          text: "All mixed, or just world, history, science, culture, gaming or sport.",
+        },
+        {
+          title: "One guess",
+          text: "Whole numbers only, one guess per question, no changing. The question ends once everyone has guessed or time is up.",
+        },
+        {
+          title: "Units",
+          text: "The unit is shown next to the input, e.g. metres, years or kilometres. Years are entered as a year.",
+        },
+        {
+          title: "No repeats",
+          text: "Questions already played in the room only come back once the topic is used up.",
+        },
+      ],
+      scoreTitle: "Points",
+      scores: [
+        { label: "Closest guess", value: "100" },
+        { label: "Second / third", value: "60 / 40" },
+        { label: "Everyone else who guessed", value: "20" },
+        { label: "Spot on", value: "+50" },
+        { label: "No guess", value: "0" },
+      ],
+      faq: [
+        {
+          q: "How many questions are there?",
+          a: "More than 150, in English and German. Each game picks at random, with no repeats in the same room.",
+        },
+        {
+          q: "Does speed matter?",
+          a: "No. Only how close you are counts. Guesses that are equally close score the same.",
+        },
+        {
+          q: "Do I need to know the exact answer?",
+          a: "No. You just need to be closer than the others. An exact guess scores 50 extra points.",
+        },
         FREE.en,
       ],
     },

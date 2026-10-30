@@ -2,11 +2,13 @@
 
 import { DEV_TOOLS, PORT, ROOM_TTL_MS } from "./config";
 import { enableBots } from "./dev/bots";
+import { stopEstimateTimer } from "./games/estimate";
 import { stopTimers as stopGeoTimers } from "./games/geo";
 import { registerChatHandlers } from "./handlers/chat";
 import { createHandlers } from "./handlers/context";
 import { registerDevHandlers } from "./handlers/dev";
 import { registerDrawHandlers } from "./handlers/draw";
+import { registerEstimateHandlers } from "./handlers/estimate";
 import { registerGeoHandlers } from "./handlers/geo";
 import { registerKniffelHandlers } from "./handlers/kniffel";
 import { registerMusicHandlers } from "./handlers/music";
@@ -25,6 +27,7 @@ io.on("connection", (socket) => {
   registerSlfHandlers(handlers);
   registerDrawHandlers(handlers);
   registerGeoHandlers(handlers);
+  registerEstimateHandlers(handlers);
   registerChatHandlers(handlers);
   if (DEV_TOOLS) registerDevHandlers(handlers);
 });
@@ -41,6 +44,7 @@ setInterval(() => {
       clearTimeout(room.draw?.timer);
       room.draw?.hintTimers.forEach(clearTimeout);
       stopGeoTimers(room.geo);
+      stopEstimateTimer(room.estimate);
       rooms.delete(room.code);
     }
   }

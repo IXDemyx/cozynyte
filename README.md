@@ -1,8 +1,8 @@
 # Cozynyte
 
 Multiplayer party games in the browser.
-No sign-up: create a room, share the four-letter code or the invite link, and play – at the
-same table or over a video call. Live at <https://cozynyte.com>.
+No sign-up: create a room, share the four-letter code or the invite link, and play together,
+everyone on their own device. Live at <https://cozynyte.com>.
 
 ## Games
 
@@ -15,6 +15,7 @@ same table or over a video call. Live at <https://cozynyte.com>.
 | **Yahtzee** (Kniffel)                             | A shared score sheet – roll real dice at the table or roll digitally.                          |
 | **Draw & Guess** (Montagsmaler)                   | One player picks one of three words and draws it; everyone else guesses in the chat.           |
 | **Country Quiz** (Länder-Quiz)                    | Guess the country from its flag or shape, or name its capital – typed or multiple choice.      |
+| **Estimation Quiz** (Schätzfragen)                | Everyone types a number for the same question (e.g. height of the Eiffel Tower); closest wins. |
 | **Song Snippet** (Song-Schnipsel)                 | Single player: name a song from 0.1 seconds; every wrong guess or skip plays more. Daily song. |
 
 The start page groups them into **Music**, **Classics**, **Quiz** and **Play alone**.
@@ -23,7 +24,7 @@ The three music games share the same flow: lobby → everyone picks their own so
 reveal → final scores (podium with confetti). The host can switch between them in the lobby,
 so a room can be reused without anyone leaving.
 
-Stadt Land Fluss, Draw & Guess and the Country Quiz have their own lobbies (see [Scoring and rules](#scoring-and-rules)).
+Stadt Land Fluss, Draw & Guess, the Country Quiz and the Estimation Quiz have their own lobbies (see [Scoring and rules](#scoring-and-rules)).
 Song Snippet has no room at all: it runs directly on its game page and talks to the server over
 plain HTTP (`/api/snippet`). Yahtzee works differently: there are no rounds, just one shared sheet. Everyone who joins gets
 their own column, players without a phone can be added by name, and every change shows up for
@@ -119,6 +120,7 @@ client/src/
   games/slf/      Stadt Land Fluss (lobby, letter drawing, writing round, review)
   games/draw/     Draw & Guess (lobby, word collection, canvas, toolbar, renderer)
   games/geo/      Country Quiz (lobby, question with picture, answers, reveal)
+  games/estimate/ Estimation Quiz (lobby, number input, reveal with all guesses)
   games/kniffel/  Yahtzee score sheet (dice panel, sheet with direct entry)
   games/snippet/  Song Snippet (single player: Web Audio clips, search, stats in the browser)
   hooks/          room connection, server clock, theme and design, volume, sound effects, two-click confirm
@@ -131,11 +133,12 @@ server/src/
   state.ts        room and player state
   view.ts         per-player view of a room (hides answers) and broadcasting
   connection.ts   joining, leaving and host hand-over
-  handlers/       socket events per area (room, chat, music, slf, draw, geo, kniffel, dev),
+  handlers/       socket events per area (room, chat, music, slf, draw, geo, estimate, kniffel, dev),
                   plus the HTTP routes of Song Snippet (snippet.ts)
   games/          game logic (music, Stadt Land Fluss, Draw & Guess, Country Quiz, Yahtzee,
                   Song Snippet)
   draw/           word lists for Draw & Guess (German and English)
+  estimate/       question bank of the Estimation Quiz (answers stay on the server)
   music/          iTunes search, answer matching, song suggestions
   dev/            test bots for test mode
 
@@ -275,6 +278,21 @@ expects to live at the root of its address (e.g. its own subdomain), not under a
 - Correct answer: 50 points + up to 100 for speed + 30/20/10 for the first three.
 - The picture is served by the server under a random ID per question, so the network tab does
   not give the country away (and a shape question does not reveal the flag).
+
+**Estimation Quiz (Schätzfragen)**
+
+- 183 questions in six topics (world, history, science, culture, gaming, sport),
+  each in English and German with a whole-number answer and a unit
+  (`server/src/estimate/questions.ts`). Only facts that don't change – no populations or
+  records. The bank stays on the server, so answers are not in the browser bundle.
+- Lobby: topic (all or one), number of questions (5/10/15/20), time per question (20/30/45 s).
+  Questions already played in the room are skipped until the topic is used up.
+- Everyone types one whole number per question (no changing), with the unit shown next to the
+  input. The question ends early once everyone has guessed. Other players' guesses stay hidden
+  until the reveal, which shows the answer, a number line and all guesses sorted by distance
+  for 9 seconds.
+- Points by distance: closest 100, then 60, 40 and 20 for everyone else who guessed; equal
+  distance shares the place. Exact answer: +50. Speed doesn't count.
 
 **Song Snippet (Song-Schnipsel)**
 

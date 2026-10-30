@@ -1,15 +1,25 @@
 import type { Continent, QuizAnswerMode, QuizKind, QuizMode, QuizRegion } from "./countries";
 import type { DrawStage } from "./draw";
+import type { EstimateCategory, EstimateTopic, EstimateUnit } from "./estimate";
 import type { KniffelState } from "./kniffel";
 import type { SlfVerdict } from "./slf";
 
-export type Game = "song" | "year" | "timeline" | "kniffel" | "slf" | "draw" | "geo";
+export type Game = "song" | "year" | "timeline" | "kniffel" | "slf" | "draw" | "geo" | "estimate";
 
 /** Die Musikspiele teilen sich Lobby, Songauswahl und Runden – und lassen sich im Raum umschalten. */
 export const MUSIC_GAMES: Game[] = ["song", "year", "timeline"];
 
 /** Spiele, für die es öffentliche Räume gibt (Kniffel dann mit gesperrten Spalten). */
-export const PUBLIC_GAMES: Game[] = ["song", "year", "timeline", "slf", "draw", "geo", "kniffel"];
+export const PUBLIC_GAMES: Game[] = [
+  "song",
+  "year",
+  "timeline",
+  "slf",
+  "draw",
+  "geo",
+  "estimate",
+  "kniffel",
+];
 
 /** Offene öffentliche Räume, die gerade Mitspieler suchen (für die Startseite). */
 export interface OpenRooms {
@@ -82,6 +92,10 @@ export interface Settings {
   geoHints: boolean;
   /** Auswahl: so viele 50:50-Joker hat jeder pro Partie (0 = keine). */
   geoJokers: number;
+  /** Schätzfragen: Thema (alle gemischt oder eins), Anzahl Fragen, Zeit pro Frage. */
+  estTopic: EstimateTopic;
+  estQuestions: number;
+  estSeconds: number;
 }
 
 /** Eine Karte in der Song-Timeline – das Jahr ist sichtbar. */
@@ -116,7 +130,14 @@ export interface PlayerView {
 }
 
 export type FeedKind =
-  "wrong" | "close" | "title" | "artist" | "locked" | "placed" | "guessed" | "joker";
+  | "wrong"
+  | "close"
+  | "title"
+  | "artist"
+  | "locked"
+  | "placed"
+  | "guessed"
+  | "joker";
 
 export interface FeedItem {
   id: number;
@@ -279,6 +300,34 @@ export interface GeoView {
   feed: FeedItem[];
 }
 
+/** Schätzfragen: Stand der laufenden Frage. Lösung und fremde Tipps erst in der Auflösung. */
+export interface EstimateView {
+  /** Laufende Frage (1-basiert) und Anzahl insgesamt. */
+  index: number;
+  total: number;
+  /** Countdown vor der ersten Frage, Frage, Auflösung. */
+  stage: "countdown" | "question" | "reveal";
+  /** Kennung der Frage (für Tipps – damit ein verspäteter nicht bei der nächsten landet). */
+  qid: string;
+  endsAt: number;
+  durationMs: number;
+  /** Frage in beiden Sprachen (die Spieler sprechen verschiedene) – fehlt beim Countdown. */
+  text?: { de: string; en: string };
+  category?: EstimateCategory;
+  unit?: EstimateUnit;
+  /** Wer schon getippt hat (nicht was). */
+  answered: string[];
+  /** Der eigene Tipp. */
+  yourGuess?: number;
+  /** Auflösung: Lösung, alle Tipps, Punkte, wer am nächsten dran war bzw. genau getroffen hat. */
+  answer?: number;
+  guesses?: Record<string, number>;
+  gains?: Record<string, number>;
+  closest?: string[];
+  exact?: string[];
+  feed: FeedItem[];
+}
+
 export interface RoomState {
   code: string;
   game: Game;
@@ -300,6 +349,8 @@ export interface RoomState {
   draw?: DrawView;
   /** Nur beim Länder-Quiz während der Partie. */
   geo?: GeoView;
+  /** Nur bei Schätzfragen während der Partie. */
+  estimate?: EstimateView;
   round?: RoundView;
   reveal?: RevealView;
   /** Raum-Chat, die letzten Nachrichten. */

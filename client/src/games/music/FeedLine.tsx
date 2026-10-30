@@ -15,6 +15,9 @@ function FeedLine({ item, you, game }: { item: FeedItem; you: string; game?: Gam
   if (game === "geo" && item.kind === "locked") {
     return <span className="text-(--accent)">{t.geo.feedLocked(item.name, me)}</span>;
   }
+  if (game === "estimate" && item.kind === "locked") {
+    return <span className="text-(--accent)">{t.estimate.feedLocked(item.name, me)}</span>;
+  }
   switch (item.kind) {
     case "title":
       return (

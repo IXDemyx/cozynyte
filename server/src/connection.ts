@@ -3,6 +3,7 @@
 import type { Socket } from "socket.io";
 import { LOBBY_GRACE_MS } from "./config";
 import { checkTurnDone } from "./games/draw";
+import { checkEstimateDone } from "./games/estimate";
 import { checkQuestionDone } from "./games/geo";
 import { removeColumn } from "./games/kniffel";
 import { endRound, everyoneDone } from "./games/music";
@@ -54,6 +55,8 @@ export function detach(socket: Socket, leave: boolean) {
   checkTurnDone(room);
   // Länder-Quiz: Haben jetzt alle Übrigen geantwortet, gleich auflösen.
   checkQuestionDone(room);
+  // Schätzfragen: genauso.
+  checkEstimateDone(room);
   // Nur noch Testbots da: der Raum gilt als leer und wird irgendwann aufgeräumt.
   if (humans(room).length === 0) room.emptySince = Date.now();
   broadcast(room);

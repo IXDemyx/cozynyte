@@ -24,7 +24,9 @@ function RoomChat({ state, fill = false }: { state: RoomState; fill?: boolean })
     ...state.chat.map((message) => ({ id: message.id, message })),
     ...(
       round?.feed ??
-      (state.phase === "round" ? (state.draw?.feed ?? state.geo?.feed) : undefined) ??
+      (state.phase === "round"
+        ? (state.draw?.feed ?? state.geo?.feed ?? state.estimate?.feed)
+        : undefined) ??
       []
     )
       .filter((e) => e.kind !== "wrong")

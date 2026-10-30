@@ -13,6 +13,7 @@ import {
   LuMoonStar,
   LuNotebookPen,
   LuPalette,
+  LuRuler,
   LuShuffle,
 } from "react-icons/lu";
 import { Link, useNavigate } from "react-router-dom";
@@ -91,7 +92,10 @@ function Home() {
       tone: "tone-quiz",
       title: t.home.quiz,
       text: t.home.quizText,
-      games: [{ id: "geo", icon: LuEarth, meta: t.home.meta, text: t.home.geoText }],
+      games: [
+        { id: "geo", icon: LuEarth, meta: t.home.meta, text: t.home.geoText },
+        { id: "estimate", icon: LuRuler, meta: t.home.meta, text: t.home.estimateText },
+      ],
     },
   ];
   const join = (event: FormEvent) => {

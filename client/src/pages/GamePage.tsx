@@ -12,6 +12,7 @@ import {
   LuHistory,
   LuNotebookPen,
   LuPalette,
+  LuRuler,
   LuShuffle,
 } from "react-icons/lu";
 import { Link } from "react-router-dom";
@@ -37,6 +38,7 @@ const ICONS: Record<GamePageId, IconType> = {
   kniffel: LuDice5,
   draw: LuPalette,
   geo: LuEarth,
+  estimate: LuRuler,
   snippet: LuAudioWaveform,
   flag: LuFlag,
   outline: LuMap,

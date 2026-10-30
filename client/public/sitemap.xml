@@ -129,6 +129,22 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://cozynyte.com/estimation-quiz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/estimation-quiz" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/schaetzfragen" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/estimation-quiz" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://cozynyte.com/de/schaetzfragen</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/estimation-quiz" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/schaetzfragen" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://cozynyte.com/estimation-quiz" />
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://cozynyte.com/song-of-the-day</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://cozynyte.com/song-of-the-day" />
     <xhtml:link rel="alternate" hreflang="de" href="https://cozynyte.com/de/song-des-tages" />

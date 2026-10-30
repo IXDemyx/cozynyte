@@ -9,10 +9,16 @@ import {
 } from "../../../shared/slf";
 import { DRAW_ROUNDS, DRAW_SECONDS, DRAW_WORDS_PER_PLAYER } from "../../../shared/draw";
 import { QUIZ_JOKERS, QUIZ_QUESTIONS, QUIZ_SECONDS } from "../../../shared/countries";
+import {
+  ESTIMATE_CATEGORIES,
+  ESTIMATE_QUESTIONS,
+  ESTIMATE_SECONDS,
+} from "../../../shared/estimate";
 import { MUSIC_GAMES, PUBLIC_GAMES, type Game } from "../../../shared/types";
 import { MAX_PLAYERS, MAX_SONGS_PER_PLAYER, ROUND_SECONDS, TIMELINE_GOALS } from "../config";
 import { attach, detach, removePlayer } from "../connection";
 import { addSeat, startDraw, startWordCollection } from "../games/draw";
+import { startEstimate, stopEstimateTimer } from "../games/estimate";
 import { startGeo, stopTimers as stopGeoTimers } from "../games/geo";
 import { ensureColumn } from "../games/kniffel";
 import { drawStartCard, endRound, nextRound, startPicking } from "../games/music";
@@ -47,7 +53,9 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
       return reply(cb, { ok: false, error: "too_many_attempts" });
     detach(socket, true);
 
-    const game = ["year", "timeline", "kniffel", "slf", "draw", "geo"].includes(data?.game)
+    const game = ["year", "timeline", "kniffel", "slf", "draw", "geo", "estimate"].includes(
+      data?.game,
+    )
       ? data.game
       : "song";
     const playerId = newPlayerId();
@@ -205,6 +213,14 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     if (typeof data?.geoHints === "boolean") settings.geoHints = data.geoHints;
     const geoJokers = Number(data?.geoJokers);
     if (QUIZ_JOKERS.includes(geoJokers)) settings.geoJokers = geoJokers;
+    // Schätzfragen
+    if (data?.estTopic === "all" || ESTIMATE_CATEGORIES.includes(data?.estTopic)) {
+      settings.estTopic = data.estTopic;
+    }
+    const estQuestions = Number(data?.estQuestions);
+    if (ESTIMATE_QUESTIONS.includes(estQuestions)) settings.estQuestions = estQuestions;
+    const estSeconds = Number(data?.estSeconds);
+    if (ESTIMATE_SECONDS.includes(estSeconds)) settings.estSeconds = estSeconds;
     if (typeof data?.theme === "string") {
       settings.theme = data.theme.replace(/\s+/g, " ").trimStart().slice(0, 40);
     }
@@ -225,6 +241,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     for (const p of [...c.room.players.values()]) if (!p.socketId) c.room.players.delete(p.id);
     if (c.room.game === "slf") startSlf(c.room);
     else if (c.room.game === "geo") startGeo(c.room);
+    else if (c.room.game === "estimate") startEstimate(c.room);
     else if (c.room.game === "draw") {
       if (c.room.settings.drawWordMode === "players") startWordCollection(c.room);
       else startDraw(c.room);
@@ -251,6 +268,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     clearTimeout(room.draw?.timer);
     room.draw?.hintTimers.forEach(clearTimeout);
     stopGeoTimers(room.geo);
+    stopEstimateTimer(room.estimate);
     room.round = undefined;
     room.queue = [];
     room.roundIndex = 0;
@@ -260,6 +278,7 @@ export function registerRoomHandlers({ socket, ctx, reply }: Handlers) {
     room.slf = undefined;
     room.draw = undefined;
     room.geo = undefined;
+    room.estimate = undefined;
     for (const p of [...c.room.players.values()]) {
       p.score = 0;
       p.picks = [];

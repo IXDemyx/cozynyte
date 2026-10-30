@@ -14,6 +14,7 @@ import { MAX_PLAYERS } from "../config";
 import { removePlayer } from "../connection";
 import { WORDS } from "../draw/words";
 import { addOps, chooseWord, handleDrawGuess, setWords } from "../games/draw";
+import { submitGuess } from "../games/estimate";
 import { chooseAnswer, jokersLeft, typeAnswer, useJoker } from "../games/geo";
 import { ensureColumn, rollDice, writeCell } from "../games/kniffel";
 import { canPlace, drawStartCard, handleGuess, placeCard, submitYear } from "../games/music";
@@ -108,6 +109,7 @@ function act(room: Room) {
     if (room.game === "slf") playSlf(room, bot);
     else if (room.game === "draw") playDraw(room, bot);
     else if (room.game === "geo") playGeo(room, bot);
+    else if (room.game === "estimate") playEstimate(room, bot);
     else if (room.phase === "picking") pickSongs(room, bot);
     else if (room.phase === "round") playRound(room, bot);
     if (room.kniffel) playKniffel(room, bot);
@@ -408,4 +410,25 @@ function playGeo(room: Room, bot: Player) {
       send(randomInt(4) === 0 && answer.length > 5 ? answer.slice(0, -1) + "x" : answer);
     });
   }
+}
+
+/* ---------- Schätzfragen ---------- */
+
+/** Mal nah dran, mal weit daneben: Jahre um bis zu 30 Jahre, sonst bis zu Faktor 2. Selten genau. */
+function playEstimate(room: Room, bot: Player) {
+  const game = room.estimate;
+  if (!game || room.phase !== "round" || game.stage !== "question") return;
+  const entry = game.questions[game.index];
+  if (!claim(bot, `estimate:${entry.qid}`, "guess")) return;
+  const total = game.endsAt - game.startedAt;
+  const { answer, unit } = entry.question;
+  const guess =
+    randomInt(8) === 0
+      ? answer
+      : unit === "year"
+        ? answer + randomInt(-30, 31)
+        : Math.max(0, Math.round(answer * (0.5 + Math.random() * 1.5)));
+  later(room, bot, Math.round(total * (0.2 + Math.random() * 0.6)), () => {
+    if (room.estimate === game && submitGuess(room, bot, entry.qid, guess)) broadcast(room);
+  });
 }

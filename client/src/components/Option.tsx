@@ -15,7 +15,7 @@ export function Option({ active, disabled = false, onClick, children }: OptionPr
       disabled={disabled}
       aria-pressed={active}
       onClick={onClick}
-      className={`h-10 min-w-10 rounded-lg border px-3 font-mono text-sm font-semibold transition ${
+      className={`h-10 min-w-10 whitespace-nowrap rounded-lg border px-3 font-mono text-sm font-semibold transition ${
         active
           ? "border-(--accent) bg-(--accent) text-(--on-accent)"
           : "border-slate-300 text-(--text-secondary) enabled:hover:border-(--accent) dark:border-slate-700"
@@ -34,6 +34,8 @@ interface OptionGroupProps<T> {
   disabled?: boolean;
   /** Über die ganze Breite des Einstellungsrasters. */
   wide?: boolean;
+  /** Auch ab zwei Spalten umbrechen (viele Knöpfe, z. B. Themen). */
+  wrap?: boolean;
 }
 
 /**
@@ -47,6 +49,7 @@ export function OptionGroup<T>({
   onChange,
   disabled,
   wide = false,
+  wrap = false,
 }: OptionGroupProps<T>) {
   if (disabled) {
     const selected = options.find((option) => option.value === value);
@@ -63,7 +66,7 @@ export function OptionGroup<T>({
     <div className={wide ? "sm:col-span-2" : undefined}>
       <p className="text-sm font-semibold">{label}</p>
       {/* Auf dem Handy umbrechen, ab zwei Spalten in einer Reihe bleiben. */}
-      <div className="mt-3 flex flex-wrap gap-2 sm:flex-nowrap">
+      <div className={`mt-3 flex flex-wrap gap-2 ${wrap ? "" : "sm:flex-nowrap"}`}>
         {options.map((option) => (
           <Option
             key={String(option.value)}
